@@ -17,6 +17,7 @@
 - Confirmed deployment is running in safe fallback mode with `liveSearch=false`, `llmAnalysis=false`, `emailReport=false`, `backendLogging=false`, providers `mock/fallback`, `DAILY_LLM_LIMIT=30`, and `PER_SESSION_LLM_LIMIT=3`.
 - Recorded rollout guardrails: do not connect `mandysbikefinder.com` yet and do not enable real APIs yet.
 - Improved MVP UX: added height unit selector (`cm` / `ft-in`) with internal cm normalization, weight unit selector (`lb` / `kg`) with optional kg normalization, multi-select kid color preferences with no-preference override, empty initial listing fields, optional sample listing loader, listing source labels, link-only readability note, and cleaner dimension card titles including `Kid Appeal`.
+- Updated `docs/PRD.md` to match implemented UX behavior: height/weight unit selectors with normalization, multi-select color preferences, empty initial listing fields, listing source labels, link-only readability note, and `Kid Appeal` dimension naming.
 
 ## v0.4
 

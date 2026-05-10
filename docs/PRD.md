@@ -79,9 +79,13 @@ The first working MVP may include real API integrations, but only in controlled 
 
 - Height.
   - Support centimeters in MVP.
-  - Later support feet/inches.
+  - Support feet/inches input in MVP via a unit selector.
+  - Normalize to centimeters internally before analysis.
 - Age, optional.
 - Weight, optional.
+  - Support pounds or kilograms via a unit selector in MVP.
+  - Default to pounds for US users.
+  - Normalize to kilograms internally before analysis when needed.
 - Riding experience.
   - Beginner.
   - Comfortable.
@@ -91,14 +95,15 @@ The first working MVP may include real API integrations, but only in controlled 
   - Boy-style.
   - Girl-style.
   - All good / no preference.
-- Color/style preference, optional.
-  - Pink/purple.
-  - Blue/green.
-  - Red/orange.
-  - Black/white/neutral.
+- Color/style preference, optional, multi-select.
+  - No preference / all colors are fine.
+  - Pink / purple.
+  - Blue / green.
+  - Red / orange.
+  - Black / white / neutral.
   - Bright colors.
-  - Mature/simple style.
-  - No strong preference.
+  - Mature / simple style.
+  - If no-preference is selected, it overrides or clears other color preferences.
 
 ### Style Preference Principle
 
@@ -115,6 +120,8 @@ Style/gender preference is not meant to stereotype children. It is used because 
 ### Important Constraint
 
 The app should not depend on automatic Facebook Marketplace or Craigslist scraping. Some links may not be readable. If the link cannot be read, the app should guide the user to upload a screenshot or manually enter details.
+
+If the user enters only a marketplace link and no pasted text or screenshot, show a clear note that direct link reading may not be supported yet and guide the user to paste listing text or upload a screenshot.
 
 ### Listing Data To Capture
 
@@ -145,6 +152,15 @@ From screenshot or pasted text, the app should attempt to identify:
 - Platform/link if provided.
 
 After extraction, the app must show a confirmation/editing step before analysis. The user must be able to correct extracted fields.
+
+The app should keep listing fields empty on initial page load. It should only populate confirmation fields after user input (pasted text extraction, screenshot flow, or manual entry). Optional sample/demo listing data may be provided behind an explicit action such as a "Load sample listing" button, not as default prefilled values.
+
+The app should show a small source label for listing field origin, such as:
+
+- Source: pasted text.
+- Source: screenshot.
+- Source: manual entry.
+- Source: sample listing.
 
 Phase 1 may use mock extraction or local text parsing. Phase 1.5 may use a server-side LLM provider to extract structured fields from pasted or OCR text when `ENABLE_LLM_ANALYSIS` is enabled. The app must still show a confirmation/editing step before analysis. Automatic Facebook Marketplace or Craigslist scraping remains out of scope.
 
@@ -214,7 +230,7 @@ Example higher-quality brands:
 - Cannondale.
 - Guardian.
 
-### 5. Color / Kid Appeal
+### 5. Kid Appeal
 
 Assess whether the color/style likely matches the child's preference. Include comments such as:
 
