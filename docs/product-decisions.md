@@ -58,16 +58,22 @@ Reason: Vercel and Next.js provide a clean path for a web MVP with server-side A
 
 ## Custom Domain Registration and Deployment Sequence
 
-Decision: `mandysbikefinder.com` has been registered, but custom-domain deployment is intentionally deferred.
+Decision: `mandysbikefinder.com` was registered first and is now live on Vercel at `https://www.mandysbikefinder.com/`.
 
-Reason: Deployment should happen in this order:
+Reason: Deployment followed this order:
 1. Finish Next.js migration under `/app`.
 2. Verify local build.
 3. Deploy first to a Vercel free domain.
 4. Test the full MVP flow.
 5. Then connect `mandysbikefinder.com`.
 
-Additional guardrail: API cost-control safeguards must be verified before any public deployment.
+Current status notes:
+- DNS + Vercel binding is working.
+- Deployed site returns `200 OK`.
+- Latest UX fixes are visible on the custom domain.
+- Site is still running in safe fallback mode with real APIs disabled.
+
+Additional guardrail: API cost-control safeguards must still be verified before enabling real APIs or broad public sharing.
 
 ## Email Report Added for User Value and Retention
 

@@ -64,8 +64,20 @@ All listed API routes are migrated under `/app/app/api`.
   - `backendLogging=false`
   - providers are `mock/fallback`
 - Vercel preview/free-domain deployment is verified end-to-end before any custom-domain connection.
-- Do not connect `mandysbikefinder.com` until the Vercel free domain is tested.
-- API cost-control safeguards must be verified before public deployment.
+- Deployed MVP flow is now manually verified at:
+  - `https://mandys-bike-finder.vercel.app/`
+- Custom domain is now live and reachable at:
+  - `https://www.mandysbikefinder.com/`
+- Manual verification confirms:
+  - Height unit selector works for `cm` / `ft-in`.
+  - Weight unit selector works for `lb` / `kg`.
+  - Color preference is multi-select with `No preference / all colors are fine`.
+  - Listing fields no longer show confusing prefilled data on initial load.
+  - Listing source labeling is clearer.
+  - Result cards emphasize `Fit`, `Price`, `Condition`, `Brand`, `Kid Appeal`, and `Risk`.
+- DNS + Vercel binding is working and deployed site returns `200 OK`.
+- Site is still running in safe fallback mode with real APIs disabled.
+- API cost-control safeguards must still be verified before enabling real APIs or broad public sharing.
 
 ## Not Implemented Yet
 

@@ -83,6 +83,7 @@ The first public MVP can be deployed on the free Vercel-provided domain, for exa
 Current live deployment:
 
 - `https://mandys-bike-finder.vercel.app/`
+- `https://www.mandysbikefinder.com/`
 - `/api/status` returns `200 OK`
 - Safe fallback mode is active:
   - `liveSearch=false`
@@ -92,12 +93,15 @@ Current live deployment:
   - providers are `mock/fallback`
   - `DAILY_LLM_LIMIT=30`
   - `PER_SESSION_LLM_LIMIT=3`
+- DNS + Vercel binding is working.
+- Latest UX fixes are visible on the custom domain.
 
 Custom domain status:
 
 - `mandysbikefinder.com` has been registered.
-- Do not configure custom domain deployment yet.
-- Deployment should happen later in this order:
+- Custom domain is now live:
+  - `https://www.mandysbikefinder.com/`
+- Deployment was completed in this order:
 1. Finish Next.js migration under `/app`.
 2. Verify local build.
 3. Deploy first to a Vercel free domain.
@@ -179,7 +183,7 @@ When ready:
 4. Follow Vercel's DNS instructions at the domain registrar.
 5. Wait for DNS and SSL certificate provisioning to complete.
 
-Reminder: do not connect `mandysbikefinder.com` until the Vercel free-domain deployment has been tested.
+Reminder: keep the free-domain deployment healthy and validated even after custom-domain cutover.
 
 Reminder: API cost-control safeguards must be verified before any public deployment.
 
