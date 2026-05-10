@@ -59,6 +59,7 @@ export default function Home() {
   const [listingSource, setListingSource] = useState("Not set");
   const [pastedText, setPastedText] = useState("");
   const [screenshotName, setScreenshotName] = useState("");
+  const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
   const [screenshotNotice, setScreenshotNotice] = useState("");
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
   const [heightFeet, setHeightFeet] = useState("");
@@ -98,6 +99,12 @@ export default function Home() {
     });
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
+    };
+  }, [screenshotPreviewUrl]);
+
   function updateListingField<K extends keyof Listing>(field: K, value: Listing[K], source = "manual entry") {
     setListing((current) => ({ ...current, [field]: value }));
     setListingSource((current) => {
@@ -136,6 +143,8 @@ export default function Home() {
     setListing(sampleListing);
     setListingSource("sample listing");
     setScreenshotName("");
+    if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
+    setScreenshotPreviewUrl("");
     setScreenshotNotice("");
     setStatus("Sample listing loaded.");
   }
@@ -316,16 +325,28 @@ export default function Home() {
               <div className="mb-5 grid gap-3">
                 <Field label="Listing screenshot">
                   <input className={inputClass} type="file" accept="image/*" onChange={(event) => {
-                    const nextName = event.target.files?.[0]?.name || "";
+                    const file = event.target.files?.[0];
+                    const nextName = file?.name || "";
                     setScreenshotName(nextName);
                     if (!nextName) return;
+                    if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
+                    setScreenshotPreviewUrl(URL.createObjectURL(file as Blob));
                     setListing(defaultListing);
                     setListingSource("screenshot");
                     setScreenshotNotice("Screenshot uploaded. OCR extraction is not enabled yet. Please review and enter listing details manually.");
                   }} />
                 </Field>
-                <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-muted">
-                  {screenshotName || "No image selected"}
+                <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-2 text-muted">
+                  {screenshotPreviewUrl ? (
+                    <div className="grid w-full gap-2">
+                      <div className="grid h-44 place-items-center overflow-hidden rounded-md border border-slate-200 bg-white">
+                        <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="max-h-full max-w-full object-contain" />
+                      </div>
+                      <p className="text-xs text-slate-600">{screenshotName}</p>
+                    </div>
+                  ) : (
+                    <span>No image selected</span>
+                  )}
                 </div>
                 {screenshotNotice && (
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
@@ -335,9 +356,11 @@ export default function Home() {
               </div>
             )}
             <div className="mb-4 flex items-center gap-2">
-              <button className="min-h-10 rounded-md border border-line bg-slate-50 px-3 text-sm font-bold" type="button" onClick={loadSampleListing}>
-                Load sample listing
-              </button>
+              {!screenshotName && (
+                <button className="min-h-10 rounded-md border border-line bg-slate-50 px-3 text-sm font-bold" type="button" onClick={loadSampleListing}>
+                  Load sample listing
+                </button>
+              )}
               <span className="text-xs text-muted">Source: {listingSource}</span>
             </div>
 

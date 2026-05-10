@@ -35,6 +35,9 @@ npm run dev
 10. Screenshot upload behavior:
    - Uploading a screenshot clears previously loaded sample listing values.
    - Source switches to `screenshot` immediately.
+   - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.
+   - The file name is shown as secondary metadata under the preview.
+   - After screenshot upload, `Load sample listing` is hidden to avoid conflicting source actions.
    - If OCR is not enabled, the app shows:
      - "Screenshot uploaded. OCR extraction is not enabled yet. Please review and enter listing details manually."
    - Confirm listing fields stay empty until manual edits or real extraction.

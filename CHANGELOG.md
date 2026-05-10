@@ -22,6 +22,7 @@
 - Recorded that custom domain `https://www.mandysbikefinder.com/` is now live, DNS + Vercel binding is working, the deployed site returns `200 OK`, latest UX fixes are visible on the custom domain, and the site remains in safe fallback mode with real APIs disabled.
 - Reconfirmed rollout guardrail: API cost-control safeguards must still be verified before enabling real APIs or broad public sharing.
 - Fixed listing-input UX bug in screenshot mode: uploading a screenshot now clears sample listing values, immediately marks source as `screenshot`, shows an OCR-disabled guidance message, and keeps confirmation fields empty until manual edits or real extraction.
+- Improved screenshot upload UX: the screenshot panel now renders a real image preview with aspect-ratio-safe fit, keeps the file name as secondary text, and hides `Load sample listing` after screenshot upload to prevent conflicting source state.
 
 ## v0.4
 
