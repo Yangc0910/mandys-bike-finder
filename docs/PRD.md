@@ -293,17 +293,76 @@ Example:
 
 Because search and LLM APIs may cost money, V1 must include cost-control design:
 
-- Per-session daily limit.
-- Global daily API limit via environment variables.
+- Per-session or per-IP daily limits.
+- Global daily API usage limits via environment variables.
 - Caching repeated search queries.
 - Fallback mode using local estimated price ranges.
 - No unlimited API calls.
 - Graceful message if live price check is unavailable.
+- Admin kill switches through feature flags.
+- Server-side API calls only.
+- API failure logging that does not break the user experience.
 
-Example environment variables:
+### Required Feature Flags
+
+Every external integration must be controlled by a server-side feature flag:
+
+- `ENABLE_LIVE_SEARCH`.
+- `ENABLE_LLM_ANALYSIS`.
+- `ENABLE_EMAIL_REPORT`.
+- `ENABLE_BACKEND_LOGGING`.
+
+If a feature flag is disabled, the app must use the local/mock fallback for that capability.
+
+### Required Usage Limits
+
+Global daily limits:
 
 - `DAILY_SEARCH_LIMIT`.
 - `DAILY_LLM_LIMIT`.
+- `DAILY_EMAIL_LIMIT`.
+
+Per-session or per-IP limits:
+
+- `PER_SESSION_LLM_LIMIT`.
+- `PER_SESSION_SEARCH_LIMIT`.
+- `PER_SESSION_EMAIL_LIMIT`.
+
+Search cache configuration:
+
+- `SEARCH_CACHE_TTL_HOURS`.
+
+Model configuration:
+
+- `OPENAI_MODEL`.
+
+The MVP should use the cheapest suitable model that produces acceptable output quality. For example, use a small model such as `gpt-5.4-mini` for controlled beta LLM parsing, reasoning, negotiation message generation, and email report summaries unless a higher-quality model is clearly required.
+
+### API Key Safety
+
+API keys must never be exposed to frontend code, browser bundles, checked-in source files, screenshots, documentation examples with real values, or client-side network payloads. External API calls must happen only through server-side routes or server-side functions.
+
+Provider credentials may include server-side environment variables such as:
+
+- `OPENAI_API_KEY`.
+- `SEARCH_API_KEY`.
+- `SEARCH_API_URL`.
+- `EMAIL_API_KEY`.
+- `EMAIL_API_URL`.
+- `EMAIL_FROM`.
+- `DATABASE_URL`.
+
+These variables must be configured in the local environment or deployment provider environment-variable settings. They must never be committed to GitHub.
+
+### LLM Call Timing
+
+No LLM call should happen on initial page load. LLM calls may happen only after a user action that needs them, such as pasted-text extraction, analysis reasoning, Negotiation Boost generation, or email report summary generation. If `ENABLE_LLM_ANALYSIS` is disabled, missing credentials, failed provider calls, or reached limits prevent live LLM use, the app must fall back gracefully.
+
+### Limit Storage Requirements
+
+In-memory limits and cache are acceptable only for a local prototype. They are not sufficient for deployed beta because they reset on server restart and do not work across multiple instances.
+
+Before public deployment, usage limits and cache must be backed by durable storage such as a database, durable KV store, or managed cache. Durable storage must support global daily limit enforcement, per-session or per-IP limit enforcement, search cache TTL, and API failure logging.
 
 If live search is unavailable, app should still work using:
 

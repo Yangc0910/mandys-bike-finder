@@ -7,6 +7,7 @@
 - Added feature-flagged fallbacks so the app remains functional without API keys.
 - Added in-memory daily limits and search caching.
 - Added testing notes for no-key, live-key, limit, fallback, and sample listing scenarios.
+- Expanded the PRD source of truth with the full Phase 1.5 environment-variable, model, API-key safety, server-side-only, no-initial-LLM-call, and durable limit/cache requirements.
 
 ## v0.4
 
