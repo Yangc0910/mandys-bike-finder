@@ -91,3 +91,29 @@ Outcomes:
 - Listing recency / just-listed weighting.
 - Stale listing filtering.
 - Marketplace-wide ranking engine.
+
+## Child Bike-Type Recommendation (Implemented)
+
+Reference: `buildChildBikeRecommendation` in `app/app/page.tsx`.
+
+Decision model:
+
+- Weighted category scoring is used (not single hard-coded style rule).
+- Higher-weight inputs:
+  - height/wheel-size fit
+  - age reasonableness
+  - riding experience
+- Lower-weight inputs:
+  - style preference and optional personalization
+
+Current category behavior:
+
+- `Kids mountain bike` / `Hybrid / neighborhood bike` are favored more often for older/taller and comfortable/confident/advanced riders.
+- `Kids cruiser bike` is intentionally narrower and receives practicality penalties for progression-focused riders.
+- `Training wheels bike` and `Balance bike` are constrained to younger/smaller/beginner profiles.
+
+Category-specific guidance:
+
+- Mountain recommendation explanation emphasizes versatile mixed-surface use.
+- Hybrid recommendation explanation emphasizes paved/neighborhood all-around use.
+- Cruiser recommendation explanation includes explicit caution: can be heavier and less versatile than mountain/hybrid options.

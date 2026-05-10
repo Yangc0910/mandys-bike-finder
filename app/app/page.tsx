@@ -866,22 +866,116 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
   else if (height < 155) baseWheel = 24;
   else baseWheel = 26;
 
-  // Age sanity checks as secondary adjustment
+  // Age reasonableness checks as secondary adjustment
   if (age > 0) {
     if (age <= 4) baseWheel = Math.min(baseWheel, 14);
-    else if (age <= 6) baseWheel = Math.min(baseWheel, 16);
-    else if (age <= 8) baseWheel = Math.min(baseWheel, 20);
+    else if (age <= 6) baseWheel = Math.min(baseWheel, 18);
   }
 
-  let category = "Standard kids bike";
-  if (experience === "beginner") {
-    if (height < 105 || age <= 5) category = "Balance bike";
-    else if (height < 120 || age <= 7) category = "Training wheels bike";
-    else category = "Standard kids bike";
-  } else if (experience === "comfortable") {
-    category = baseWheel >= 24 ? "Kids cruiser bike" : "Standard kids bike";
+  const categoryScores: Record<string, number> = {
+    "Balance bike": 0,
+    "Training wheels bike": 0,
+    "Standard kids bike": 0,
+    "Kids cruiser bike": 0,
+    "Kids mountain bike": 0,
+    "Hybrid / neighborhood bike": 0,
+  };
+
+  // Fit signal from wheel size
+  if (baseWheel <= 12) {
+    categoryScores["Balance bike"] += 6;
+    categoryScores["Training wheels bike"] += 3;
+  } else if (baseWheel <= 16) {
+    categoryScores["Training wheels bike"] += 5;
+    categoryScores["Standard kids bike"] += 4;
+  } else if (baseWheel <= 18) {
+    categoryScores["Standard kids bike"] += 5;
+    categoryScores["Training wheels bike"] += 2;
+  } else if (baseWheel <= 20) {
+    categoryScores["Standard kids bike"] += 4;
+    categoryScores["Hybrid / neighborhood bike"] += 3;
+    categoryScores["Kids mountain bike"] += 3;
   } else {
-    category = baseWheel >= 24 ? "Hybrid / neighborhood bike" : "Kids mountain bike";
+    categoryScores["Hybrid / neighborhood bike"] += 5;
+    categoryScores["Kids mountain bike"] += 5;
+    categoryScores["Kids cruiser bike"] += 1;
+  }
+
+  // Experience heavily influences bike type
+  if (experience === "beginner") {
+    categoryScores["Balance bike"] += 3;
+    categoryScores["Training wheels bike"] += 4;
+    categoryScores["Standard kids bike"] += 3;
+    categoryScores["Kids mountain bike"] -= 3;
+    categoryScores["Hybrid / neighborhood bike"] -= 2;
+  } else if (experience === "comfortable") {
+    categoryScores["Standard kids bike"] += 2;
+    categoryScores["Hybrid / neighborhood bike"] += 4;
+    categoryScores["Kids mountain bike"] += 4;
+    categoryScores["Kids cruiser bike"] += 1;
+  } else {
+    categoryScores["Kids mountain bike"] += 6;
+    categoryScores["Hybrid / neighborhood bike"] += 5;
+    categoryScores["Kids cruiser bike"] -= 3;
+    categoryScores["Training wheels bike"] -= 5;
+    categoryScores["Balance bike"] -= 6;
+  }
+
+  // Age reasonableness
+  if (age > 0) {
+    if (age <= 5) {
+      categoryScores["Balance bike"] += 4;
+      categoryScores["Training wheels bike"] += 4;
+      categoryScores["Kids mountain bike"] -= 4;
+      categoryScores["Hybrid / neighborhood bike"] -= 4;
+    } else if (age <= 7) {
+      categoryScores["Standard kids bike"] += 3;
+      categoryScores["Training wheels bike"] += 2;
+      categoryScores["Kids mountain bike"] += 1;
+      categoryScores["Hybrid / neighborhood bike"] += 1;
+    } else {
+      categoryScores["Kids mountain bike"] += 3;
+      categoryScores["Hybrid / neighborhood bike"] += 3;
+      categoryScores["Balance bike"] -= 4;
+      categoryScores["Training wheels bike"] -= 3;
+    }
+  }
+
+  // Cruiser as narrower, explicit style/use-case signal
+  const styleLower = stylePreference.toLowerCase();
+  const hasCruiserSignal = styleLower.includes("girl") || styleLower.includes("comfort") || styleLower.includes("cruiser");
+  if (hasCruiserSignal) {
+    categoryScores["Kids cruiser bike"] += 3;
+  }
+  if (experience === "advanced" || experience === "confident") {
+    categoryScores["Kids cruiser bike"] -= 4;
+  }
+  if (baseWheel >= 24 && age >= 8 && (experience === "comfortable" || experience === "advanced" || experience === "confident")) {
+    categoryScores["Kids mountain bike"] += 2;
+    categoryScores["Hybrid / neighborhood bike"] += 2;
+  }
+
+  // Practicality penalty: cruiser can be heavier / less versatile for progression
+  if (baseWheel >= 20 && age >= 7 && (experience === "comfortable" || experience === "advanced" || experience === "confident")) {
+    categoryScores["Kids cruiser bike"] -= 2;
+  }
+
+  const categoryPriority = [
+    "Kids mountain bike",
+    "Hybrid / neighborhood bike",
+    "Standard kids bike",
+    "Kids cruiser bike",
+    "Training wheels bike",
+    "Balance bike",
+  ];
+  let category = categoryPriority[0];
+  let bestScore = Number.NEGATIVE_INFINITY;
+  for (const candidate of categoryPriority) {
+    const score = categoryScores[candidate];
+    if (score > bestScore) {
+      bestScore = score;
+      category = candidate;
+    }
   }
 
   const wheelSize = `${baseWheel} inch`;
@@ -892,7 +986,17 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
   const styleRecommendation = stylePreference === "all good / no preference"
     ? `${category} with practical geometry and neutral long-term style.`
     : `${category} that matches ${stylePreference} while still prioritizing fit and control.`;
-  const explanation = `Based on height ${height || "unknown"} cm, age ${age || "unknown"}, and ${experience} riding experience, a ${wheelSize} ${category.toLowerCase()} is the safest starting point now.`;
+  const explanation = category === "Kids mountain bike"
+    ? `Given the child's height, age, and riding experience, a ${wheelSize} kids mountain bike is a practical and versatile option for neighborhood riding, parks, gravel, and light trails.`
+    : category === "Hybrid / neighborhood bike"
+      ? `A youth hybrid or neighborhood bike is a good all-around option when the child mainly rides on paved paths, driveway, and neighborhood roads. ${wheelSize} is the current fit-first size target.`
+      : category === "Kids cruiser bike"
+        ? `Cruiser bikes are best for relaxed flat neighborhood riding and style/comfort preference, but they can be heavier and less versatile than mountain or hybrid bikes. ${wheelSize} should still be confirmed with fit and control checks.`
+        : category === "Training wheels bike"
+          ? `Based on height, age, and riding confidence, a ${wheelSize} training-wheels setup can support stable early riding while control skills improve.`
+          : category === "Balance bike"
+            ? `A balance bike is the best early option for this height/age stage to build steering, balance, and braking confidence before moving to pedals.`
+            : `Based on height ${height || "unknown"} cm, age ${age || "unknown"}, and ${experience} riding experience, a ${wheelSize} standard kids bike is a practical and safe starting point now.`;
   const optionalNotes: string[] = [];
 
   if (weightKg > 0) {
@@ -906,6 +1010,40 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
     optionalNotes.push(`Preferred color directions: ${colorPreferences.join(", ")}.`);
   }
 
+  const lookForByCategory: Record<string, string[]> = {
+    "Kids mountain bike": [
+      "Lightweight frame if possible",
+      "Working hand brakes",
+      "Smooth shifting if the bike has gears",
+      `${wheelSize} wheel size for current height range`,
+      "Reasonable standover height",
+      "Tires suitable for neighborhood and light trail use",
+    ],
+    "Kids cruiser bike": [
+      "Comfortable upright position",
+      "Low step-through frame",
+      "Simple controls",
+      "Good fit and manageable weight",
+      "Good condition tires and brakes",
+    ],
+  };
+  const avoidByCategory: Record<string, string[]> = {
+    "Kids mountain bike": [
+      "Bike that is too heavy for the child to control",
+      "Poor brake condition",
+      "Suspension that is cheap, broken, or unnecessarily heavy",
+      "Adult-sized 26 inch bike unless height and age clearly support it",
+      "Rust, bent wheels, or rough shifting",
+    ],
+    "Kids cruiser bike": [
+      "Very heavy frame",
+      "Poor braking",
+      "Bike that is too large despite low step-through frame",
+      "Single-speed bike if the area has hills",
+      "Choosing cruiser only for looks if the child needs a more versatile bike",
+    ],
+  };
+
   return {
     category,
     wheelSize,
@@ -913,7 +1051,7 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
     styleRecommendation,
     explanation,
     optionalNotes,
-    lookFor: [
+    lookFor: lookForByCategory[category] || [
       "Low standover height",
       "Adjustable seat height",
       "Working hand brakes",
@@ -921,7 +1059,7 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
       "Simple gearing if the child is not advanced",
       "Test ride if considering a larger size",
     ],
-    avoid: [
+    avoid: avoidByCategory[category] || [
       "Bike that is too large to grow into",
       "Very heavy department-store bike if the child is still learning",
       "Poor brake condition",

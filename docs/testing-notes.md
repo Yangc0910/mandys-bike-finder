@@ -193,6 +193,18 @@ Expected behavior: the second call falls back gracefully and explains that the d
    - Cruiser/comfort category variants (for example `Kids cruiser bike`, `Cruiser bike`, `24 inch Kids cruiser bike`) should all map to the cruiser comfort image.
    - Mountain category should map to the kids mountain bike image.
    - If recommendation text has no recognized category keywords, fallback placeholder should appear.
+9. Bike-type weighting behavior:
+   - Case 1: 145 cm, age 9, Advanced, Girl-style:
+     - Expected primary recommendation is `Kids mountain bike` or `Hybrid / neighborhood bike` (not `Kids cruiser bike`).
+     - Wheel size should generally be `24 inch`.
+   - Case 2: 145 cm, age 9, Comfortable, strong comfort/cruiser style signal:
+     - `Kids cruiser bike` can be recommended with explicit note about weight and lower versatility.
+   - Case 3: 125 cm, age 6, Beginner:
+     - Expected recommendation is `Standard kids bike` or `Training wheels bike` depending on confidence and fit.
+     - Wheel guidance should generally stay around 18/20 inch range.
+   - Case 4: 135 cm, age 8, Comfortable, no style preference:
+     - Expected recommendation leans toward `Hybrid / neighborhood bike` or `Kids mountain bike`.
+     - Wheel guidance should generally be around 20 inch (24 inch only if fit/age context supports).
 
 ## Manual Verification on Live Deployment
 

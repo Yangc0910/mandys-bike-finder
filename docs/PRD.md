@@ -134,6 +134,7 @@ The app should support a child-profile-only recommendation flow before listing a
 - If child profile changes after recommendation is shown, prompt:
   - `Child profile changed. Re-run recommendation.`
 - Height should drive wheel-size range first, age should act as a reasonableness check, and riding experience should adjust category and confidence.
+- Bike type selection should use weighted decision logic where fit/age/experience outweigh style preference.
 - Required inputs for this recommendation:
   - height
   - age
@@ -145,6 +146,23 @@ The app should support a child-profile-only recommendation flow before listing a
 - Output should include both:
   - recommended bike type/category
   - recommended wheel size
+
+Current recommendation behavior:
+
+- Cruiser is a narrower recommendation (style/comfort-focused, flatter casual riding).
+- For older/taller and comfortable/advanced riders (often around 20/24 inch range), default recommendation should lean toward:
+  - `Kids mountain bike`, or
+  - `Hybrid / neighborhood bike`
+- Style preference can personalize result, but should not override safety, fit, and practical riding needs.
+
+Supported recommendation categories:
+
+- `Balance bike`
+- `Training wheels bike`
+- `Standard kids bike`
+- `Kids cruiser bike`
+- `Kids mountain bike`
+- `Hybrid / neighborhood bike`
 
 ## F. Listing Input Requirements
 

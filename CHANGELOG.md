@@ -43,6 +43,7 @@
 - Increased controlled AI extraction limit defaults for testing/light personal use: server-side LLM daily limit baseline is now `10` per IP/day with session baseline `10`, limit messaging now clearly states the 10/day cap and manual fallback guidance, and docs/env examples were updated to match.
 - Fixed Link-mode UX for marketplace URLs: action button now appears for Facebook Marketplace links (not just Craigslist), Facebook uses pasted text extraction path with link preserved as reference, link-only states show explicit guidance instead of silent missing action, and source label is reset by tab mode to prevent stale `screenshot` source in Link mode.
 - Documentation and cleanup alignment pass: synchronized PRD/README/user flows/scoring/testing/current-status with actual implementation (required child recommendation fields, screenshot/link/manual behavior, platform-specific link handling, AI extraction limits, source label states, and current image asset mapping), and removed duplicate screenshot guidance text in UI.
+- Refined child bike-type recommendation weighting: reduced over-broad cruiser defaults, increased mountain/hybrid preference for older/taller comfortable/advanced riders, added weighted category scoring (fit/age/experience first, style as secondary), and updated recommendation explanations plus category-specific look-for/avoid guidance.
 
 ## v0.4
 
