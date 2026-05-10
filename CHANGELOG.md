@@ -18,6 +18,10 @@
 - Recorded rollout guardrails: do not connect `mandysbikefinder.com` yet and do not enable real APIs yet.
 - Improved MVP UX: added height unit selector (`cm` / `ft-in`) with internal cm normalization, weight unit selector (`lb` / `kg`) with optional kg normalization, multi-select kid color preferences with no-preference override, empty initial listing fields, optional sample listing loader, listing source labels, link-only readability note, and cleaner dimension card titles including `Kid Appeal`.
 - Updated `docs/PRD.md` to match implemented UX behavior: height/weight unit selectors with normalization, multi-select color preferences, empty initial listing fields, listing source labels, link-only readability note, and `Kid Appeal` dimension naming.
+- Recorded that the deployed MVP flow is now manually verified at `https://mandys-bike-finder.vercel.app/`, including working height (`cm` / `ft-in`) and weight (`lb` / `kg`) unit selectors, multi-select color preference with `No preference / all colors are fine`, no confusing prefilled listing data, clearer listing source labels, and cleaner result-card emphasis on `Fit`, `Price`, `Condition`, `Brand`, `Kid Appeal`, and `Risk` while remaining in safe fallback mode with real APIs disabled.
+- Recorded that custom domain `https://www.mandysbikefinder.com/` is now live, DNS + Vercel binding is working, the deployed site returns `200 OK`, latest UX fixes are visible on the custom domain, and the site remains in safe fallback mode with real APIs disabled.
+- Reconfirmed rollout guardrail: API cost-control safeguards must still be verified before enabling real APIs or broad public sharing.
+- Fixed listing-input UX bug in screenshot mode: uploading a screenshot now clears sample listing values, immediately marks source as `screenshot`, shows an OCR-disabled guidance message, and keeps confirmation fields empty until manual edits or real extraction.
 
 ## v0.4
 

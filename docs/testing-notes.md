@@ -29,8 +29,15 @@ npm run dev
    - Source: screenshot.
    - Source: manual entry.
    - Source: sample listing.
+   - After screenshot upload and manual edits, source can show `screenshot + manual edits`.
 9. In link mode, if only a link is entered, confirm the note appears:
    - "Marketplace links may not be readable directly yet. Please paste listing text or upload a screenshot."
+10. Screenshot upload behavior:
+   - Uploading a screenshot clears previously loaded sample listing values.
+   - Source switches to `screenshot` immediately.
+   - If OCR is not enabled, the app shows:
+     - "Screenshot uploaded. OCR extraction is not enabled yet. Please review and enter listing details manually."
+   - Confirm listing fields stay empty until manual edits or real extraction.
 
 Expected behavior: the app remains fully functional without API keys.
 
@@ -92,6 +99,22 @@ Expected behavior: the second call falls back gracefully and explains that the d
 3. Color preference multi-select:
    - Select multiple colors and confirm they remain selected.
    - Select `No preference / all colors are fine` and confirm it overrides/clears other selections.
+
+## Manual Verification on Live Deployment
+
+Manual run-through is verified on:
+
+- `https://mandys-bike-finder.vercel.app/`
+
+Confirmed on deployed MVP:
+
+- Height unit selector works for `cm` / `ft-in`.
+- Weight unit selector works for `lb` / `kg`.
+- Color preference is multi-select with `No preference / all colors are fine`.
+- Listing fields no longer show confusing prefilled data on initial load.
+- Listing source labeling is clearer.
+- Result cards emphasize `Fit`, `Price`, `Condition`, `Brand`, `Kid Appeal`, and `Risk`.
+- `/api/status` remains `200 OK` with safe fallback mode and real APIs disabled.
 
 ## Test Fallback Behavior
 

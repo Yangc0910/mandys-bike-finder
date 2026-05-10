@@ -59,6 +59,7 @@ export default function Home() {
   const [listingSource, setListingSource] = useState("Not set");
   const [pastedText, setPastedText] = useState("");
   const [screenshotName, setScreenshotName] = useState("");
+  const [screenshotNotice, setScreenshotNotice] = useState("");
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
   const [heightFeet, setHeightFeet] = useState("");
   const [heightInches, setHeightInches] = useState("");
@@ -99,7 +100,11 @@ export default function Home() {
 
   function updateListingField<K extends keyof Listing>(field: K, value: Listing[K], source = "manual entry") {
     setListing((current) => ({ ...current, [field]: value }));
-    setListingSource(source);
+    setListingSource((current) => {
+      if (source !== "manual entry") return source;
+      if (current === "screenshot") return "screenshot + manual edits";
+      return "manual entry";
+    });
   }
 
   function toggleColorPreference(option: string) {
@@ -123,13 +128,25 @@ export default function Home() {
     const fields = result?.result?.fields || localExtract(pastedText);
     setListing((current) => ({ ...current, ...compactFields(fields) }));
     setListingSource("pasted text");
+    setScreenshotNotice("");
     setStatus(result?.statusMessage || providerStatusText(result?.apiStatus || providerModes) || "Listing fields extracted.");
   }
 
   function loadSampleListing() {
     setListing(sampleListing);
     setListingSource("sample listing");
+    setScreenshotName("");
+    setScreenshotNotice("");
     setStatus("Sample listing loaded.");
+  }
+
+  function handleInputModeChange(mode: string) {
+    setInputMode(mode);
+    setScreenshotNotice("");
+    if (mode === "screenshot" && listingSource === "sample listing") {
+      setListing(defaultListing);
+      setListingSource("Not set");
+    }
   }
 
   async function analyze(event: FormEvent) {
@@ -177,6 +194,21 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-6">
       <section className="mx-auto max-w-[1440px]">
+        <div className="relative mb-6 overflow-hidden rounded-xl border border-line shadow-panel">
+          <div
+            className="h-[260px] bg-cover md:h-[340px]"
+            style={{ backgroundImage: "url('/images/mandy-bike-hero.jpg')", backgroundPosition: "68% center" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-transparent" />
+          <div className="absolute inset-y-0 left-0 flex max-w-xl flex-col justify-center p-4 text-white md:p-8">
+            <p className="text-xs font-bold uppercase tracking-wide text-white/90">Mandy&apos;s Bike Finder</p>
+            <h2 className="mt-1 text-2xl font-bold md:text-4xl">Find the right used bike with confidence</h2>
+            <p className="mt-2 text-sm text-white/90 md:text-base">
+              Fit, price, condition, style, and a ready-to-send message in one flow.
+            </p>
+          </div>
+        </div>
+
         <header className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="mb-1 text-xs font-bold uppercase text-muted">Mandy&apos;s Bike Finder</p>
@@ -260,7 +292,7 @@ export default function Home() {
             <SectionTitle step="2" title="Listing input" />
             <div className="mb-4 grid grid-cols-3 gap-2">
               {["link", "screenshot", "manual"].map((mode) => (
-                <button key={mode} type="button" onClick={() => setInputMode(mode)} className={`min-h-11 rounded-md border font-bold ${inputMode === mode ? "border-brand bg-brand text-white" : "border-line bg-slate-50"}`}>
+                <button key={mode} type="button" onClick={() => handleInputModeChange(mode)} className={`min-h-11 rounded-md border font-bold ${inputMode === mode ? "border-brand bg-brand text-white" : "border-line bg-slate-50"}`}>
                   {mode[0].toUpperCase() + mode.slice(1)}
                 </button>
               ))}
@@ -286,12 +318,20 @@ export default function Home() {
                   <input className={inputClass} type="file" accept="image/*" onChange={(event) => {
                     const nextName = event.target.files?.[0]?.name || "";
                     setScreenshotName(nextName);
-                    if (nextName) setListingSource("screenshot");
+                    if (!nextName) return;
+                    setListing(defaultListing);
+                    setListingSource("screenshot");
+                    setScreenshotNotice("Screenshot uploaded. OCR extraction is not enabled yet. Please review and enter listing details manually.");
                   }} />
                 </Field>
                 <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-muted">
                   {screenshotName || "No image selected"}
                 </div>
+                {screenshotNotice && (
+                  <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
+                    {screenshotNotice}
+                  </p>
+                )}
               </div>
             )}
             <div className="mb-4 flex items-center gap-2">
