@@ -171,7 +171,7 @@ The app should support a child-profile-only recommendation flow before listing a
 
 ### Important Constraint
 
-The app should not depend on automatic Facebook Marketplace or Craigslist scraping. Some links may not be readable. If the link cannot be read, the app should guide the user to upload a screenshot or manually enter details.
+The app should not depend on automatic Facebook Marketplace scraping. Some links may not be readable. If the link cannot be read, the app should guide the user to upload a screenshot or manually enter details.
 
 If the user enters only a marketplace link and no pasted text or screenshot, show a clear note that direct link reading may not be supported yet and guide the user to paste listing text or upload a screenshot.
 
@@ -182,6 +182,15 @@ Marketplace link behavior in MVP:
 - Do not assume automatic page scraping or successful extraction from link alone.
 - Do not populate title, price, brand, wheel size, condition, or description from link unless real extraction succeeds.
 - Link-only input should not be treated as sufficient for full analysis; users should add pasted listing text, screenshot extraction, or key listing fields.
+- Platform-specific behavior:
+  - Craigslist URL:
+    - Attempt controlled server-side extraction (single provided URL only).
+    - If extraction fails, show: `We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.`
+  - Facebook Marketplace URL:
+    - Do not attempt automatic scraping in MVP.
+    - Store `listingLink`, set `platform` to `Facebook Marketplace`, and show: `Facebook Marketplace links usually cannot be read directly. Please upload a screenshot or paste the listing text for AI-assisted extraction.`
+  - Other marketplace URL:
+    - Store link as reference metadata only and show: `This link will be saved as a reference. For analysis, please paste listing text, upload a screenshot, or enter key details manually.`
 - Controlled Craigslist enhancement:
   - For Craigslist URLs, the backend may attempt lightweight server-side extraction of public listing fields.
   - This extraction should be single-URL only (no crawling), time-limited, and rate-limited.
@@ -231,7 +240,7 @@ The app should show a small source label for listing field origin, such as:
 - Source: pasted text AI extraction.
 - Source: Craigslist link extraction.
 
-Phase 1 may use mock extraction or local text parsing. Phase 1.5 may use a server-side LLM provider to extract structured fields from pasted or OCR text when `ENABLE_LLM_ANALYSIS` is enabled. The app must still show a confirmation/editing step before analysis. Automatic Facebook Marketplace or Craigslist scraping remains out of scope.
+Phase 1 may use mock extraction or local text parsing. Phase 1.5 may use a server-side LLM provider to extract structured fields from pasted or OCR text when `ENABLE_LLM_ANALYSIS` is enabled. The app must still show a confirmation/editing step before analysis. Automatic Facebook Marketplace scraping remains out of scope.
 
 Controlled beta screenshot extraction behavior:
 
@@ -444,6 +453,11 @@ Per-session or per-IP limits:
 - `PER_SESSION_SEARCH_LIMIT`.
 - `PER_SESSION_EMAIL_LIMIT`.
 
+Default controlled beta baseline for LLM extraction:
+
+- `DAILY_LLM_LIMIT=10` per IP/day.
+- `PER_SESSION_LLM_LIMIT=10` baseline so normal testing does not hit session limit before the daily limit.
+
 Search cache configuration:
 
 - `SEARCH_CACHE_TTL_HOURS`.
@@ -473,6 +487,10 @@ These variables must be configured in the local environment or deployment provid
 ### LLM Call Timing
 
 No LLM call should happen on initial page load. LLM calls may happen only after a user action that needs them, such as pasted-text extraction, analysis reasoning, Negotiation Boost generation, or email report summary generation. If `ENABLE_LLM_ANALYSIS` is disabled, missing credentials, failed provider calls, or reached limits prevent live LLM use, the app must fall back gracefully.
+
+Recommended daily-limit user message:
+
+- `Daily AI extraction limit reached. You can use AI extraction up to 10 times per day. Please enter the listing details manually or try again tomorrow.`
 
 ### Limit Storage Requirements
 

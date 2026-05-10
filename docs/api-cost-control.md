@@ -118,7 +118,7 @@ Graceful messages should be plain and useful:
 - "This price estimate has lower confidence because no live retailer search was run."
 - "Daily live lookup limit reached. You can still analyze the listing with local guidance."
 - "AI screenshot extraction is currently disabled. Please enter the listing details manually."
-- "Daily AI extraction limit reached. Please enter the listing details manually."
+- "Daily AI extraction limit reached. You can use AI extraction up to 10 times per day. Please enter the listing details manually or try again tomorrow."
 - "AI extraction could not read enough listing details. Please enter the details manually."
 
 ## Controlled Screenshot AI Extraction
@@ -131,6 +131,9 @@ Phase 1.5 supports controlled screenshot extraction through a server-side LLM ro
 - Max screenshot size: 5 MB with friendly rejection message.
 - Image should be resized/compressed before provider call where possible to reduce token/cost.
 - Extraction consumes LLM limits (`DAILY_LLM_LIMIT`, `PER_SESSION_LLM_LIMIT`).
+- Default LLM extraction limits for controlled testing:
+  - `DAILY_LLM_LIMIT=10` (per IP/day baseline).
+  - `PER_SESSION_LLM_LIMIT=10` baseline to avoid session blocking before daily limit in normal testing.
 - If disabled, limited, or failed, the flow must fall back to manual entry without breaking the page.
 
 ## Controlled Craigslist Link Extraction

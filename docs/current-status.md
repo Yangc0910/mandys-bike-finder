@@ -64,8 +64,7 @@ Child recommendation current rules:
   - `ENABLE_EMAIL_REPORT=false`
   - `ENABLE_BACKEND_LOGGING=false`
   - `OPENAI_MODEL=gpt-5.4-mini`
-  - `DAILY_LLM_LIMIT=30`
-  - `PER_SESSION_LLM_LIMIT=3`
+  - LLM extraction default limit baseline: `DAILY_LLM_LIMIT=10` and `PER_SESSION_LLM_LIMIT=10` (unless overridden in deployment environment variables)
 - `/api/status` confirms:
   - `liveSearch=false`
   - `llmAnalysis=false`

@@ -122,8 +122,7 @@ Current live deployment:
   - `emailReport=false`
   - `backendLogging=false`
   - providers are `mock/fallback`
-  - `DAILY_LLM_LIMIT=30`
-  - `PER_SESSION_LLM_LIMIT=3`
+  - `DAILY_LLM_LIMIT` and `PER_SESSION_LLM_LIMIT` are configured server-side
 - DNS + Vercel binding is working.
 - Latest UX fixes are visible on the custom domain.
 
@@ -186,8 +185,8 @@ PER_SESSION_LLM_LIMIT
 Recommended values for first deployment:
 
 ```text
-DAILY_LLM_LIMIT=30
-PER_SESSION_LLM_LIMIT=3
+DAILY_LLM_LIMIT=10
+PER_SESSION_LLM_LIMIT=10
 ```
 
 Important: API keys must be added only in Vercel Environment Variables. Never commit API keys, OAuth secrets, `.env`, `config.yaml`, credentials, database URLs, or tokens to GitHub.

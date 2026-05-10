@@ -78,7 +78,7 @@ npm run dev
    - If `ENABLE_LLM_ANALYSIS=false` or `OPENAI_API_KEY` is missing, confirm fallback message:
      - "AI screenshot extraction is currently disabled. Please enter the listing details manually."
    - If limits are reached, confirm fallback message:
-     - "Daily AI extraction limit reached. Please enter the listing details manually."
+     - "Daily AI extraction limit reached. You can use AI extraction up to 10 times per day. Please enter the listing details manually or try again tomorrow."
    - After successful extraction, listing source becomes `screenshot AI extraction`.
    - After manual edits post extraction, source becomes `screenshot AI extraction + manual edits`.
    - Confirm listing fields stay empty until manual edits or real extraction.

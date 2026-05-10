@@ -40,6 +40,7 @@
 - Clarified marketplace link behavior by platform: Craigslist links now trigger controlled server-side extraction attempt with explicit fallback messaging, Facebook Marketplace links are stored without auto-scraping and show screenshot/text guidance, and other marketplace links are saved as reference-only with clear analysis instructions.
 - Fixed bike recommendation illustration mapping: replaced exact label matching with robust keyword-based normalization so category variants (e.g., `Kids cruiser bike`, `24 inch Kids cruiser bike`, `Cruiser bike`) correctly resolve to the expected image under `/images/*`, with fallback placeholder preserved when unmatched.
 - Fixed screenshot AI price extraction mapping: extraction prompt now explicitly requests visible asking price formats (e.g., `$35`, `$35.00`, `35 dollars`), server parsing now normalizes `askingPrice` aliases (`price`, `listingPrice`, `asking_price`) into `askingPrice`, and fallback regex extraction fills price when visible so the asking price input is populated as numeric text (e.g., `35`).
+- Increased controlled AI extraction limit defaults for testing/light personal use: server-side LLM daily limit baseline is now `10` per IP/day with session baseline `10`, limit messaging now clearly states the 10/day cap and manual fallback guidance, and docs/env examples were updated to match.
 
 ## v0.4
 

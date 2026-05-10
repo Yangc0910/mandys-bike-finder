@@ -1,4 +1,8 @@
 export function loadServerConfig(env = process.env) {
+  const llmDaily = numberFromEnv(env.DAILY_LLM_LIMIT, 10);
+  const sessionLlmRaw = numberFromEnv(env.PER_SESSION_LLM_LIMIT, 10);
+  const sessionLlm = Math.max(sessionLlmRaw, Math.min(llmDaily, 10));
+
   return {
     featureFlags: {
       liveSearch: booleanFromEnv(env.ENABLE_LIVE_SEARCH),
@@ -8,10 +12,10 @@ export function loadServerConfig(env = process.env) {
     },
     limits: {
       searchDaily: numberFromEnv(env.DAILY_SEARCH_LIMIT, 25),
-      llmDaily: numberFromEnv(env.DAILY_LLM_LIMIT, 50),
+      llmDaily,
       emailDaily: numberFromEnv(env.DAILY_EMAIL_LIMIT, 10),
       searchCacheTtlHours: numberFromEnv(env.SEARCH_CACHE_TTL_HOURS, 24),
-      sessionLlm: numberFromEnv(env.PER_SESSION_LLM_LIMIT, 12),
+      sessionLlm,
       sessionSearch: numberFromEnv(env.PER_SESSION_SEARCH_LIMIT, 8),
       sessionEmail: numberFromEnv(env.PER_SESSION_EMAIL_LIMIT, 3),
     },

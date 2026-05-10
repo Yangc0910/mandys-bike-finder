@@ -54,9 +54,11 @@ export async function POST(request: Request) {
 
   const limit = checkUsageLimits("llm", clientKey(request), config.limits.llmDaily, config.limits.sessionLlm);
   if (!limit.allowed) {
-    const limitMessage = isScreenshotRequest
-      ? "Daily AI extraction limit reached. Please enter the listing details manually."
-      : `${limit.reason === "session" ? "Session" : "Daily"} LLM limit reached. Local fallback was used.`;
+    const limitMessage = limit.reason === "daily"
+      ? "Daily AI extraction limit reached. You can use AI extraction up to 10 times per day. Please enter the listing details manually or try again tomorrow."
+      : isScreenshotRequest
+        ? "Session AI extraction limit reached. Please enter the listing details manually or start a new session."
+        : "Session LLM limit reached. Local fallback was used.";
     console.info("llm.extract.fallback.limit", {
       mode: isScreenshotRequest ? "screenshot" : "text",
       reason: limit.reason,
