@@ -314,6 +314,9 @@ export default function Home() {
                 <Field label="Pasted listing text">
                   <textarea className={inputClass} rows={4} placeholder="Paste title, price, description, or seller text" value={pastedText} onChange={(e) => setPastedText(e.target.value)} onBlur={extractPastedText} />
                 </Field>
+                <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
+                  AI-assisted extraction currently supports pasted listing text. Screenshot OCR is not implemented yet.
+                </p>
                 {listing.listingLink && !pastedText.trim() && !screenshotName && (
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
                     Marketplace links may not be readable directly yet. Please paste listing text or upload a screenshot.
@@ -333,7 +336,7 @@ export default function Home() {
                     setScreenshotPreviewUrl(URL.createObjectURL(file as Blob));
                     setListing(defaultListing);
                     setListingSource("screenshot");
-                    setScreenshotNotice("Screenshot uploaded. OCR extraction is not enabled yet. Please review and enter listing details manually.");
+                    setScreenshotNotice("Screenshot uploaded. Please review and enter listing details manually unless you paste listing text for AI-assisted extraction.");
                   }} />
                 </Field>
                 <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-2 text-muted">
@@ -353,6 +356,9 @@ export default function Home() {
                     {screenshotNotice}
                   </p>
                 )}
+                <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
+                  Screenshot OCR is not implemented yet. For AI-assisted extraction, please paste the listing text below.
+                </p>
               </div>
             )}
             <div className="mb-4 flex items-center gap-2">

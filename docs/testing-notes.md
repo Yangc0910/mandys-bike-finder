@@ -38,8 +38,10 @@ npm run dev
    - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.
    - The file name is shown as secondary metadata under the preview.
    - After screenshot upload, `Load sample listing` is hidden to avoid conflicting source actions.
-   - If OCR is not enabled, the app shows:
-     - "Screenshot uploaded. OCR extraction is not enabled yet. Please review and enter listing details manually."
+   - In screenshot mode, the UI clearly states:
+     - "Screenshot OCR is not implemented yet. For AI-assisted extraction, please paste the listing text below."
+   - Uploading a screenshot does not trigger image-to-LLM extraction.
+   - Pasted listing text is the current AI-assisted extraction path (server-side via `/api/extract` when `ENABLE_LLM_ANALYSIS=true` and `OPENAI_API_KEY` is configured).
    - Confirm listing fields stay empty until manual edits or real extraction.
 
 Expected behavior: the app remains fully functional without API keys.
