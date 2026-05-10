@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added marketplace-aware listing link support layer with domain detection and platform-specific guidance for Craigslist, Facebook Marketplace, eBay, OfferUp, Pinkbike BuySell, Bicycle Blue Book, Buycycle, The Pro's Closet, BikeExchange, and unknown links.
+- Added extraction-mode routing (`direct_supported`, `best_effort`, `fallback_only`) in Link mode, including detected marketplace indicator, clearer button behavior, and pasted-text/screenshot fallback guidance.
+- Expanded server-side `/api/extract-link` into controlled public-page extraction for allowlisted best-effort marketplaces with timeout, caching, usage limits, and SSRF guardrails; fallback-only marketplaces remain guidance-first without login-gated scraping.
 - QA hardening pass after PRD consolidation baseline (`c1a81af`): fixed link-source manual-edit state mapping to consistently use `link`/`link + manual edits`, scoped Craigslist auto-extraction to Link mode only, and aligned child-profile recommendation trigger guard with required fields (height + age + riding experience).
 - Migrated the production-path MVP into a new Next.js + TypeScript + Tailwind app under `/app`.
 - Moved the controlled beta API surface into Next.js App Router API routes.

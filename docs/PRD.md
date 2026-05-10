@@ -155,15 +155,26 @@ Category intent summary:
 ### Link Mode
 
 - User pastes listing URL.
-- Link action button remains visible when URL exists.
-- Craigslist URL:
-  - supports controlled server-side extraction attempt.
-- Facebook Marketplace URL:
-  - often not directly readable server-side.
-  - user is guided to pasted listing text or screenshot extraction.
-  - URL is still preserved as listing reference.
-- Other URL:
-  - stored as reference; user guided to pasted text/manual details.
+- Marketplace is detected from URL and shown in UI.
+- Detected marketplace list:
+  - Craigslist
+  - Facebook Marketplace
+  - eBay
+  - OfferUp
+  - Pinkbike BuySell
+  - Bicycle Blue Book
+  - Buycycle
+  - The Pro's Closet
+  - BikeExchange
+  - Unknown
+- URL is always preserved as listing reference.
+- Link analysis uses platform-specific extraction mode:
+  - `direct_supported`: Craigslist
+  - `best_effort`: eBay, Pinkbike BuySell, Bicycle Blue Book, Buycycle, The Pro's Closet, BikeExchange
+  - `fallback_only`: Facebook Marketplace, OfferUp, unknown
+- For `best_effort` and `fallback_only`, user is guided to pasted listing text or screenshot when direct page read is unreliable.
+- If pasted listing text exists in Link mode, text extraction is preferred for fallback-only marketplaces.
+- Manual entry remains available in all cases.
 
 ### Manual Mode
 
@@ -225,6 +236,7 @@ Security principles:
 - API keys remain server-side.
 - No frontend exposure of provider secrets.
 - Avoid unnecessary LLM calls by explicit user action gating.
+- Link extraction is public-page best effort only; no login-gated scraping, no anti-bot bypass, no browser automation scraping in MVP.
 
 ## 13. Listing Evaluation / Scoring Logic
 
@@ -314,6 +326,8 @@ Mapping behavior:
 ## 17. Known Limitations
 
 - Facebook Marketplace pages may not be directly readable server-side.
+- OfferUp and unknown marketplaces are treated as fallback-only in MVP link flow.
+- Best-effort link extraction is public-page only and can fail due to dynamic rendering, anti-bot controls, or login requirements.
 - AI extraction is helpful but not perfect; user confirmation is required.
 - Price logic is currently rule-based with local fallback ranges.
 - Recommendations are guidance, not a substitute for test riding.

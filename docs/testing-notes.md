@@ -72,7 +72,28 @@ npm run dev
    - If extraction fails, confirm message:
      - `We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.`
    - Confirm Craigslist auto-extraction attempts only in Link mode (not while Screenshot/Manual tabs are active).
-15. Screenshot upload behavior:
+15. Marketplace-aware link detection and guidance:
+   - Test URLs:
+     - `https://boston.craigslist.org/gbs/bik/d/example/123456.html`
+     - `https://www.facebook.com/marketplace/item/177201768044349/`
+     - `https://www.ebay.com/itm/1234567890`
+     - `https://offerup.com/item/detail/123456`
+     - `https://www.pinkbike.com/buysell/123456/`
+     - `https://www.bicyclebluebook.com/marketplace/buy-now/123456/`
+     - `https://buycycle.com/en-us/bike/example-12345`
+     - `https://www.theproscloset.com/products/example-bike`
+     - `https://www.bikeexchange.com/en-US/products/example`
+     - `https://example.com/random-listing`
+   - Confirm each link shows a `Detected:` marketplace label.
+   - Confirm extraction mode behavior:
+     - Craigslist: direct-supported button (`Analyze listing link`).
+     - Best-effort platforms (eBay/Pinkbike/Bicycle Blue Book/Buycycle/The Pro's Closet/BikeExchange): `Try link analysis` + fallback guidance.
+     - Fallback-only platforms (Facebook/OfferUp/unknown): direct analysis is not implied; pasted text/screenshot guidance is shown.
+   - Confirm fallback-only links still keep a visible action path:
+     - If pasted text is empty: button is disabled and helper copy explains next step.
+     - If pasted text is present: `Analyze pasted listing text` is enabled.
+   - Confirm Link mode source and marketplace indicator stay accurate after tab switching.
+16. Screenshot upload behavior:
    - Uploading a screenshot clears previously loaded sample listing values.
    - Source switches to `screenshot` immediately.
    - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.
@@ -88,11 +109,11 @@ npm run dev
    - After successful extraction, listing source becomes `screenshot AI extraction`.
    - After manual edits post extraction, source becomes `screenshot AI extraction + manual edits`.
    - Confirm listing fields stay empty until manual edits or real extraction.
-16. Listing input tab order:
+17. Listing input tab order:
    - Confirm tab order is `Screenshot`, `Link`, `Manual`.
    - Confirm `Screenshot` is selected by default on initial page load.
    - Confirm source label stays aligned with tab context when switching modes (`screenshot`, `link`, `manual`).
-17. Screenshot AI extraction price parsing:
+18. Screenshot AI extraction price parsing:
    - Upload a screenshot containing:
      - Title: `Fuji Blaster Girls 21 Speed Mountain Bike`
      - Visible price: `$35`

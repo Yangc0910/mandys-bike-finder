@@ -3,6 +3,7 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { analyzeBike, generateSellerMessage, localPriceReference, recommendWheelSize } from "@/lib/analysis";
+import { detectMarketplace } from "@/lib/marketplace";
 import type { AnalysisResult, ChildProfile, Listing, MeterResult, ProviderModes } from "@/lib/types";
 
 const defaultChild: ChildProfile = {
@@ -128,11 +129,13 @@ export default function Home() {
       ? "Please add listing text, screenshot extraction, or key bike details before analyzing."
       : "";
   const linkValue = (listing.listingLink || "").trim();
-  const lowerLinkValue = linkValue.toLowerCase();
-  const isCraigslistLink = lowerLinkValue.includes("craigslist.org");
-  const isFacebookMarketplaceLink = lowerLinkValue.includes("facebook.com/marketplace");
-  const isOtherMarketplaceLikeLink = Boolean(linkValue) && !isCraigslistLink && !isFacebookMarketplaceLink;
-  const canRunLinkAction = Boolean(linkValue) && (isCraigslistLink || Boolean(pastedText.trim()));
+  const detectedMarketplace = useMemo(() => detectMarketplace(linkValue), [linkValue]);
+  const hasPastedText = Boolean(pastedText.trim());
+  const isCraigslistLink = detectedMarketplace.id === "craigslist";
+  const isFacebookMarketplaceLink = detectedMarketplace.id === "facebook_marketplace";
+  const canRunLinkAction = Boolean(linkValue) && (
+    detectedMarketplace.extractionMode !== "fallback_only" || hasPastedText
+  );
 
   useEffect(() => {
     apiGet("/api/status").then((result) => {
@@ -151,18 +154,18 @@ export default function Home() {
 
   useEffect(() => {
     if (inputMode !== "link") return;
-    if (!linkValue || !isCraigslistLink || !isLikelyHttpUrl(linkValue)) return;
+    if (!linkValue || !isCraigslistLink || !detectedMarketplace.isValidUrl) return;
     if (hasTriedCraigslistAutoExtract === linkValue) return;
     setHasTriedCraigslistAutoExtract(linkValue);
-    void extractCraigslistLink(linkValue);
-  }, [hasTriedCraigslistAutoExtract, inputMode, isCraigslistLink, linkValue]);
+    void extractListingLink(linkValue);
+  }, [detectedMarketplace.isValidUrl, hasTriedCraigslistAutoExtract, inputMode, isCraigslistLink, linkValue]);
 
   function updateListingField<K extends keyof Listing>(field: K, value: Listing[K], source = "manual entry") {
     setListing((current) => ({ ...current, [field]: value }));
     setListingSource((current) => {
       if (source !== "manual entry") return source;
       if (current === "link") return "link + manual edits";
-      if (current === "Craigslist link extraction") return "Craigslist link extraction + manual edits";
+      if (current.toLowerCase().includes("link extraction")) return `${current} + manual edits`;
       if (current === "screenshot") return "screenshot + manual edits";
       if (current === "screenshot AI extraction") return "screenshot AI extraction + manual edits";
       return "manual entry";
@@ -209,21 +212,21 @@ export default function Home() {
 
   async function runLinkAction() {
     if (!linkValue) return;
-    if (isCraigslistLink) {
-      await extractCraigslistLink(linkValue);
+    if (!detectedMarketplace.isValidUrl) {
+      setLinkNotice("Please enter a valid listing URL.");
       return;
     }
-    if (pastedText.trim()) {
+    if (hasPastedText && (detectedMarketplace.extractionMode === "fallback_only" || detectedMarketplace.extractionMode === "best_effort")) {
       await extractPastedText();
       setListingSource("link + pasted text AI extraction");
       setLinkNotice("Pasted listing text was analyzed. The link is saved as listing reference.");
       return;
     }
-    if (isFacebookMarketplaceLink) {
-      setLinkNotice("Facebook Marketplace links usually cannot be read directly. Please paste listing text or upload a screenshot for best results.");
+    if (detectedMarketplace.extractionMode === "direct_supported" || detectedMarketplace.extractionMode === "best_effort") {
+      await extractListingLink(linkValue);
       return;
     }
-    setLinkNotice("This link is saved as reference only. Please paste listing text, upload a screenshot, or enter key details manually.");
+    setLinkNotice("Paste listing text or upload a screenshot to analyze this marketplace listing.");
   }
 
   async function analyze(event: FormEvent) {
@@ -276,24 +279,25 @@ export default function Home() {
     }
   }
 
-  async function extractCraigslistLink(inputUrl?: string) {
+  async function extractListingLink(inputUrl?: string) {
     const url = (inputUrl || listing.listingLink || "").trim();
     if (!url) return;
+    const marketplace = detectMarketplace(url);
     setIsExtractingLink(true);
     try {
       const result = await apiPost("/api/extract-link", { url });
       if (result?.result?.fields) {
         setListing((current) => ({ ...current, ...compactFields(result.result.fields) }));
-        setListingSource("Craigslist link extraction");
-        setLinkNotice("Craigslist listing details were extracted. Please confirm and edit any missing fields.");
-        setStatus(result?.cached ? "Craigslist details loaded from cache." : "Craigslist extraction complete.");
+        setListingSource(`${marketplace.label} link extraction`);
+        setLinkNotice(`${marketplace.label} listing details were extracted. Please confirm and edit any missing fields.`);
+        setStatus(result?.cached ? `${marketplace.label} details loaded from cache.` : `${marketplace.label} extraction complete.`);
       } else {
-        const message = result?.statusMessage || "We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.";
+        const message = result?.statusMessage || "We could not read this listing automatically. Please paste the listing text or upload a screenshot.";
         setLinkNotice(message);
         setStatus(message);
       }
     } catch {
-      const message = "We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.";
+      const message = "We could not read this listing automatically. Please paste the listing text or upload a screenshot.";
       setLinkNotice(message);
       setStatus(message);
     } finally {
@@ -539,22 +543,13 @@ export default function Home() {
                     value={listing.listingLink}
                     onChange={(e) => {
                       const value = e.target.value;
-                      const lower = value.toLowerCase();
-                      const platform = lower.includes("craigslist.org")
-                        ? "Craigslist"
-                        : lower.includes("facebook.com/marketplace")
-                          ? "Facebook Marketplace"
-                          : "";
-                      setListing((current) => ({ ...current, listingLink: value, platform: platform || current.platform || "" }));
+                      const detected = detectMarketplace(value);
+                      setListing((current) => ({ ...current, listingLink: value, platform: detected.label }));
                       setLinkNotice("");
-                      if (!lower.includes("craigslist.org")) {
+                      if (detected.id !== "craigslist") {
                         setHasTriedCraigslistAutoExtract("");
                       }
-                      setListingSource((current) => {
-                        if (!value.trim()) return current === "link" ? "Not set" : current;
-                        if (current === "Not set") return "link";
-                        return current;
-                      });
+                      setListingSource(value.trim() ? "link" : "Not set");
                     }}
                   />
                 </Field>
@@ -564,14 +559,16 @@ export default function Home() {
                 <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
                   AI-assisted extraction supports pasted listing text. You can also use screenshot extraction in screenshot mode.
                 </p>
+                {Boolean(linkValue) && (
+                  <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                    <span className="font-semibold">Detected: {detectedMarketplace.label}</span>
+                    <br />
+                    {detectedMarketplace.userGuidance}
+                  </p>
+                )}
                 {isFacebookMarketplaceLink && (
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
                     Facebook Marketplace links usually cannot be read directly. Please upload a screenshot or paste the listing text for AI-assisted extraction.
-                  </p>
-                )}
-                {isOtherMarketplaceLikeLink && (
-                  <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
-                    This link will be saved as a reference. For analysis, please paste listing text, upload a screenshot, or enter key details manually.
                   </p>
                 )}
                 {Boolean(linkValue) && (
@@ -584,18 +581,15 @@ export default function Home() {
                     >
                       {isExtractingLink
                         ? "Analyzing listing link..."
-                        : isCraigslistLink
+                        : detectedMarketplace.extractionMode === "direct_supported"
                           ? "Analyze listing link"
-                          : "Analyze pasted text / link"}
+                          : detectedMarketplace.extractionMode === "best_effort"
+                            ? "Try link analysis"
+                            : "Analyze pasted listing text"}
                     </button>
-                    {!canRunLinkAction && isFacebookMarketplaceLink && (
+                    {!canRunLinkAction && detectedMarketplace.extractionMode === "fallback_only" && (
                       <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
-                        Paste listing text to run AI-assisted extraction for this Facebook link.
-                      </p>
-                    )}
-                    {!canRunLinkAction && isOtherMarketplaceLikeLink && (
-                      <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
-                        Add pasted listing text to analyze this link. The URL alone is stored as reference.
+                        Paste listing text or upload a screenshot to analyze this marketplace listing.
                       </p>
                     )}
                     {linkNotice && (
@@ -680,6 +674,9 @@ export default function Home() {
             )}
             <div className="mb-4 flex items-center gap-2">
               <span className="text-xs text-muted">Source: {listingSource}</span>
+              {inputMode === "link" && Boolean(linkValue) && (
+                <span className="text-xs text-muted">Marketplace: {detectedMarketplace.label}</span>
+              )}
             </div>
 
             <SectionTitle step="3" title="Confirm listing fields" />
@@ -1190,15 +1187,6 @@ function localExtract(text: string) {
   const priceMatch = text.match(/\$?\b(\d{2,4})\b/);
   const wheelMatch = text.match(/\b(12|14|16|18|20|24|26|27\.5)\s*(?:inch|in|")\b/i);
   return { title: text.split(/\r?\n/).find((line) => line.trim()) || "", askingPrice: priceMatch?.[1] || "", wheelSize: wheelMatch?.[1] || "", description: text };
-}
-
-function isLikelyHttpUrl(value: string) {
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 function resolveBikeTypeImage(category: string, hint = "") {
