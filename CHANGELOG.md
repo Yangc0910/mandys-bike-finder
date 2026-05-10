@@ -24,6 +24,7 @@
 - Fixed listing-input UX bug in screenshot mode: uploading a screenshot now clears sample listing values, immediately marks source as `screenshot`, shows an OCR-disabled guidance message, and keeps confirmation fields empty until manual edits or real extraction.
 - Improved screenshot upload UX: the screenshot panel now renders a real image preview with aspect-ratio-safe fit, keeps the file name as secondary text, and hides `Load sample listing` after screenshot upload to prevent conflicting source state.
 - Clarified screenshot analysis behavior: screenshot mode now explicitly states OCR is not implemented yet and directs users to pasted text for AI-assisted extraction; screenshot images are not sent to OpenAI in this step.
+- Refined result assessment card UI: removed small meter pill badges and switched to full-card qualitative styling (green/yellow/red tint with stronger accents), larger dimension titles, and clearer hierarchy for status line and reasoning text.
 
 ## v0.4
 

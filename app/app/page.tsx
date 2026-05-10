@@ -470,9 +470,19 @@ function PanelTitle({ step, title, children }: { step: string; title: string; ch
 }
 
 function DimensionCard({ name, item }: { name: string; item: MeterResult }) {
-  const border = item.meter === "green" ? "border-l-good" : item.meter === "red" ? "border-l-danger" : "border-l-caution";
-  const badge = item.meter === "green" ? "bg-good" : item.meter === "red" ? "bg-danger" : "bg-caution";
-  return <article className={`min-h-36 rounded-lg border border-line border-l-8 bg-white p-4 ${border}`}><span className={`rounded-full px-2 py-1 text-xs font-bold text-white ${badge}`}>{item.meter.toUpperCase()}</span><h3 className="mt-3 font-bold">{name}</h3><p className="text-sm font-semibold text-slate-800">{item.label}</p><p className="mt-2 text-muted">{item.reasoning}</p></article>;
+  const cardTone = item.meter === "green"
+    ? "border-green-300 bg-green-50/70"
+    : item.meter === "red"
+      ? "border-red-300 bg-red-50/70"
+      : "border-amber-300 bg-amber-50/70";
+  const accent = item.meter === "green" ? "border-l-good" : item.meter === "red" ? "border-l-danger" : "border-l-caution";
+  return (
+    <article className={`min-h-44 rounded-lg border-2 border-l-8 p-5 shadow-panel ${cardTone} ${accent}`}>
+      <h3 className="text-2xl font-bold text-slate-900">{name}</h3>
+      <p className="mt-2 text-base font-semibold text-slate-800">{item.label}</p>
+      <p className="mt-3 text-sm leading-6 text-slate-700">{item.reasoning}</p>
+    </article>
+  );
 }
 
 function dimensionCards(analysis: AnalysisResult): Array<[string, MeterResult]> {

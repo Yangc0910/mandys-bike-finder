@@ -119,6 +119,8 @@ Confirmed on deployed MVP:
 - Listing fields no longer show confusing prefilled data on initial load.
 - Listing source labeling is clearer.
 - Result cards emphasize `Fit`, `Price`, `Condition`, `Brand`, `Kid Appeal`, and `Risk`.
+- Dimension cards use full-card qualitative styling (green/yellow/red tint + stronger accent) instead of small GREEN/YELLOW/RED pill badges.
+- Dimension title is the most prominent label, with short status line and secondary reasoning beneath.
 - `/api/status` remains `200 OK` with safe fallback mode and real APIs disabled.
 
 ## Test Fallback Behavior
