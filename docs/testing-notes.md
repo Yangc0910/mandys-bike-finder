@@ -24,15 +24,27 @@ npm run dev
    - Negotiation Boost message.
    - Email report preview or simulated send.
 7. Confirm initial listing fields are empty on first page load (no prefilled sample data).
-8. Confirm listing source label appears and changes appropriately:
+8. Confirm initial result area is gated:
+   - Overall/result cards are hidden before first Analyze.
+   - Seller questions, Negotiation Boost, and Email report sections are hidden before first Analyze.
+   - Empty state is shown with guidance to add child and listing details.
+9. Confirm Analyze button gating:
+   - Analyze is disabled when child height is missing.
+   - Analyze is disabled when no listing detail is provided.
+   - Disabled-state helper reason is shown near the button.
+10. Confirm stale-result behavior:
+   - Run one analysis.
+   - Change key child or listing fields.
+   - Confirm prior result is replaced by an "update and re-run analysis" style state until Analyze is clicked again.
+11. Confirm listing source label appears and changes appropriately:
    - Source: pasted text.
    - Source: screenshot.
    - Source: manual entry.
    - Source: sample listing.
    - After screenshot upload and manual edits, source can show `screenshot + manual edits`.
-9. In link mode, if only a link is entered, confirm the note appears:
+12. In link mode, if only a link is entered, confirm the note appears:
    - "Marketplace links may not be readable directly yet. Please paste listing text or upload a screenshot."
-10. Screenshot upload behavior:
+13. Screenshot upload behavior:
    - Uploading a screenshot clears previously loaded sample listing values.
    - Source switches to `screenshot` immediately.
    - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.

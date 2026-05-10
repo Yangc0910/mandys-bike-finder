@@ -71,6 +71,7 @@ export default function Home() {
   const [weightInput, setWeightInput] = useState("");
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const [analyzedSignature, setAnalyzedSignature] = useState("");
   const [status, setStatus] = useState("Local fallback ready");
   const [providerModes, setProviderModes] = useState<ProviderModes | null>(null);
   const [messageGoal, setMessageGoal] = useState("lowerOffer");
@@ -92,6 +93,33 @@ export default function Home() {
 
   const localAnalysis = useMemo(() => analyzeBike(normalizedChild, listing, localPriceReference(listing)), [normalizedChild, listing]);
   const visibleAnalysis = analysis || localAnalysis;
+  const inputSignature = useMemo(
+    () => JSON.stringify({ child: normalizedChild, listing, pastedText, screenshotName }),
+    [normalizedChild, listing, pastedText, screenshotName],
+  );
+  const hasHeight = Boolean((normalizedChild.heightCm || "").trim());
+  const hasExperience = Boolean((normalizedChild.experience || "").trim());
+  const hasCoreListing = Boolean((listing.wheelSize || "").trim() || (listing.title || "").trim() || pastedText.trim());
+  const hasAnyListingField = Boolean(
+    (listing.title || "").trim() ||
+      (listing.askingPrice || "").trim() ||
+      (listing.brand || "").trim() ||
+      (listing.model || "").trim() ||
+      (listing.wheelSize || "").trim() ||
+      (listing.bikeType || "").trim() ||
+      (listing.colorStyle || "").trim() ||
+      (listing.platform || "").trim() ||
+      (listing.description || "").trim(),
+  );
+  const hasScreenshotManualListing = Boolean(screenshotName && hasAnyListingField);
+  const canAnalyze = hasHeight && hasExperience && (hasCoreListing || hasScreenshotManualListing);
+  const needsRerun = hasAnalyzed && analyzedSignature !== inputSignature;
+  const showAnalysisResults = hasAnalyzed && !needsRerun;
+  const analyzeDisabledReason = !hasHeight || !hasExperience
+    ? "Enter child height and riding experience."
+    : !hasCoreListing && !hasScreenshotManualListing
+      ? "Add at least one listing detail before analyzing."
+      : "";
 
   useEffect(() => {
     apiGet("/api/status").then((result) => {
@@ -165,10 +193,12 @@ export default function Home() {
 
   async function analyze(event: FormEvent) {
     event.preventDefault();
+    if (!canAnalyze) return;
     const result = await apiPost("/api/analyze", { child: normalizedChild, listing });
     const nextAnalysis = result?.analysis || analyzeBike(normalizedChild, listing, localPriceReference(listing));
     setAnalysis(nextAnalysis);
     setHasAnalyzed(true);
+    setAnalyzedSignature(inputSignature);
     setStatus(result?.priceReference?.message || providerStatusText(result?.apiStatus || providerModes) || "Analysis complete.");
     setSellerMessage(await generateMessage("lowerOffer", "friendly", listing, false));
   }
@@ -465,10 +495,24 @@ export default function Home() {
             </div>
             </section>
           </div>
-          <button className="min-h-12 w-full rounded-md bg-brand px-4 font-bold text-white shadow-panel sm:w-auto sm:min-w-64" type="submit">Analyze bike</button>
+          <div className="grid gap-2">
+            <button
+              className="min-h-12 w-full rounded-md bg-brand px-4 font-bold text-white shadow-panel disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-64"
+              type="submit"
+              disabled={!canAnalyze}
+            >
+              Analyze bike
+            </button>
+            {!canAnalyze && <p className="text-sm text-slate-600">{analyzeDisabledReason}</p>}
+            {canAnalyze && (
+              <p className="text-xs text-slate-500">
+                Best results include asking price, brand, and condition details.
+              </p>
+            )}
+          </div>
         </form>
 
-        {hasAnalyzed ? (
+        {showAnalysisResults ? (
           <section className="grid gap-4">
             <BikeSizeRecommendation child={normalizedChild} />
             <div className="grid min-h-40 grid-cols-[72px_1fr] items-center gap-5 rounded-lg border border-line bg-white p-6 shadow-panel">
@@ -511,9 +555,24 @@ export default function Home() {
               <pre className="min-h-32 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-slate-50 p-3 text-sm text-slate-700">{reportPreview}</pre>
             </PanelTitle>
           </section>
+        ) : needsRerun ? (
+          <section className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-slate-700 shadow-panel">
+            <p className="font-semibold">Update inputs and re-run analysis</p>
+            <p className="mt-1">
+              Your child or listing details changed after the last result. Run Analyze again to refresh the recommendation.
+            </p>
+          </section>
         ) : (
-          <section className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600 shadow-panel">
-            Run <span className="font-semibold">Analyze bike</span> to see recommended bike size, overall result, detailed assessments, seller questions, and messaging help.
+          <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-panel">
+            <div className="flex items-start gap-3">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-blue-50 text-lg text-brand">i</div>
+              <div>
+                <p className="text-base font-semibold text-slate-900">Add your child&apos;s details and a bike listing to get a recommendation.</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  We&apos;ll check fit, price, condition, brand, kid appeal, and seller questions once enough information is provided.
+                </p>
+              </div>
+            </div>
           </section>
         )}
         <details className="mt-6 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-panel">

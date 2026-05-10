@@ -181,6 +181,22 @@ Controlled beta screenshot extraction behavior:
 
 The user-facing result should use a qualitative red/yellow/green meter, not a numeric score.
 
+Analysis gating and empty-state behavior:
+
+- On initial page load, do not show overall result or dimension assessments yet.
+- Show a friendly empty state prompting users to add child details and listing details first.
+- Disable Analyze until minimum requirements are met.
+  - Required child info: height and riding experience.
+  - Required listing info: at least one of wheel size, title, pasted listing text, or screenshot flow with listing details entered/confirmed.
+- If inputs change after a previous analysis, treat the prior result as stale and prompt the user to re-run analysis.
+- Only after Analyze should the app show:
+  - Recommended bike size.
+  - Overall result.
+  - Dimension-level assessments.
+  - Seller questions.
+  - Negotiation Boost.
+  - Email report.
+
 ### Green
 
 Label: Worth contacting  
