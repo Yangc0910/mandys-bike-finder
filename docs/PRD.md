@@ -109,6 +109,28 @@ The first working MVP may include real API integrations, but only in controlled 
 
 Style/gender preference is not meant to stereotype children. It is used because used bike listings often use words like "girls bike," "boys mountain bike," "Barbie-like bike," or "princess bike," and those terms can affect whether the child likes the bike and whether the bike has long-term appeal.
 
+### Child-Profile-Only Recommendation Feature
+
+The app should support a child-profile-only recommendation flow before listing analysis.
+
+- A button under Child Profile:
+  - `Recommend bike type and size`
+- Disabled until minimum child profile fields are present:
+  - height
+  - riding experience
+- On click, show a recommendation panel directly below Child Profile with:
+  - recommended bike category
+  - recommended wheel size
+  - growth option
+  - bike style recommendation
+  - short "what to look for" checklist
+  - short "what to avoid" checklist
+  - polished placeholder for future bike-type illustration
+- This feature must use local rule-based logic only.
+- No API calls are required for this recommendation flow.
+- If child profile changes after recommendation is shown, prompt:
+  - `Child profile changed. Re-run recommendation.`
+
 ## F. Listing Input Requirements
 
 ### Input Priority

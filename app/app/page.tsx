@@ -70,6 +70,9 @@ export default function Home() {
   const [recipientName, setRecipientName] = useState("");
   const [reportNote, setReportNote] = useState("");
   const [reportPreview, setReportPreview] = useState("");
+  const [showProfileRecommendation, setShowProfileRecommendation] = useState(false);
+  const [profileRecommendation, setProfileRecommendation] = useState<ChildBikeRecommendation | null>(null);
+  const [profileRecommendationSignature, setProfileRecommendationSignature] = useState("");
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -101,6 +104,11 @@ export default function Home() {
   const canAnalyze = hasHeight && hasExperience && (hasCoreListing || hasScreenshotManualListing);
   const needsRerun = hasAnalyzed && analyzedSignature !== inputSignature;
   const showAnalysisResults = hasAnalyzed && !needsRerun;
+  const profileSignature = useMemo(
+    () => JSON.stringify({ heightCm: normalizedChild.heightCm, experience: normalizedChild.experience, age: normalizedChild.age, stylePreference: normalizedChild.stylePreference }),
+    [normalizedChild.heightCm, normalizedChild.experience, normalizedChild.age, normalizedChild.stylePreference],
+  );
+  const needsProfileRecommendationRerun = showProfileRecommendation && profileRecommendationSignature !== profileSignature;
   const analyzeDisabledReason = !hasHeight || !hasExperience
     ? "Enter child height and riding experience."
     : !hasCoreListing && !hasScreenshotManualListing
@@ -246,6 +254,13 @@ export default function Home() {
     setStatus("Report preview generated locally.");
   }
 
+  function recommendFromChildProfile() {
+    if (!hasHeight || !hasExperience) return;
+    setProfileRecommendation(buildChildBikeRecommendation(normalizedChild));
+    setProfileRecommendationSignature(profileSignature);
+    setShowProfileRecommendation(true);
+  }
+
   return (
     <main className="min-h-screen bg-slate-50/70 px-4 py-5 md:px-6 md:py-7">
       <section className="mx-auto max-w-[1320px]">
@@ -358,6 +373,53 @@ export default function Home() {
                 </div>
               </Field>
               </div>
+              <div className="mt-5 grid gap-2">
+                <button
+                  type="button"
+                  onClick={recommendFromChildProfile}
+                  disabled={!hasHeight || !hasExperience}
+                  className="min-h-11 rounded-md bg-blue-50 px-4 text-left font-bold text-brand disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Recommend bike type and size
+                </button>
+                {(!hasHeight || !hasExperience) && (
+                  <p className="text-sm text-slate-600">Enter height and riding experience to get a bike recommendation.</p>
+                )}
+              </div>
+              {showProfileRecommendation && profileRecommendation && (
+                <article className="mt-4 rounded-lg border border-blue-200 bg-blue-50/40 p-4 shadow-panel">
+                  {needsProfileRecommendationRerun && (
+                    <p className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-slate-700">
+                      Child profile changed. Re-run recommendation.
+                    </p>
+                  )}
+                  <h3 className="text-lg font-bold text-slate-900">Child profile recommendation</h3>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    <InfoLine label="Recommended bike category" value={profileRecommendation.category} />
+                    <InfoLine label="Recommended wheel size" value={profileRecommendation.wheelSize} />
+                    <InfoLine label="Growth option" value={profileRecommendation.growthOption} />
+                    <InfoLine label="Bike style recommendation" value={profileRecommendation.styleRecommendation} />
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    <div className="rounded-md border border-slate-200 bg-white p-3">
+                      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">What to look for</p>
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                        {profileRecommendation.lookFor.map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+                    <div className="rounded-md border border-slate-200 bg-white p-3">
+                      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">What to avoid</p>
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                        {profileRecommendation.avoid.map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="mt-3 rounded-lg border border-dashed border-blue-200 bg-white/80 p-4 text-sm text-slate-600">
+                    <p className="font-semibold text-slate-800">Bike type illustration coming later</p>
+                    <p className="mt-1">Future illustration: {profileRecommendation.illustrationHint}</p>
+                  </div>
+                </article>
+              )}
             </section>
 
             <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
@@ -641,6 +703,101 @@ function buildSizeRecommendationDetails(
     growthOption,
     caution: recommendation.note.includes("test ride") ? "Test ride is recommended before pickup" : "Confirm wheel size with seller",
     reasoning: recommendation.note,
+  };
+}
+
+type ChildBikeRecommendation = {
+  category: string;
+  wheelSize: string;
+  growthOption: string;
+  styleRecommendation: string;
+  lookFor: string[];
+  avoid: string[];
+  illustrationHint: string;
+};
+
+function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendation {
+  const height = Number(child.heightCm || 0);
+  const experience = child.experience;
+  const stylePreference = child.stylePreference || "all good / no preference";
+
+  let category = "Kids pedal bike";
+  let wheelSize = "20 inch";
+  let growthOption = "Stay with the recommended size until control is stable.";
+
+  if (height < 95) {
+    category = "Balance bike";
+    wheelSize = "12 inch";
+    growthOption = "Move to 14 inch only after stable balance and braking control.";
+  } else if (height < 105) {
+    category = experience === "beginner" ? "Balance bike" : "Training-wheel bike";
+    wheelSize = "12-14 inch";
+    growthOption = "Consider first pedal bike when starts and stops are confident.";
+  } else if (height < 115) {
+    category = experience === "beginner" ? "Training-wheel bike" : "Kids pedal bike";
+    wheelSize = "14-16 inch";
+    growthOption = "16 inch can work as skills improve.";
+  } else if (height < 125) {
+    category = "Kids pedal bike";
+    wheelSize = "16-18 inch";
+    growthOption = "18 inch can be the next step after control is consistent.";
+  } else if (height < 135) {
+    category = "Kids pedal bike";
+    wheelSize = "20 inch";
+    growthOption = "24 inch only if the child can test ride comfortably.";
+  } else if (height < 145) {
+    category = experience === "confident" || experience === "advanced" ? "Kids mountain bike" : "Kids pedal bike";
+    wheelSize = "24 inch";
+    growthOption = "26 inch is a later step; test ride first.";
+  } else if (height < 155) {
+    if (experience === "beginner") {
+      category = "Kids pedal bike";
+      wheelSize = "24 inch";
+      growthOption = "Avoid jumping to 26 inch too early while still learning.";
+    } else if (experience === "comfortable") {
+      category = "Kids mountain bike";
+      wheelSize = "24 inch";
+      growthOption = "Consider 26 inch only if the child is confident and can test ride safely.";
+    } else {
+      category = "Youth hybrid bike";
+      wheelSize = "24-26 inch";
+      growthOption = "26 inch is reasonable with safe standover and test ride confidence.";
+    }
+  } else {
+    category = experience === "advanced" ? "Youth hybrid bike" : "Cruiser / comfort bike";
+    wheelSize = "26 inch";
+    growthOption = "Consider a small adult frame only if standover height is safe.";
+  }
+
+  if (experience === "advanced" && (height >= 145)) {
+    category = "Youth hybrid bike";
+  }
+
+  const styleRecommendation = stylePreference === "all good / no preference"
+    ? `${category} with practical geometry and neutral long-term style.`
+    : `${category} that matches ${stylePreference} while still prioritizing fit and control.`;
+
+  return {
+    category,
+    wheelSize,
+    growthOption,
+    styleRecommendation,
+    lookFor: [
+      "Low standover height",
+      "Adjustable seat height",
+      "Working hand brakes",
+      "Not too heavy",
+      "Simple gearing if the child is not advanced",
+      "Test ride if considering a larger size",
+    ],
+    avoid: [
+      "Bike that is too large to grow into",
+      "Very heavy department-store bike if the child is still learning",
+      "Poor brake condition",
+      "Rusty chain or flat tires unless willing to repair",
+      "Overly childish color/style if the child may outgrow it emotionally",
+    ],
+    illustrationHint: `${wheelSize} ${category}`.replace(/\s+/g, " ").trim(),
   };
 }
 

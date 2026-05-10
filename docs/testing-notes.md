@@ -135,6 +135,22 @@ Expected behavior: the second call falls back gracefully and explains that the d
    - Select multiple colors and confirm they remain selected.
    - Select `No preference / all colors are fine` and confirm it overrides/clears other selections.
 
+## Test Child-Profile-Only Recommendation
+
+1. Button gating:
+   - Without height, confirm `Recommend bike type and size` is disabled.
+   - Confirm helper message: `Enter height and riding experience to get a bike recommendation.`
+2. Case: 145 cm, age 9, comfortable rider:
+   - Click recommend button.
+   - Confirm wheel recommendation emphasizes `24 inch` with `26 inch` as cautious growth option.
+   - Confirm category and checklist sections render.
+3. Case: beginner young child (for example 100 cm):
+   - Confirm recommendation leans toward balance bike or training-wheel bike with small wheel range.
+4. Case: confident 150 cm child:
+   - Confirm recommendation allows `26 inch` consideration after safe test ride.
+5. Change child profile after recommendation:
+   - Confirm prompt appears: `Child profile changed. Re-run recommendation.`
+
 ## Manual Verification on Live Deployment
 
 Manual run-through is verified on:
