@@ -49,17 +49,23 @@ The MVP still excludes automatic Facebook/Craigslist scraping, user accounts, pa
 
 ## Local Web App
 
-Start the web MVP:
+The production-path MVP now lives in `/app` as a Next.js + TypeScript + Tailwind app.
+
+Start the Next.js MVP:
 
 ```powershell
-npm start
+cd app
+npm install
+npm run dev
 ```
 
 Then open:
 
-- `http://127.0.0.1:5173/`
+- `http://localhost:3000/`
 
-The default configuration uses mock/local fallbacks. To test controlled live integrations, copy `.env.example` to `.env`, set feature flags such as `ENABLE_LIVE_SEARCH=true`, and provide server-side provider credentials. Never put API keys in frontend code.
+The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search, email, and backend logging currently remain provider-interface placeholders with fallback behavior. Never put API keys in frontend code.
+
+The older `web/` folder is retained as a legacy prototype until the Next.js app is fully verified in deployment. New production work should happen in `/app`.
 
 ## Vercel Deployment
 
@@ -92,7 +98,7 @@ Output Directory: .next
 Install Command: npm install
 ```
 
-The current prototype also contains `web/`, but the Vercel production app should use the future `/app` Next.js directory when that implementation is added.
+The current production-path app lives in `/app`. The older `web/` folder is a legacy prototype and should not be selected as the Vercel root.
 
 ### 3. Configure Environment Variables
 
@@ -182,8 +188,13 @@ The changelog is:
 |   `-- prompts/                       Earlier build prompt records
 |-- prompts/
 |   `-- product-discussion-log.md      Product discussion summary
+|-- app/                               Next.js + TypeScript + Tailwind production-path MVP
+|   |-- app/                           App Router pages and API routes
+|   |-- lib/                           Shared analysis logic and server providers
+|   |-- package.json                   Next.js app scripts
+|   `-- tailwind.config.ts
 |-- web/
-|   |-- index.html                     Phase 1 web MVP entry point
+|   |-- index.html                     Legacy static prototype entry point
 |   |-- styles.css                     UI styling
 |   |-- src/                           Front-end UI logic and local fallback analysis
 |   `-- server/                        Server-side API routes, providers, limits, cache
@@ -210,7 +221,7 @@ See [docs/roadmap.md](docs/roadmap.md) for details.
 
 ## Legacy Prototype Note
 
-The repository contains an older Python `listing_monitor` prototype. It is not the current product direction. The current PRD is web-first and explicitly avoids automatic Facebook/Craigslist scraping. The legacy code can be treated as experimental history unless future work intentionally adapts parts of it into PRD-aligned service logic.
+The repository contains an older Python `listing_monitor` prototype and the earlier `web/` static prototype. They are not the production deployment path. The current production path is the Vercel-hosted Next.js app under `/app`. Legacy code can remain as experimental history unless future work intentionally adapts parts of it into PRD-aligned service logic.
 
 ## Development Direction
 

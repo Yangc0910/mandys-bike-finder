@@ -50,6 +50,12 @@ Decision: Test real-world product flow earlier by integrating real APIs in a con
 
 Reason: Controlled real integrations help validate the true user value of the product: checking whether a used kids bike is the right fit, right style, and a good enough deal based on real listing data and trusted price references. Every external integration must be protected by feature flags, server-side API calls, usage limits, caching where relevant, graceful fallback modes, and safe defaults so the app remains useful without API keys.
 
+## Vercel-Hosted Next.js App Under /app
+
+Decision: The production deployment path for Mandy's Bike Finder is a Vercel-hosted Next.js app under `/app`.
+
+Reason: Vercel and Next.js provide a clean path for a web MVP with server-side API routes, environment-variable management, and future deployment to a free Vercel-provided domain. The older `web/` prototype remains in the repository as a legacy prototype until the `/app` implementation is verified.
+
 ## Email Report Added for User Value and Retention
 
 Decision: Add an email report flow.

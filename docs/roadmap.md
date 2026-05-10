@@ -29,6 +29,8 @@ No real external APIs in Phase 1.
 
 ## Phase 1.5: Controlled Real API Beta
 
+- Production deployment path is now a Vercel-hosted Next.js app under `/app`.
+- Migrate the working `web/` prototype into `/app` using Next.js, TypeScript, Tailwind CSS, and App Router API routes.
 - Use real API integrations where practical for LLM parsing/reasoning, trusted web search price reference, email report delivery, and backend metadata logging.
 - Keep every integration behind a provider abstraction and feature flag.
 - Add cost controls from the beginning, including per-session or per-IP daily limits and global daily limits.
@@ -38,11 +40,12 @@ No real external APIs in Phase 1.
 - Never expose API keys to frontend code.
 - Show clear UI status when live checks are unavailable and fallback estimates are used.
 - Prepare Vercel deployment using the free Vercel-provided domain, such as `mandys-bike-finder.vercel.app`.
-- When the production Next.js app lives in `/app`, configure Vercel's root directory as `app`.
+- Configure Vercel's root directory as `app`.
 - Configure feature flags, API limits, and provider credentials only through Vercel Environment Variables.
 - Confirm deployment by opening the Vercel URL, running a sample listing analysis, and verifying fallback behavior when APIs are disabled.
 - Add a custom domain later through Vercel's Domains settings after the MVP flow is validated.
 - Never commit API keys, `.env`, OAuth secrets, database URLs, credentials, or tokens to GitHub.
+- Keep the old `web/` folder as a legacy prototype until the `/app` deployment path is fully verified.
 
 ## Phase 2: Screenshot Upload and Extraction
 

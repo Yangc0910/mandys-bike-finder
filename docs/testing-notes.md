@@ -6,13 +6,15 @@ Current implementation approach: Phase 1.5 controlled real API beta
 ## Test Without API Keys
 
 1. Leave all feature flags in `.env` unset or set to `false`.
-2. Start the web server:
+2. Start the Next.js app:
 
 ```powershell
-npm start
+cd app
+npm install
+npm run dev
 ```
 
-3. Open `http://127.0.0.1:5173/`.
+3. Open `http://localhost:3000/`.
 4. Analyze a sample listing.
 5. Confirm the status pill says providers are mock/fallback.
 6. Confirm the app still shows:
@@ -36,12 +38,22 @@ ENABLE_EMAIL_REPORT=true
 ENABLE_BACKEND_LOGGING=true
 ```
 
-3. Add only server-side API credentials.
+3. Add only server-side API credentials in `/app/.env.local` or Vercel Environment Variables.
 4. Restart the server.
 5. Use the same sample listings.
-6. Confirm the status pill and API responses indicate live provider modes where configured.
+6. Confirm the status pill and API responses indicate live LLM mode if configured. Search, email, and backend logging should still report fallback/mock until those real providers are intentionally implemented.
 
 Expected behavior: live providers run only server-side. No API keys appear in browser source or network payloads.
+
+## Test Production Build
+
+From `/app`:
+
+```powershell
+npm run build
+```
+
+Expected behavior: the Next.js app builds successfully. If dependencies are not installed, run `npm install` first. If build fails, fix TypeScript, lint, or App Router errors before deploying to Vercel.
 
 ## Test API Limits
 

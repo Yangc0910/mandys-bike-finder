@@ -11,6 +11,7 @@ Supporting product docs:
 - [api-cost-control.md](api-cost-control.md)
 - [roadmap.md](roadmap.md)
 - [product-decisions.md](product-decisions.md)
+- [current-status.md](current-status.md)
 
 Historical PRDs:
 

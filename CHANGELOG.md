@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Migrated the production-path MVP into a new Next.js + TypeScript + Tailwind app under `/app`.
+- Moved the controlled beta API surface into Next.js App Router API routes.
+- Documented `/app` as the Vercel production deployment root and marked `web/` as a legacy prototype.
 - Added Phase 1.5 controlled real API beta plan.
 - Added server-side provider architecture for LLM, trusted retailer search, email report, and backend logging.
 - Added feature-flagged fallbacks so the app remains functional without API keys.
