@@ -150,8 +150,8 @@ Expected behavior: the second call falls back gracefully and explains that the d
 ## Test Child-Profile-Only Recommendation
 
 1. Button gating:
-   - Without height, confirm `Recommend bike type and size` is disabled.
-   - Confirm helper message: `Enter height and riding experience to get a bike recommendation.`
+   - Without height or age, confirm `Recommend bike type and size` is disabled.
+   - Confirm helper message: `Enter height, age, and riding experience to get a bike recommendation.`
 2. Case: 145 cm, age 9, comfortable rider:
    - Click recommend button.
    - Confirm wheel recommendation emphasizes `24 inch` with `26 inch` as cautious growth option.

@@ -117,6 +117,7 @@ The app should support a child-profile-only recommendation flow before listing a
   - `Recommend bike type and size`
 - Disabled until minimum child profile fields are present:
   - height
+  - age
   - riding experience
 - On click, show a recommendation panel directly below Child Profile with:
   - recommended bike category
@@ -130,6 +131,7 @@ The app should support a child-profile-only recommendation flow before listing a
 - No API calls are required for this recommendation flow.
 - If child profile changes after recommendation is shown, prompt:
   - `Child profile changed. Re-run recommendation.`
+- Height should drive wheel-size range first, age should act as a reasonableness check, and riding experience should adjust category and confidence.
 
 ## F. Listing Input Requirements
 

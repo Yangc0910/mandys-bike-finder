@@ -89,6 +89,7 @@ export default function Home() {
     [normalizedChild, listing, pastedText, screenshotName],
   );
   const hasHeight = Boolean((normalizedChild.heightCm || "").trim());
+  const hasAgeForRecommendation = Boolean((normalizedChild.age || "").trim());
   const hasExperience = Boolean((normalizedChild.experience || "").trim());
   const hasCoreListing = Boolean((listing.wheelSize || "").trim() || (listing.title || "").trim() || pastedText.trim());
   const hasAnyListingField = Boolean(
@@ -107,8 +108,15 @@ export default function Home() {
   const needsRerun = hasAnalyzed && analyzedSignature !== inputSignature;
   const showAnalysisResults = hasAnalyzed && !needsRerun;
   const profileSignature = useMemo(
-    () => JSON.stringify({ heightCm: normalizedChild.heightCm, experience: normalizedChild.experience, age: normalizedChild.age, stylePreference: normalizedChild.stylePreference }),
-    [normalizedChild.heightCm, normalizedChild.experience, normalizedChild.age, normalizedChild.stylePreference],
+    () => JSON.stringify({
+      heightCm: normalizedChild.heightCm,
+      age: normalizedChild.age,
+      weight: normalizedChild.weight,
+      experience: normalizedChild.experience,
+      stylePreference: normalizedChild.stylePreference,
+      colorPreferences: normalizedChild.colorPreferences,
+    }),
+    [normalizedChild.heightCm, normalizedChild.age, normalizedChild.weight, normalizedChild.experience, normalizedChild.stylePreference, normalizedChild.colorPreferences],
   );
   const needsProfileRecommendationRerun = showProfileRecommendation && profileRecommendationSignature !== profileSignature;
   const analyzeDisabledReason = !hasHeight || !hasExperience
@@ -338,17 +346,14 @@ export default function Home() {
             <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
               <SectionTitle step="1" title="Child profile" />
               <div className="grid gap-3 md:grid-cols-2">
-              <Field label="Height">
-                <div className="grid gap-2">
+              <Field label="Height" required>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
                   <select className={inputClass} value={heightUnit} onChange={(e) => setHeightUnit(e.target.value as "cm" | "ft-in")}>
                     <option value="cm">cm</option>
                     <option value="ft-in">ft-in</option>
                   </select>
                   {heightUnit === "cm" ? (
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-                      <input className={inputClass} type="number" min="80" max="220" value={heightCmInput} onChange={(e) => setHeightCmInput(e.target.value)} />
-                      <span>cm</span>
-                    </div>
+                    <input className={inputClass} type="number" min="80" max="220" placeholder="Height value" value={heightCmInput} onChange={(e) => setHeightCmInput(e.target.value)} />
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
                       <input className={inputClass} type="number" min="2" max="7" placeholder="feet" value={heightFeet} onChange={(e) => setHeightFeet(e.target.value)} />
@@ -357,22 +362,19 @@ export default function Home() {
                   )}
                 </div>
               </Field>
-              <Field label="Age">
-                <input className={inputClass} type="number" placeholder="Optional" value={child.age} onChange={(e) => setChild({ ...child, age: e.target.value })} />
+              <Field label="Age" required>
+                <input className={inputClass} type="number" placeholder="Age" value={child.age} onChange={(e) => setChild({ ...child, age: e.target.value })} />
               </Field>
-              <Field label="Weight">
-                <div className="grid gap-2">
+              <Field label="Weight" optional>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
                   <select className={inputClass} value={weightUnit} onChange={(e) => setWeightUnit(e.target.value as "lb" | "kg")}>
                     <option value="lb">lb</option>
                     <option value="kg">kg</option>
                   </select>
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-                    <input className={inputClass} type="number" placeholder="Optional" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} />
-                    <span>{weightUnit}</span>
-                  </div>
+                  <input className={inputClass} type="number" placeholder="Weight value" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} />
                 </div>
               </Field>
-              <Field label="Riding experience">
+              <Field label="Riding experience" required>
                 <select className={inputClass} value={child.experience} onChange={(e) => setChild({ ...child, experience: e.target.value as ChildProfile["experience"] })}>
                   <option value="beginner">Beginner</option>
                   <option value="comfortable">Comfortable</option>
@@ -380,15 +382,15 @@ export default function Home() {
                   <option value="advanced">Advanced</option>
                 </select>
               </Field>
-              <Field label="Style preference">
+              <Field label="Style preference" optional>
                 <select className={inputClass} value={child.stylePreference} onChange={(e) => setChild({ ...child, stylePreference: e.target.value })}>
                   <option value="all good / no preference">All good / no preference</option>
                   <option value="boy-style">Boy-style</option>
                   <option value="girl-style">Girl-style</option>
                 </select>
               </Field>
-              <Field label="Color preference">
-                <div className="grid gap-2 rounded-md border border-slate-300 bg-slate-50 p-2">
+              <Field label="Color preference" optional>
+                <div className="grid min-h-[102px] gap-2 rounded-md border border-slate-300 bg-slate-50 p-2">
                   {colorPreferenceOptions.map((option) => (
                     <label key={option} className="flex items-center gap-2 text-sm font-normal text-slate-700">
                       <input
@@ -406,13 +408,13 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={recommendFromChildProfile}
-                  disabled={!hasHeight || !hasExperience}
+                  disabled={!hasHeight || !hasAgeForRecommendation || !hasExperience}
                   className="min-h-11 rounded-md bg-blue-50 px-4 text-left font-bold text-brand disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Recommend bike type and size
                 </button>
-                {(!hasHeight || !hasExperience) && (
-                  <p className="text-sm text-slate-600">Enter height and riding experience to get a bike recommendation.</p>
+                {(!hasHeight || !hasAgeForRecommendation || !hasExperience) && (
+                  <p className="text-sm text-slate-600">Enter height, age, and riding experience to get a bike recommendation.</p>
                 )}
               </div>
               {showProfileRecommendation && profileRecommendation && (
@@ -424,11 +426,20 @@ export default function Home() {
                   )}
                   <h3 className="text-lg font-bold text-slate-900">Child profile recommendation</h3>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    <InfoLine label="Recommended bike category" value={profileRecommendation.category} />
+                    <InfoLine label="Recommended bike type" value={profileRecommendation.category} />
                     <InfoLine label="Recommended wheel size" value={profileRecommendation.wheelSize} />
-                    <InfoLine label="Growth option" value={profileRecommendation.growthOption} />
-                    <InfoLine label="Bike style recommendation" value={profileRecommendation.styleRecommendation} />
+                    <InfoLine label="Growth option" value={profileRecommendation.growthOption || "No growth option needed now"} />
+                    <InfoLine label="Bike style recommendation" value={profileRecommendation.styleRecommendation || "Use fit-first neutral styling"} />
                   </div>
+                  <p className="mt-3 text-sm text-slate-700">{profileRecommendation.explanation}</p>
+                  {profileRecommendation.optionalNotes.length > 0 && (
+                    <div className="mt-2 rounded-md border border-slate-200 bg-white p-3">
+                      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Optional personalization notes</p>
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                        {profileRecommendation.optionalNotes.map((note) => <li key={note}>{note}</li>)}
+                      </ul>
+                    </div>
+                  )}
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <p className="text-xs font-bold uppercase tracking-wide text-slate-500">What to look for</p>
@@ -756,6 +767,8 @@ type ChildBikeRecommendation = {
   wheelSize: string;
   growthOption: string;
   styleRecommendation: string;
+  explanation: string;
+  optionalNotes: string[];
   lookFor: string[];
   avoid: string[];
   illustrationHint: string;
@@ -763,70 +776,68 @@ type ChildBikeRecommendation = {
 
 function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendation {
   const height = Number(child.heightCm || 0);
+  const age = Number(child.age || 0);
   const experience = child.experience;
   const stylePreference = child.stylePreference || "all good / no preference";
+  const weightKg = Number(child.weight || 0);
+  const colorPreferences = child.colorPreferences || [];
 
-  let category = "Kids pedal bike";
-  let wheelSize = "20 inch";
-  let growthOption = "Stay with the recommended size until control is stable.";
+  let baseWheel = 12;
+  if (height < 95) baseWheel = 12;
+  else if (height < 105) baseWheel = 14;
+  else if (height < 115) baseWheel = 16;
+  else if (height < 125) baseWheel = 18;
+  else if (height < 145) baseWheel = 20;
+  else if (height < 155) baseWheel = 24;
+  else baseWheel = 26;
 
-  if (height < 95) {
-    category = "Balance bike";
-    wheelSize = "12 inch";
-    growthOption = "Move to 14 inch only after stable balance and braking control.";
-  } else if (height < 105) {
-    category = experience === "beginner" ? "Balance bike" : "Training-wheel bike";
-    wheelSize = "12-14 inch";
-    growthOption = "Consider first pedal bike when starts and stops are confident.";
-  } else if (height < 115) {
-    category = experience === "beginner" ? "Training-wheel bike" : "Kids pedal bike";
-    wheelSize = "14-16 inch";
-    growthOption = "16 inch can work as skills improve.";
-  } else if (height < 125) {
-    category = "Kids pedal bike";
-    wheelSize = "16-18 inch";
-    growthOption = "18 inch can be the next step after control is consistent.";
-  } else if (height < 135) {
-    category = "Kids pedal bike";
-    wheelSize = "20 inch";
-    growthOption = "24 inch only if the child can test ride comfortably.";
-  } else if (height < 145) {
-    category = experience === "confident" || experience === "advanced" ? "Kids mountain bike" : "Kids pedal bike";
-    wheelSize = "24 inch";
-    growthOption = "26 inch is a later step; test ride first.";
-  } else if (height < 155) {
-    if (experience === "beginner") {
-      category = "Kids pedal bike";
-      wheelSize = "24 inch";
-      growthOption = "Avoid jumping to 26 inch too early while still learning.";
-    } else if (experience === "comfortable") {
-      category = "Kids mountain bike";
-      wheelSize = "24 inch";
-      growthOption = "Consider 26 inch only if the child is confident and can test ride safely.";
-    } else {
-      category = "Youth hybrid bike";
-      wheelSize = "24-26 inch";
-      growthOption = "26 inch is reasonable with safe standover and test ride confidence.";
-    }
+  // Age sanity checks as secondary adjustment
+  if (age > 0) {
+    if (age <= 4) baseWheel = Math.min(baseWheel, 14);
+    else if (age <= 6) baseWheel = Math.min(baseWheel, 16);
+    else if (age <= 8) baseWheel = Math.min(baseWheel, 20);
+  }
+
+  let category = "Standard kids bike";
+  if (experience === "beginner") {
+    if (height < 105 || age <= 5) category = "Balance bike";
+    else if (height < 120 || age <= 7) category = "Training wheels bike";
+    else category = "Standard kids bike";
+  } else if (experience === "comfortable") {
+    category = baseWheel >= 24 ? "Kids cruiser bike" : "Standard kids bike";
   } else {
-    category = experience === "advanced" ? "Youth hybrid bike" : "Cruiser / comfort bike";
-    wheelSize = "26 inch";
-    growthOption = "Consider a small adult frame only if standover height is safe.";
+    category = baseWheel >= 24 ? "Hybrid / neighborhood bike" : "Kids mountain bike";
   }
 
-  if (experience === "advanced" && (height >= 145)) {
-    category = "Youth hybrid bike";
-  }
+  const wheelSize = `${baseWheel} inch`;
+  const growthOption = baseWheel >= 24
+    ? "Consider 26 inch only if the child is confident and can test ride safely."
+    : `Consider ${Math.min(baseWheel + 2, 26)} inch only after control and stopping confidence improve.`;
 
   const styleRecommendation = stylePreference === "all good / no preference"
     ? `${category} with practical geometry and neutral long-term style.`
     : `${category} that matches ${stylePreference} while still prioritizing fit and control.`;
+  const explanation = `Based on height ${height || "unknown"} cm, age ${age || "unknown"}, and ${experience} riding experience, a ${wheelSize} ${category.toLowerCase()} is the safest starting point now.`;
+  const optionalNotes: string[] = [];
+
+  if (weightKg > 0) {
+    if (weightKg < 20) optionalNotes.push("Prioritize lightweight frames so starts and handling feel easier.");
+    else if (weightKg > 45) optionalNotes.push("Check weight rating and frame stiffness for comfort and control.");
+  }
+  if (stylePreference !== "all good / no preference") {
+    optionalNotes.push(`Use ${stylePreference} as a preference filter after fit and safety are confirmed.`);
+  }
+  if (!colorPreferences.includes("No preference / all colors are fine") && colorPreferences.length > 0) {
+    optionalNotes.push(`Preferred color directions: ${colorPreferences.join(", ")}.`);
+  }
 
   return {
     category,
     wheelSize,
     growthOption,
     styleRecommendation,
+    explanation,
+    optionalNotes,
     lookFor: [
       "Low standover height",
       "Adjustable seat height",
@@ -852,8 +863,29 @@ function SectionTitle({ step, title }: { step: string; title: string }) {
   return <div className="mb-4 mt-2 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-brand font-bold text-white">{step}</span><h2 className="text-lg font-bold">{title}</h2></div>;
 }
 
-function Field({ label, wide, children }: { label: string; wide?: boolean; children: ReactNode }) {
-  return <label className={`grid gap-1 text-sm font-bold text-slate-700 ${wide ? "md:col-span-2" : ""}`}><span>{label}</span>{children}</label>;
+function Field({
+  label,
+  wide,
+  required,
+  optional,
+  children,
+}: {
+  label: string;
+  wide?: boolean;
+  required?: boolean;
+  optional?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <label className={`grid gap-1 text-sm font-bold text-slate-700 ${wide ? "md:col-span-2" : ""}`}>
+      <span className="flex items-center gap-2">
+        <span>{label}</span>
+        {required && <span className="text-xs font-semibold text-brand">Required</span>}
+        {optional && <span className="text-xs font-semibold text-slate-500">Optional</span>}
+      </span>
+      {children}
+    </label>
+  );
 }
 
 function PanelTitle({ step, title, children }: { step: string; title: string; children: ReactNode }) {
