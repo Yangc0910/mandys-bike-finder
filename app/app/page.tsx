@@ -2,7 +2,7 @@
 
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 
-import { analyzeBike, generateSellerMessage, localPriceReference } from "@/lib/analysis";
+import { analyzeBike, generateSellerMessage, localPriceReference, recommendWheelSize } from "@/lib/analysis";
 import type { AnalysisResult, ChildProfile, Listing, MeterResult, ProviderModes } from "@/lib/types";
 
 const defaultChild: ChildProfile = {
@@ -70,6 +70,7 @@ export default function Home() {
   const [weightUnit, setWeightUnit] = useState<"lb" | "kg">("lb");
   const [weightInput, setWeightInput] = useState("");
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [status, setStatus] = useState("Local fallback ready");
   const [providerModes, setProviderModes] = useState<ProviderModes | null>(null);
   const [messageGoal, setMessageGoal] = useState("lowerOffer");
@@ -167,6 +168,7 @@ export default function Home() {
     const result = await apiPost("/api/analyze", { child: normalizedChild, listing });
     const nextAnalysis = result?.analysis || analyzeBike(normalizedChild, listing, localPriceReference(listing));
     setAnalysis(nextAnalysis);
+    setHasAnalyzed(true);
     setStatus(result?.priceReference?.message || providerStatusText(result?.apiStatus || providerModes) || "Analysis complete.");
     setSellerMessage(await generateMessage("lowerOffer", "friendly", listing, false));
   }
@@ -273,10 +275,11 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[0.95fr_1.15fr]">
-          <form onSubmit={analyze} className="rounded-lg border border-line bg-white p-5 shadow-panel">
-            <SectionTitle step="1" title="Child profile" />
-            <div className="mb-6 grid gap-3 md:grid-cols-2">
+        <form onSubmit={analyze} className="mb-6 grid gap-5">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
+              <SectionTitle step="1" title="Child profile" />
+              <div className="grid gap-3 md:grid-cols-2">
               <Field label="Height">
                 <div className="grid gap-2">
                   <select className={inputClass} value={heightUnit} onChange={(e) => setHeightUnit(e.target.value as "cm" | "ft-in")}>
@@ -340,8 +343,10 @@ export default function Home() {
                   ))}
                 </div>
               </Field>
-            </div>
+              </div>
+            </section>
 
+            <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
             <SectionTitle step="2" title="Listing input" />
             <div className="mb-4 grid grid-cols-3 gap-2">
               {["link", "screenshot", "manual"].map((mode) => (
@@ -424,7 +429,7 @@ export default function Home() {
             </div>
 
             <SectionTitle step="3" title="Confirm listing fields" />
-            <div className="mb-6 grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <Field label="Title" wide>
                 <input className={inputClass} value={listing.title} onChange={(e) => updateListingField("title", e.target.value)} />
               </Field>
@@ -458,10 +463,14 @@ export default function Home() {
                 <textarea className={inputClass} rows={4} value={listing.description} onChange={(e) => updateListingField("description", e.target.value)} />
               </Field>
             </div>
-            <button className="min-h-12 w-full rounded-md bg-brand px-4 font-bold text-white" type="submit">Analyze bike</button>
-          </form>
+            </section>
+          </div>
+          <button className="min-h-12 w-full rounded-md bg-brand px-4 font-bold text-white shadow-panel sm:w-auto sm:min-w-64" type="submit">Analyze bike</button>
+        </form>
 
+        {hasAnalyzed ? (
           <section className="grid gap-4">
+            <BikeSizeRecommendation child={normalizedChild} />
             <div className="grid min-h-40 grid-cols-[72px_1fr] items-center gap-5 rounded-lg border border-line bg-white p-6 shadow-panel">
               <div className={`h-16 w-16 rounded-full border-8 ${meterSignal(visibleAnalysis.overall.meter)}`} />
               <div>
@@ -502,7 +511,11 @@ export default function Home() {
               <pre className="min-h-32 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-slate-50 p-3 text-sm text-slate-700">{reportPreview}</pre>
             </PanelTitle>
           </section>
-        </div>
+        ) : (
+          <section className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600 shadow-panel">
+            Run <span className="font-semibold">Analyze bike</span> to see recommended bike size, overall result, detailed assessments, seller questions, and messaging help.
+          </section>
+        )}
         <details className="mt-6 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-panel">
           <summary className="cursor-pointer font-semibold text-slate-700">Beta status</summary>
           <p className="mt-2">{status}</p>
@@ -510,6 +523,67 @@ export default function Home() {
       </section>
     </main>
   );
+}
+
+function BikeSizeRecommendation({ child }: { child: ChildProfile }) {
+  const result = recommendWheelSize(child.heightCm, child.experience);
+  const details = buildSizeRecommendationDetails(child.heightCm, child.experience, result);
+  return (
+    <article className="rounded-lg border border-blue-200 bg-blue-50/50 p-5 shadow-panel">
+      <h2 className="text-xl font-bold text-slate-900">Recommended bike size</h2>
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <InfoLine label="Best size now" value={details.bestSizeNow} />
+        <InfoLine label="Growth option" value={details.growthOption} />
+        <InfoLine label="Size caution" value={details.caution} />
+      </div>
+      <p className="mt-3 text-sm text-slate-700">{details.reasoning}</p>
+    </article>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-blue-100 bg-white px-3 py-2">
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+function buildSizeRecommendationDetails(
+  heightCm: string,
+  experience: string,
+  recommendation: { recommended: string; note: string },
+) {
+  const height = Number(heightCm || 0);
+  if (!height) {
+    return {
+      bestSizeNow: "Add height",
+      growthOption: "Unknown",
+      caution: "Need child height",
+      reasoning: "Enter child height and riding experience to estimate the safest bike size.",
+    };
+  }
+
+  if (height >= 145 && height < 155 && experience === "comfortable") {
+    return {
+      bestSizeNow: "24 inch",
+      growthOption: "26 inch if confident and able to test ride safely",
+      caution: "Do not size up without test ride",
+      reasoning: "24 inch is easier to control now; 26 inch may offer more growth room but should be test-ridden.",
+    };
+  }
+
+  const recommended = recommendation.recommended || "Unknown";
+  const alternatives = recommended.includes("/") ? recommended.split("/").map((item) => `${item.trim()} inch`) : [];
+  const bestSizeNow = alternatives[0] || recommended;
+  const growthOption = alternatives[1] || "No clear growth alternative";
+  return {
+    bestSizeNow,
+    growthOption,
+    caution: recommendation.note.includes("test ride") ? "Test ride is recommended before pickup" : "Confirm wheel size with seller",
+    reasoning: recommendation.note,
+  };
 }
 
 const inputClass = "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-ink outline-brand/20 focus:border-brand focus:outline";

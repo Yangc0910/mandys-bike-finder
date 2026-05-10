@@ -134,6 +134,8 @@ Confirmed on deployed MVP:
 - Dimension title is the most prominent label, with short status line and secondary reasoning beneath.
 - `/api/status` remains `200 OK` with safe fallback mode and real APIs disabled.
 - Landing/header visual polish: one simplified hero, clearer parent-facing headline, three value chips, improved spacing/typography, and technical provider status moved to a subtle `Beta status` section.
+- Main flow layout: `Child profile` and `Listing input` now appear side-by-side at the top on desktop (stacked on mobile), with `Confirm listing fields` staying in the listing flow and results rendered below only after clicking `Analyze bike`.
+- Bike size recommendation visibility: after analysis, a dedicated `Recommended bike size` section clearly shows best size now, growth option, caution, and reasoning.
 
 ## Test Fallback Behavior
 
