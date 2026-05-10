@@ -37,6 +37,8 @@
 - Documentation alignment pass: updated README/PRD/current-status/testing notes to clearly separate implemented features vs planned items, reflect current source labels and Craigslist extraction behavior, and document required vs optional child-profile recommendation inputs.
 - Fixed wheel-size fit matching and formatting: normalized wheel-size parsing now supports single, multi-size, and range formats (e.g., `24`, `24 in.`, `24/26`, `24-26`), resolves false mismatch cases like `24` vs `24/26`, and standardizes display labels to clean `24 inch` style.
 - Prioritized screenshot input in listing flow: reordered listing tabs to `Screenshot`, `Link`, `Manual` and set `Screenshot` as the default selected tab to match the most reliable input path.
+- Clarified marketplace link behavior by platform: Craigslist links now trigger controlled server-side extraction attempt with explicit fallback messaging, Facebook Marketplace links are stored without auto-scraping and show screenshot/text guidance, and other marketplace links are saved as reference-only with clear analysis instructions.
+- Fixed bike recommendation illustration mapping: replaced exact label matching with robust keyword-based normalization so category variants (e.g., `Kids cruiser bike`, `24 inch Kids cruiser bike`, `Cruiser bike`) correctly resolve to the expected image under `/images/*`, with fallback placeholder preserved when unmatched.
 
 ## v0.4
 

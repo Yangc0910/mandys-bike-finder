@@ -44,8 +44,11 @@ npm run dev
    - Source: link + manual edits.
    - Source: Craigslist link extraction.
    - After screenshot upload and manual edits, source can show `screenshot + manual edits`.
-12. In link mode, if only a link is entered, confirm the note appears:
-   - "Some marketplace links cannot be read directly. Please paste the listing text or upload a screenshot for best results."
+12. In link mode, platform-specific helper copy:
+   - Facebook Marketplace URL:
+     - `Facebook Marketplace links usually cannot be read directly. Please upload a screenshot or paste the listing text for AI-assisted extraction.`
+   - Other marketplace URL:
+     - `This link will be saved as a reference. For analysis, please paste listing text, upload a screenshot, or enter key details manually.`
 13. Craigslist link-only case:
    - Paste a Craigslist URL, for example:
      - `https://boston.craigslist.org/bmw/bik/d/wayland-trek-mt220-girls-mountain-bike/7919424984.html`
@@ -61,7 +64,7 @@ npm run dev
    - Confirm source label becomes `Craigslist link extraction`.
    - Edit any field and confirm source becomes `Craigslist link extraction + manual edits`.
    - If extraction fails, confirm message:
-     - `We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.`
+     - `We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.`
 15. Screenshot upload behavior:
    - Uploading a screenshot clears previously loaded sample listing values.
    - Source switches to `screenshot` immediately.
@@ -169,6 +172,11 @@ Expected behavior: the second call falls back gracefully and explains that the d
    - Confirm explanation references height, age, and riding experience.
 7. Optional personalization behavior:
    - Confirm optional notes appear only when optional fields (weight/style/color) are provided.
+8. Recommendation illustration mapping:
+   - 145 cm, comfortable rider: generate recommendation and confirm a matching bike illustration renders (not the fallback placeholder).
+   - Cruiser/comfort category variants (for example `Kids cruiser bike`, `Cruiser bike`, `24 inch Kids cruiser bike`) should all map to the cruiser comfort image.
+   - Mountain category should map to the kids mountain bike image.
+   - If recommendation text has no recognized category keywords, fallback placeholder should appear.
 
 ## Manual Verification on Live Deployment
 

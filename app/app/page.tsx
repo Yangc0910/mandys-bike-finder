@@ -51,6 +51,7 @@ export default function Home() {
   const [isExtractingLink, setIsExtractingLink] = useState(false);
   const [screenshotNotice, setScreenshotNotice] = useState("");
   const [linkNotice, setLinkNotice] = useState("");
+  const [hasTriedCraigslistAutoExtract, setHasTriedCraigslistAutoExtract] = useState("");
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
   const [heightFeet, setHeightFeet] = useState("");
   const [heightInches, setHeightInches] = useState("");
@@ -119,11 +120,17 @@ export default function Home() {
     [normalizedChild.heightCm, normalizedChild.age, normalizedChild.weight, normalizedChild.experience, normalizedChild.stylePreference, normalizedChild.colorPreferences],
   );
   const needsProfileRecommendationRerun = showProfileRecommendation && profileRecommendationSignature !== profileSignature;
+  const profileRecommendationImage = profileRecommendation ? resolveBikeTypeImage(profileRecommendation.category, profileRecommendation.illustrationHint) : "";
   const analyzeDisabledReason = !hasHeight || !hasExperience
     ? "Enter child height and riding experience."
     : !hasCoreListing && !hasScreenshotManualListing
       ? "Please add listing text, screenshot extraction, or key bike details before analyzing."
       : "";
+  const linkValue = (listing.listingLink || "").trim();
+  const lowerLinkValue = linkValue.toLowerCase();
+  const isCraigslistLink = lowerLinkValue.includes("craigslist.org");
+  const isFacebookMarketplaceLink = lowerLinkValue.includes("facebook.com/marketplace");
+  const isOtherMarketplaceLikeLink = Boolean(linkValue) && !isCraigslistLink && !isFacebookMarketplaceLink;
 
   useEffect(() => {
     apiGet("/api/status").then((result) => {
@@ -139,6 +146,13 @@ export default function Home() {
       if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
     };
   }, [screenshotPreviewUrl]);
+
+  useEffect(() => {
+    if (!linkValue || !isCraigslistLink || !isLikelyHttpUrl(linkValue)) return;
+    if (hasTriedCraigslistAutoExtract === linkValue) return;
+    setHasTriedCraigslistAutoExtract(linkValue);
+    void extractCraigslistLink(linkValue);
+  }, [hasTriedCraigslistAutoExtract, isCraigslistLink, linkValue]);
 
   function updateListingField<K extends keyof Listing>(field: K, value: Listing[K], source = "manual entry") {
     setListing((current) => ({ ...current, [field]: value }));
@@ -233,8 +247,8 @@ export default function Home() {
     }
   }
 
-  async function extractCraigslistLink() {
-    const url = (listing.listingLink || "").trim();
+  async function extractCraigslistLink(inputUrl?: string) {
+    const url = (inputUrl || listing.listingLink || "").trim();
     if (!url) return;
     setIsExtractingLink(true);
     try {
@@ -245,12 +259,12 @@ export default function Home() {
         setLinkNotice("Craigslist listing details were extracted. Please confirm and edit any missing fields.");
         setStatus(result?.cached ? "Craigslist details loaded from cache." : "Craigslist extraction complete.");
       } else {
-        const message = result?.statusMessage || "We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.";
+        const message = result?.statusMessage || "We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.";
         setLinkNotice(message);
         setStatus(message);
       }
     } catch {
-      const message = "We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.";
+      const message = "We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.";
       setLinkNotice(message);
       setStatus(message);
     } finally {
@@ -454,9 +468,24 @@ export default function Home() {
                       </ul>
                     </div>
                   </div>
-                  <div className="mt-3 rounded-lg border border-dashed border-blue-200 bg-white/80 p-4 text-sm text-slate-600">
-                    <p className="font-semibold text-slate-800">Bike type illustration coming later</p>
-                    <p className="mt-1">Future illustration: {profileRecommendation.illustrationHint}</p>
+                  <div className="mt-3 rounded-lg border border-blue-200 bg-white/90 p-4 text-sm text-slate-600">
+                    {profileRecommendationImage ? (
+                      <div className="grid gap-3">
+                        <div className="overflow-hidden rounded-md border border-slate-200 bg-slate-50">
+                          <img
+                            src={profileRecommendationImage}
+                            alt={`${profileRecommendation.category} illustration`}
+                            className="h-auto w-full object-cover"
+                          />
+                        </div>
+                        <p className="text-sm font-semibold text-slate-800">{profileRecommendation.category} illustration</p>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-slate-800">Bike type illustration coming later</p>
+                        <p className="mt-1">Future illustration: {profileRecommendation.illustrationHint}</p>
+                      </>
+                    )}
                   </div>
                 </article>
               )}
@@ -489,6 +518,9 @@ export default function Home() {
                           : "";
                       setListing((current) => ({ ...current, listingLink: value, platform: platform || current.platform || "" }));
                       setLinkNotice("");
+                      if (!lower.includes("craigslist.org")) {
+                        setHasTriedCraigslistAutoExtract("");
+                      }
                       setListingSource((current) => {
                         if (!value.trim()) return current === "link only" ? "Not set" : current;
                         if (current === "Not set") return "link only";
@@ -503,16 +535,21 @@ export default function Home() {
                 <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
                   AI-assisted extraction supports pasted listing text. You can also use screenshot extraction in screenshot mode.
                 </p>
-                {listing.listingLink && (
+                {isFacebookMarketplaceLink && (
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
-                    Some marketplace links cannot be read directly. Please paste the listing text or upload a screenshot for best results.
+                    Facebook Marketplace links usually cannot be read directly. Please upload a screenshot or paste the listing text for AI-assisted extraction.
                   </p>
                 )}
-                {String(listing.listingLink || "").toLowerCase().includes("craigslist.org") && (
+                {isOtherMarketplaceLikeLink && (
+                  <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
+                    This link will be saved as a reference. For analysis, please paste listing text, upload a screenshot, or enter key details manually.
+                  </p>
+                )}
+                {isCraigslistLink && (
                   <>
                     <button
                       type="button"
-                      onClick={extractCraigslistLink}
+                      onClick={() => void extractCraigslistLink()}
                       disabled={isExtractingLink}
                       className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand disabled:cursor-not-allowed disabled:opacity-60"
                     >
@@ -945,6 +982,29 @@ function localExtract(text: string) {
   const priceMatch = text.match(/\$?\b(\d{2,4})\b/);
   const wheelMatch = text.match(/\b(12|14|16|18|20|24|26|27\.5)\s*(?:inch|in|")\b/i);
   return { title: text.split(/\r?\n/).find((line) => line.trim()) || "", askingPrice: priceMatch?.[1] || "", wheelSize: wheelMatch?.[1] || "", description: text };
+}
+
+function isLikelyHttpUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function resolveBikeTypeImage(category: string, hint = "") {
+  const text = `${category || ""} ${hint || ""}`.toLowerCase().trim();
+  if (!text) return "";
+
+  if (text.includes("balance")) return "/images/Balance bike.png";
+  if (text.includes("training")) return "/images/Training-wheel bike.png";
+  if (text.includes("mountain")) return "/images/Kids mountain bike.png";
+  if (text.includes("hybrid")) return "/images/Youth hybrid bike.png";
+  if (text.includes("cruiser") || text.includes("comfort")) return "/images/Cruiser comfort bike.png";
+  if (text.includes("pedal")) return "/images/Kids pedal bike.png";
+
+  return "";
 }
 
 function compactFields(fields: Partial<Listing>) {
