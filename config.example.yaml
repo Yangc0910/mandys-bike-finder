@@ -1,0 +1,154 @@
+# Copy to config.yaml and edit for your personal use.
+
+browser:
+  # Persistent profile keeps your normal logged-in browser state for this tool.
+  # Use a dedicated folder, not your everyday Chrome/Edge profile.
+  user_data_dir: ".browser-profile"
+  headless: false
+  slow_mo_ms: 250
+  viewport:
+    width: 1365
+    height: 900
+
+storage:
+  sqlite_path: "data/listings.sqlite3"
+
+gmail:
+  sender: "your.gmail.address@gmail.com"
+  recipient: "your.gmail.address@gmail.com"
+  subject_prefix: "Daily listing monitor"
+  send_empty_summary: false
+
+filters:
+  # Matches are case-insensitive. A listing matches if it contains any include keyword
+  # and none of the exclude keywords. Leave include_keywords empty to allow all.
+  include_keywords: []
+  exclude_keywords: []
+  min_price:
+  max_price:
+
+deal_scoring:
+  # Scores are local ranking hints only. They do not trigger messaging or purchasing.
+  enabled: true
+  absolute_max_price: 100
+  top_n: 10
+  low_price_threshold: 100
+  free_score: 50
+  low_price_score: 25
+  positive_keyword_score: 15
+  brand_keyword_score: 20
+  negative_keyword_penalty: 40
+  unknown_price_penalty: 10
+  max_positive_keyword_score: 30
+  max_brand_keyword_score: 40
+  max_negative_penalty: 80
+  free_with_negative_cap: 35
+  bike_type_score: 20
+  size_keyword_score: 15
+  excluded_bike_type_penalty: 40
+  pickup_constraint_penalty: 20
+  max_bike_type_score: 40
+  max_size_keyword_score: 30
+  max_excluded_bike_type_penalty: 80
+  max_pickup_constraint_penalty: 40
+  positive_keywords:
+    - "like new"
+    - "barely used"
+    - "new in box"
+    - "excellent condition"
+    - "moving sale"
+    - "must go"
+    - "pickup today"
+    - "priced to sell"
+    - "lightly used"
+  negative_keywords:
+    - "broken"
+    - "needs repair"
+    - "need repair"
+    - "belt needs repair"
+    - "parts only"
+    - "for parts"
+    - "not working"
+    - "damaged"
+    - "missing parts"
+    - "pickup only if removed"
+    - "must disassemble"
+    - "no delivery"
+    - "scrap"
+  brand_keywords:
+    - "nordictrack"
+    - "bowflex"
+    - "peloton"
+    - "horizon"
+    - "sole"
+    - "life fitness"
+    - "precor"
+    - "gorilla"
+    - "lifetime"
+    - "rubbermaid"
+    - "craftsman"
+    - "dewalt"
+    - "milwaukee"
+    - "makita"
+  desired_bike_types:
+    - "commuter bike"
+    - "road bike"
+    - "hybrid bike"
+    - "mountain bike"
+  excluded_bike_types:
+    - "kids bike"
+    - "bmx"
+    - "stationary bike"
+  preferred_frame_sizes:
+    - "medium frame"
+    - "54cm"
+    - "56cm"
+  preferred_wheel_sizes:
+    - "700c"
+    - "27.5"
+    - "29er"
+  pickup_constraint_keywords:
+    - "pickup only"
+    - "must disassemble"
+    - "no delivery"
+
+preference_examples:
+  # Stored only as examples of listings you personally like.
+  # The tool does not fetch or open these URLs.
+  liked_item_urls:
+    - "https://www.facebook.com/marketplace/item/1344286480818141/"
+    - "https://www.facebook.com/marketplace/item/1645375596664083/"
+    - "https://www.facebook.com/marketplace/item/979470821269639/"
+    - "https://www.facebook.com/marketplace/item/2025722315016302/"
+    - "https://www.facebook.com/marketplace/item/1867302020624827/"
+    - "https://www.facebook.com/marketplace/item/984672811053042/"
+
+selection:
+  primary_source: "FB Recommended"
+  top_n: 10
+  min_primary_ratio: 0.5
+
+rate_limits:
+  # Conservative pacing. The tool never tries to bypass login, CAPTCHA, or bot checks.
+  delay_between_pages_seconds:
+    min: 12
+    max: 25
+  delay_after_load_seconds:
+    min: 5
+    max: 10
+
+sources:
+  - name: "Example search page"
+    url: "https://example.com/search/results"
+    # Preferred: set selectors for the website you already use.
+    listing_selector: ".listing-card"
+    fields:
+      title: ".listing-title"
+      price: ".listing-price"
+      location: ".listing-location"
+      link: "a"
+
+  - name: "Fallback example"
+    url: "https://example.com/another-search"
+    # If selectors are omitted, the tool uses a conservative visible-link heuristic.
+    # The heuristic only reads visible text already rendered on the page.
