@@ -54,6 +54,7 @@ npm run dev
    - Confirm a Link-mode action button is visible when a URL is present for both Craigslist and Facebook Marketplace.
    - For Facebook links with no pasted text, confirm the button stays visible but disabled with clear helper text.
    - For Facebook links with pasted text, confirm the button runs text extraction and keeps URL as listing reference.
+   - After switching from Screenshot/Manual back to Link mode, confirm source label resets to `link` (no stale `screenshot` source).
 13. Craigslist link-only case:
    - Paste a Craigslist URL, for example:
      - `https://boston.craigslist.org/bmw/bik/d/wayland-trek-mt220-girls-mountain-bike/7919424984.html`
@@ -70,6 +71,7 @@ npm run dev
    - Edit any field and confirm source becomes `Craigslist link extraction + manual edits`.
    - If extraction fails, confirm message:
      - `We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.`
+   - Confirm Craigslist auto-extraction attempts only in Link mode (not while Screenshot/Manual tabs are active).
 15. Screenshot upload behavior:
    - Uploading a screenshot clears previously loaded sample listing values.
    - Source switches to `screenshot` immediately.

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- QA hardening pass after PRD consolidation baseline (`c1a81af`): fixed link-source manual-edit state mapping to consistently use `link`/`link + manual edits`, scoped Craigslist auto-extraction to Link mode only, and aligned child-profile recommendation trigger guard with required fields (height + age + riding experience).
 - Migrated the production-path MVP into a new Next.js + TypeScript + Tailwind app under `/app`.
 - Moved the controlled beta API surface into Next.js App Router API routes.
 - Documented `/app` as the Vercel production deployment root and marked `web/` as a legacy prototype.

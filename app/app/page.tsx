@@ -150,17 +150,18 @@ export default function Home() {
   }, [screenshotPreviewUrl]);
 
   useEffect(() => {
+    if (inputMode !== "link") return;
     if (!linkValue || !isCraigslistLink || !isLikelyHttpUrl(linkValue)) return;
     if (hasTriedCraigslistAutoExtract === linkValue) return;
     setHasTriedCraigslistAutoExtract(linkValue);
     void extractCraigslistLink(linkValue);
-  }, [hasTriedCraigslistAutoExtract, isCraigslistLink, linkValue]);
+  }, [hasTriedCraigslistAutoExtract, inputMode, isCraigslistLink, linkValue]);
 
   function updateListingField<K extends keyof Listing>(field: K, value: Listing[K], source = "manual entry") {
     setListing((current) => ({ ...current, [field]: value }));
     setListingSource((current) => {
       if (source !== "manual entry") return source;
-      if (current === "link only") return "link + manual edits";
+      if (current === "link") return "link + manual edits";
       if (current === "Craigslist link extraction") return "Craigslist link extraction + manual edits";
       if (current === "screenshot") return "screenshot + manual edits";
       if (current === "screenshot AI extraction") return "screenshot AI extraction + manual edits";
@@ -334,7 +335,7 @@ export default function Home() {
   }
 
   function recommendFromChildProfile() {
-    if (!hasHeight || !hasExperience) return;
+    if (!hasHeight || !hasAgeForRecommendation || !hasExperience) return;
     setProfileRecommendation(buildChildBikeRecommendation(normalizedChild));
     setProfileRecommendationSignature(profileSignature);
     setShowProfileRecommendation(true);
@@ -550,8 +551,8 @@ export default function Home() {
                         setHasTriedCraigslistAutoExtract("");
                       }
                       setListingSource((current) => {
-                        if (!value.trim()) return current === "link only" ? "Not set" : current;
-                        if (current === "Not set") return "link only";
+                        if (!value.trim()) return current === "link" ? "Not set" : current;
+                        if (current === "Not set") return "link";
                         return current;
                       });
                     }}
