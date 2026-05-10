@@ -47,6 +47,7 @@ export default function Home() {
   const [screenshotName, setScreenshotName] = useState("");
   const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [isScreenshotPreviewOpen, setIsScreenshotPreviewOpen] = useState(false);
   const [isExtractingScreenshot, setIsExtractingScreenshot] = useState(false);
   const [isExtractingLink, setIsExtractingLink] = useState(false);
   const [screenshotNotice, setScreenshotNotice] = useState("");
@@ -619,18 +620,48 @@ export default function Home() {
                     setScreenshotNotice("Screenshot uploaded. You can extract listing details with AI or enter them manually.");
                   }} />
                 </Field>
-                <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-2 text-muted">
+                <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-2 text-muted">
                   {screenshotPreviewUrl ? (
                     <div className="grid w-full gap-2">
-                      <div className="grid h-44 place-items-center overflow-hidden rounded-md border border-slate-200 bg-white">
-                        <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="max-h-full max-w-full object-contain" />
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsScreenshotPreviewOpen(true)}
+                        className="w-full rounded-md border border-slate-200 bg-white p-0 text-left"
+                      >
+                        <div className="max-h-[500px] overflow-auto md:max-h-[620px]">
+                          <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="block h-auto w-full object-contain" />
+                        </div>
+                      </button>
                       <p className="text-xs text-slate-600">{screenshotName}</p>
+                      <p className="text-xs text-slate-500">
+                        Preview shown at reduced size. AI extraction uses the full uploaded image.
+                      </p>
                     </div>
                   ) : (
-                    <span>No image selected</span>
+                    <div className="grid min-h-40 place-items-center">
+                      <span>No image selected</span>
+                    </div>
                   )}
                 </div>
+                {isScreenshotPreviewOpen && screenshotPreviewUrl && (
+                  <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/70 p-4">
+                    <div className="w-full max-w-5xl rounded-lg border border-slate-200 bg-white shadow-xl">
+                      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                        <p className="truncate text-sm font-semibold text-slate-800">{screenshotName || "Screenshot preview"}</p>
+                        <button
+                          type="button"
+                          onClick={() => setIsScreenshotPreviewOpen(false)}
+                          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          Close
+                        </button>
+                      </div>
+                      <div className="max-h-[82vh] overflow-auto bg-slate-50 p-3">
+                        <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot full preview" className="block h-auto w-full object-contain" />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {screenshotNotice && (
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
                     {screenshotNotice}
@@ -1210,23 +1241,15 @@ function toFixed(value: string, decimals: number) {
 }
 
 async function prepareScreenshotForExtraction(file: File): Promise<{ dataUrl: string; mimeType: string; sizeBytes: number }> {
-  const maxEdge = 1400;
-  const bitmap = await createImageBitmap(file);
-  const ratio = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
-  const width = Math.max(1, Math.round(bitmap.width * ratio));
-  const height = Math.max(1, Math.round(bitmap.height * ratio));
+  const dataUrl = await fileToDataUrl(file);
+  return { dataUrl, mimeType: file.type || "image/jpeg", sizeBytes: file.size };
+}
 
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Canvas not available");
-  context.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-
-  const preferredType = file.type === "image/png" ? "image/png" : "image/jpeg";
-  const dataUrl = canvas.toDataURL(preferredType, preferredType === "image/jpeg" ? 0.82 : undefined);
-  const base64 = dataUrl.split(",")[1] || "";
-  const sizeBytes = Math.floor((base64.length * 3) / 4);
-  return { dataUrl, mimeType: preferredType, sizeBytes };
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Failed to read screenshot file."));
+    reader.readAsDataURL(file);
+  });
 }
