@@ -61,6 +61,87 @@ Then open:
 
 The default configuration uses mock/local fallbacks. To test controlled live integrations, copy `.env.example` to `.env`, set feature flags such as `ENABLE_LIVE_SEARCH=true`, and provide server-side provider credentials. Never put API keys in frontend code.
 
+## Vercel Deployment
+
+The first public MVP can be deployed on the free Vercel-provided domain, for example:
+
+- `mandys-bike-finder.vercel.app`
+
+### 1. Connect GitHub to Vercel
+
+1. Go to Vercel and sign in.
+2. Choose **Add New Project**.
+3. Import the GitHub repository: `Yangc0910/mandys-bike-finder`.
+4. Allow Vercel access to the repository if prompted.
+5. Keep automatic deployments enabled so pushes to `main` create new deployments.
+
+### 2. Set the Root Directory
+
+If the production Next.js app lives inside `/app`, set Vercel's **Root Directory** to:
+
+```text
+app
+```
+
+Vercel should then detect Next.js automatically. If it does not, use:
+
+```text
+Framework Preset: Next.js
+Build Command: npm run build
+Output Directory: .next
+Install Command: npm install
+```
+
+The current prototype also contains `web/`, but the Vercel production app should use the future `/app` Next.js directory when that implementation is added.
+
+### 3. Configure Environment Variables
+
+In Vercel, open the project and go to **Settings -> Environment Variables**. Configure only the variables needed for the current beta:
+
+```text
+ENABLE_LIVE_SEARCH
+ENABLE_LLM_ANALYSIS
+ENABLE_EMAIL_REPORT
+ENABLE_BACKEND_LOGGING
+DAILY_SEARCH_LIMIT
+DAILY_LLM_LIMIT
+DAILY_EMAIL_LIMIT
+SEARCH_CACHE_TTL_HOURS
+OPENAI_API_KEY
+OPENAI_MODEL
+SEARCH_API_KEY
+SEARCH_API_URL
+EMAIL_API_KEY
+EMAIL_API_URL
+EMAIL_FROM
+DATABASE_URL
+```
+
+Use safe defaults first, such as feature flags set to `false`, then enable one integration at a time.
+
+Important: API keys must be added only in Vercel Environment Variables. Never commit API keys, OAuth secrets, `.env`, `config.yaml`, credentials, database URLs, or tokens to GitHub.
+
+### 4. Confirm Deployment Works
+
+After Vercel deploys:
+
+1. Open the Vercel-provided URL, such as `https://mandys-bike-finder.vercel.app`.
+2. Confirm the home page loads.
+3. Enter a child profile and sample bike listing.
+4. Confirm the app returns a red/yellow/green result.
+5. Confirm fallback messaging appears when live APIs are disabled.
+6. If a feature flag is enabled, confirm the related server-side API works without exposing keys in browser source or client-side network payloads.
+
+### 5. Add a Custom Domain Later
+
+When ready:
+
+1. Open the Vercel project.
+2. Go to **Settings -> Domains**.
+3. Add the custom domain.
+4. Follow Vercel's DNS instructions at the domain registrar.
+5. Wait for DNS and SSL certificate provisioning to complete.
+
 ## Source of Truth
 
 The current complete PRD is:

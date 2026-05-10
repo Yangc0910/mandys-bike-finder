@@ -37,6 +37,12 @@ No real external APIs in Phase 1.
 - Run all external API calls server-side only.
 - Never expose API keys to frontend code.
 - Show clear UI status when live checks are unavailable and fallback estimates are used.
+- Prepare Vercel deployment using the free Vercel-provided domain, such as `mandys-bike-finder.vercel.app`.
+- When the production Next.js app lives in `/app`, configure Vercel's root directory as `app`.
+- Configure feature flags, API limits, and provider credentials only through Vercel Environment Variables.
+- Confirm deployment by opening the Vercel URL, running a sample listing analysis, and verifying fallback behavior when APIs are disabled.
+- Add a custom domain later through Vercel's Domains settings after the MVP flow is validated.
+- Never commit API keys, `.env`, OAuth secrets, database URLs, credentials, or tokens to GitHub.
 
 ## Phase 2: Screenshot Upload and Extraction
 
