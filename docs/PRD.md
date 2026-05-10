@@ -71,7 +71,7 @@ The MVP must include:
 13. Email report.
 14. Backend metadata logging.
 
-Phase 1 implementation should provide these features with local/mock analysis logic and service interfaces where real integrations will later live.
+The first working MVP may include real API integrations, but only in controlled beta mode with feature flags, usage limits, caching, server-side calls, and fallback behavior. The app must remain functional without API keys by using local/mock analysis, local price estimates, simulated email report behavior, and mock metadata logging.
 
 ## E. Child Profile Requirements
 
@@ -146,7 +146,7 @@ From screenshot or pasted text, the app should attempt to identify:
 
 After extraction, the app must show a confirmation/editing step before analysis. The user must be able to correct extracted fields.
 
-Phase 1 may use mock extraction or local text parsing only. Real OCR and external listing fetches are out of scope until later phases.
+Phase 1 may use mock extraction or local text parsing. Phase 1.5 may use a server-side LLM provider to extract structured fields from pasted or OCR text when `ENABLE_LLM_ANALYSIS` is enabled. The app must still show a confirmation/editing step before analysis. Automatic Facebook Marketplace or Craigslist scraping remains out of scope.
 
 ## H. Overall Result
 
@@ -378,7 +378,7 @@ Report should include:
 - Suggested message.
 - Disclaimer.
 
-Phase 1 may show an email report UI placeholder and compose a preview locally. Real email sending is out of scope until Phase 4.
+Phase 1 may show an email report UI placeholder and compose a preview locally. Phase 1.5 may send real email only when `ENABLE_EMAIL_REPORT` is enabled and daily limits allow it. If email is disabled, unavailable, or limited, the app should simulate sending and show a clear fallback message.
 
 ## P. Backend Metadata Logging
 
@@ -405,7 +405,7 @@ Store:
 
 Avoid storing unnecessary child personal details.
 
-Phase 1 should define an interface or placeholder for this behavior but should not implement a real database.
+Phase 1 should define an interface or placeholder for this behavior. Phase 1.5 may log metadata through a server-side storage provider when `ENABLE_BACKEND_LOGGING` is enabled. If backend storage is unavailable, it should use local/mock logging without blocking the report flow.
 
 ## Q. Privacy and Disclaimer
 

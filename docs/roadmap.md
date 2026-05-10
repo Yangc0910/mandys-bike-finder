@@ -27,6 +27,17 @@ Current PRD: `docs/PRD.md` v0.4
 
 No real external APIs in Phase 1.
 
+## Phase 1.5: Controlled Real API Beta
+
+- Use real API integrations where practical for LLM parsing/reasoning, trusted web search price reference, email report delivery, and backend metadata logging.
+- Keep every integration behind a provider abstraction and feature flag.
+- Add cost controls from the beginning, including per-session or per-IP daily limits and global daily limits.
+- Add fallback modes so the app remains functional if APIs fail, feature flags are off, API keys are missing, or limits are reached.
+- Cache repeated trusted-retailer search queries.
+- Run all external API calls server-side only.
+- Never expose API keys to frontend code.
+- Show clear UI status when live checks are unavailable and fallback estimates are used.
+
 ## Phase 2: Screenshot Upload and Extraction
 
 - Add real screenshot extraction/OCR behind an interface.

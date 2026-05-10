@@ -1,15 +1,8 @@
 import { analyzeBike, generateSellerMessage } from "./analysis.js";
-import {
-  LocalCostControlService,
-  LocalPriceReferenceService,
-  MockEmailReportService,
-  MockExtractionService,
-  MockMetadataLogger,
-} from "./services.js";
+import { LocalPriceReferenceService, MockEmailReportService, MockExtractionService, MockMetadataLogger } from "./services.js";
 
 const extractionService = new MockExtractionService();
 const priceReferenceService = new LocalPriceReferenceService();
-const costControlService = new LocalCostControlService();
 const emailReportService = new MockEmailReportService();
 const metadataLogger = new MockMetadataLogger();
 
@@ -34,9 +27,11 @@ document.querySelectorAll("[data-input-mode]").forEach((button) => {
   button.addEventListener("click", () => switchInputMode(button.dataset.inputMode));
 });
 
-pastedText.addEventListener("blur", () => {
+pastedText.addEventListener("blur", async () => {
   if (!pastedText.value.trim()) return;
-  applyExtractedFields(extractionService.extractFromText(pastedText.value));
+  const result = await apiPost("/api/extract", { text: pastedText.value });
+  applyExtractedFields(result?.result?.fields || extractionService.extractFromText(pastedText.value));
+  updateCostStatus(result?.statusMessage || providerStatusText(result));
 });
 
 screenshot.addEventListener("change", () => {
@@ -47,62 +42,75 @@ screenshot.addEventListener("change", () => {
   applyExtractedFields(extractionService.extractFromScreenshot());
 });
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   currentChild = readChild();
   currentListing = readListing();
-  costControlService.useSearchLookup();
-  updateCostStatus();
-  const reference = priceReferenceService.getReference(currentListing);
-  currentAnalysis = analyzeBike(currentChild, currentListing, reference);
+  const result = await apiPost("/api/analyze", { child: currentChild, listing: currentListing });
+  const reference = result?.priceReference || priceReferenceService.getReference(currentListing);
+  currentAnalysis = result?.analysis || analyzeBike(currentChild, currentListing, reference);
   renderAnalysis(currentAnalysis);
-  sellerMessage.value = generateSellerMessage("lowerOffer", "friendly", currentListing, {
+  updateCostStatus(result?.priceReference?.message || providerStatusText(result));
+  const messageResult = await apiPost("/api/message", {
+    goal: "lowerOffer",
+    tone: "friendly",
+    listing: currentListing,
+    options: {
+      targetOffer: document.querySelector("#target-offer").value,
+      pickupTiming: document.querySelector("#pickup-timing").value,
+      reason: document.querySelector("#offer-reason").value,
+    },
+  });
+  sellerMessage.value = messageResult?.message || generateSellerMessage("lowerOffer", "friendly", currentListing, {
     targetOffer: document.querySelector("#target-offer").value,
     pickupTiming: document.querySelector("#pickup-timing").value,
     reason: document.querySelector("#offer-reason").value,
   });
 });
 
-document.querySelector("#generate-message").addEventListener("click", () => {
-  const allowance = costControlService.useMessageGeneration();
-  updateCostStatus();
-  if (!allowance.allowed) {
-    sellerMessage.value = allowance.message;
-    return;
-  }
+document.querySelector("#generate-message").addEventListener("click", async () => {
   const listing = currentListing || readListing();
-  sellerMessage.value = generateSellerMessage(
-    document.querySelector("#message-goal").value,
-    document.querySelector("#message-tone").value,
+  const payload = {
+    goal: document.querySelector("#message-goal").value,
+    tone: document.querySelector("#message-tone").value,
     listing,
-    {
+    options: {
       targetOffer: document.querySelector("#target-offer").value,
       pickupTiming: document.querySelector("#pickup-timing").value,
       reason: document.querySelector("#offer-reason").value,
-    }
-  );
+    },
+  };
+  const result = await apiPost("/api/message", payload);
+  sellerMessage.value = result?.message || generateSellerMessage(payload.goal, payload.tone, listing, payload.options);
+  updateCostStatus(result?.statusMessage || providerStatusText(result));
 });
 
-document.querySelector("#preview-report").addEventListener("click", () => {
+document.querySelector("#preview-report").addEventListener("click", async () => {
   const child = currentChild || readChild();
   const listing = currentListing || readListing();
   const reference = priceReferenceService.getReference(listing);
   const analysis = currentAnalysis || analyzeBike(child, listing, reference);
   const email = document.querySelector("#report-email").value;
-
-  metadataLogger.logReportPreview(child, listing, analysis, email);
-  reportPreview.textContent = emailReportService.buildReport({
+  const payload = {
     child,
     listing,
     analysis,
+    email,
     message: sellerMessage.value,
     recipientName: document.querySelector("#recipient-name").value,
     note: document.querySelector("#report-note").value,
-  });
+  };
+  const result = await apiPost("/api/report", payload);
+  if (result?.report) {
+    reportPreview.textContent = `${result.emailResult?.message || "Report generated."}\n\n${result.report}`;
+  } else {
+    metadataLogger.logReportPreview(child, listing, analysis, email);
+    reportPreview.textContent = emailReportService.buildReport(payload);
+  }
+  updateCostStatus(result?.emailResult?.message || providerStatusText(result));
 });
 
-form.dispatchEvent(new Event("submit"));
-updateCostStatus();
+initialize();
 
 function switchInputMode(mode) {
   document.querySelectorAll("[data-input-mode]").forEach((button) => {
@@ -184,6 +192,42 @@ function setValue(selector, value) {
   document.querySelector(selector).value = value;
 }
 
-function updateCostStatus() {
-  costStatus.textContent = costControlService.statusText();
+function updateCostStatus(message = "") {
+  costStatus.textContent = message || "Local fallback ready";
+}
+
+async function initialize() {
+  const status = await apiGet("/api/status");
+  updateCostStatus(providerStatusText(status) || "Local fallback ready");
+  form.dispatchEvent(new Event("submit"));
+}
+
+async function apiGet(path) {
+  try {
+    const response = await fetch(path);
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function apiPost(path, payload) {
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+function providerStatusText(result) {
+  const status = result?.apiStatus || result?.providers;
+  if (!status) return "";
+  return `Server beta: LLM ${status.llm}, search ${status.search}, email ${status.email}, logging ${status.logging}`;
 }

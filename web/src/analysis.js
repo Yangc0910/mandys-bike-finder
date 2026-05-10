@@ -231,7 +231,7 @@ function buildSellerQuestions(dimensions, listing) {
   if (dimensions.condition.meter !== "green") {
     questions.push("Do the brakes work well, do the tires hold air, and is the chain in good shape?");
   }
-  if (!listing.description.toLowerCase().includes("rust")) {
+  if (!(listing.description || "").toLowerCase().includes("rust")) {
     questions.push("Is there any rust, damage, or repair needed?");
   }
   questions.push("Would it be possible for my child to do a quick test ride at pickup?");

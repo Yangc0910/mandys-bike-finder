@@ -44,6 +44,12 @@ Decision: Cost controls are part of V1 requirements.
 
 Reason: Search, OCR, LLM, email, and backend APIs can create runaway cost if not bounded.
 
+## Controlled Real API Beta Before Full Production
+
+Decision: Test real-world product flow earlier by integrating real APIs in a controlled beta mode rather than relying only on mock analysis.
+
+Reason: Controlled real integrations help validate the true user value of the product: checking whether a used kids bike is the right fit, right style, and a good enough deal based on real listing data and trusted price references. Every external integration must be protected by feature flags, server-side API calls, usage limits, caching where relevant, graceful fallback modes, and safe defaults so the app remains useful without API keys.
+
 ## Email Report Added for User Value and Retention
 
 Decision: Add an email report flow.

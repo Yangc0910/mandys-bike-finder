@@ -1,0 +1,10 @@
+{
+  "name": "mandys-bike-finder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node web/server/server.js",
+    "check:web": "node --check web/src/app.js && node --check web/src/analysis.js && node --check web/src/services.js && node --check web/server/server.js"
+  }
+}

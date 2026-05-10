@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added Phase 1.5 controlled real API beta plan.
+- Added server-side provider architecture for LLM, trusted retailer search, email report, and backend logging.
+- Added feature-flagged fallbacks so the app remains functional without API keys.
+- Added in-memory daily limits and search caching.
+- Added testing notes for no-key, live-key, limit, fallback, and sample listing scenarios.
+
 ## v0.4
 
 - Added action, reporting, and retention requirements.

@@ -24,7 +24,7 @@ Parents browsing Facebook Marketplace, Craigslist, OfferUp, local parent groups,
 
 The current product direction is a Web MVP, not iOS first.
 
-Phase 1 should include:
+Phase 1 includes:
 
 - Child profile form.
 - Listing input by link, screenshot, or manual fallback.
@@ -36,7 +36,30 @@ Phase 1 should include:
 - Email Report UI placeholder and local report preview.
 - Service interfaces for future search, OCR, email, and backend metadata logging.
 
-Phase 1 should not include real external APIs, real OCR, real email sending, real database, user accounts, payments, or iOS app work.
+Phase 1.5 adds a controlled real API beta architecture. Real integrations can be enabled only through server-side feature flags and environment variables. The app must still work without API keys through mock/local fallbacks.
+
+Phase 1.5 supports provider interfaces for:
+
+- LLM parsing/reasoning/message/report generation.
+- Trusted-retailer search price reference.
+- Email report sending.
+- Backend metadata/API usage logging.
+
+The MVP still excludes automatic Facebook/Craigslist scraping, user accounts, payments, and iOS app work.
+
+## Local Web App
+
+Start the web MVP:
+
+```powershell
+npm start
+```
+
+Then open:
+
+- `http://127.0.0.1:5173/`
+
+The default configuration uses mock/local fallbacks. To test controlled live integrations, copy `.env.example` to `.env`, set feature flags such as `ENABLE_LIVE_SEARCH=true`, and provide server-side provider credentials. Never put API keys in frontend code.
 
 ## Source of Truth
 
@@ -81,7 +104,8 @@ The changelog is:
 |-- web/
 |   |-- index.html                     Phase 1 web MVP entry point
 |   |-- styles.css                     UI styling
-|   `-- src/                           Local/mock front-end logic and interfaces
+|   |-- src/                           Front-end UI logic and local fallback analysis
+|   `-- server/                        Server-side API routes, providers, limits, cache
 |-- src/
 |   `-- listing_monitor/               Legacy Python listing monitor prototype
 |-- tests/                             Existing Python prototype tests
@@ -94,11 +118,12 @@ The changelog is:
 
 1. Phase 0: documentation and repo setup.
 2. Phase 1: front-end MVP with mock/local rules.
-3. Phase 2: screenshot upload and extraction.
-4. Phase 3: live trusted-retailer price reference search.
-5. Phase 4: email report backend.
-6. Phase 5: polish, shareable reports, and analytics.
-7. Future: PWA/iOS, affiliate, saved listings, user accounts.
+3. Phase 1.5: controlled real API beta with feature flags, limits, caching, and fallbacks.
+4. Phase 2: screenshot upload and extraction.
+5. Phase 3: live trusted-retailer price reference search hardening.
+6. Phase 4: email report backend hardening.
+7. Phase 5: polish, shareable reports, and analytics.
+8. Future: PWA/iOS, affiliate, saved listings, user accounts.
 
 See [docs/roadmap.md](docs/roadmap.md) for details.
 
