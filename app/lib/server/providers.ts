@@ -40,11 +40,12 @@ export async function openAiExtractListingFields(text: string, apiKey: string, m
     {
       role: "system",
       content:
-        "Extract used kids bike listing fields. Return strict JSON with title, askingPrice, brand, model, wheelSize, bikeType, colorStyle, condition, description, platform, listingLink, location. Use empty strings when unknown.",
+        "Extract used kids bike listing fields. Return strict JSON with title, askingPrice, brand, model, wheelSize, bikeType, colorStyle, condition, description, platform, listingLink, location. askingPrice should be numeric when visible (for example 35 for $35, $35.00, 35 dollars, or Price: $35). Use empty strings when unknown.",
     },
     { role: "user", content: text },
   ]);
-  return { provider: "openai", fields: JSON.parse(content) as Partial<Listing> };
+  const parsed = parseStructuredJson(content);
+  return { provider: "openai", fields: normalizeExtractedListingFields(parsed, text) };
 }
 
 export async function openAiExtractListingFieldsFromImage(
@@ -66,7 +67,7 @@ export async function openAiExtractListingFieldsFromImage(
         {
           role: "system",
           content:
-            "Extract only visible marketplace listing details for a used kids bike screenshot. Return strict JSON with keys: title, askingPrice, brand, model, wheelSize, bikeType, colorStyle, condition, description, platform, confidence, missingFields. Do not invent missing values. Use empty strings for unknown string fields. confidence must be one of high, medium, low. missingFields must list unknown or unclear fields.",
+            "Extract only visible marketplace listing details for a used kids bike screenshot. Return strict JSON with keys: title, askingPrice, brand, model, wheelSize, bikeType, colorStyle, condition, description, platform, confidence, missingFields. Explicitly extract visible asking price and support common formats like $35, $35.00, 35 dollars, and Price: $35; return askingPrice as a number-like string (for example 35). Do not invent missing values. Use empty strings for unknown string fields. confidence must be one of high, medium, low. missingFields must list unknown or unclear fields.",
         },
         {
           role: "user",
@@ -82,20 +83,14 @@ export async function openAiExtractListingFieldsFromImage(
   const json = await response.json();
   const content = String(json.choices?.[0]?.message?.content || "").trim();
   const parsed = parseStructuredJson(content);
+  const normalized = normalizeExtractedListingFields(parsed, [
+    String(parsed.title || ""),
+    String(parsed.description || ""),
+    String(parsed.condition || ""),
+  ].join("\n"));
   return {
     provider: "openai",
-    fields: {
-      title: parsed.title || "",
-      askingPrice: parsed.askingPrice || "",
-      brand: parsed.brand || "",
-      model: parsed.model || "",
-      wheelSize: parsed.wheelSize || "",
-      bikeType: parsed.bikeType || "",
-      colorStyle: parsed.colorStyle || "",
-      condition: parsed.condition || "",
-      description: parsed.description || "",
-      platform: parsed.platform || "",
-    } as Partial<Listing>,
+    fields: normalized,
     confidence: normalizeConfidence(parsed.confidence),
     missingFields: Array.isArray(parsed.missingFields)
       ? parsed.missingFields.map((value) => String(value))
@@ -245,6 +240,63 @@ function parseStructuredJson(content: string): Record<string, unknown> {
     }
     throw new Error("Invalid JSON returned from LLM.");
   }
+}
+
+function normalizeExtractedListingFields(parsed: Record<string, unknown>, fallbackText = ""): Partial<Listing> {
+  const rawAskingPrice =
+    parsed.askingPrice ??
+    parsed.price ??
+    parsed.listingPrice ??
+    parsed.asking_price ??
+    "";
+
+  return {
+    title: stringField(parsed.title),
+    askingPrice: normalizePriceValue(rawAskingPrice, fallbackText),
+    brand: stringField(parsed.brand),
+    model: stringField(parsed.model),
+    wheelSize: stringField(parsed.wheelSize),
+    bikeType: stringField(parsed.bikeType),
+    colorStyle: stringField(parsed.colorStyle),
+    condition: stringField(parsed.condition),
+    description: stringField(parsed.description),
+    platform: stringField(parsed.platform),
+    listingLink: stringField(parsed.listingLink),
+    location: stringField(parsed.location),
+  };
+}
+
+function normalizePriceValue(rawValue: unknown, fallbackText: string) {
+  const direct = extractPriceNumber(String(rawValue || ""));
+  if (direct) return direct;
+  return extractPriceNumber(fallbackText);
+}
+
+function extractPriceNumber(text: string) {
+  if (!text) return "";
+  const normalized = text.trim();
+
+  const currencyMatch = normalized.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+  if (currencyMatch?.[1]) return formatPriceNumber(currencyMatch[1]);
+
+  const dollarsMatch = normalized.match(/\b(\d+(?:\.\d{1,2})?)\s*dollars?\b/i);
+  if (dollarsMatch?.[1]) return formatPriceNumber(dollarsMatch[1]);
+
+  const labelledMatch = normalized.match(/\bprice\s*[:=-]?\s*\$?\s*(\d+(?:\.\d{1,2})?)\b/i);
+  if (labelledMatch?.[1]) return formatPriceNumber(labelledMatch[1]);
+
+  if (/^\d+(?:\.\d{1,2})?$/.test(normalized)) return formatPriceNumber(normalized);
+  return "";
+}
+
+function formatPriceNumber(value: string) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+}
+
+function stringField(value: unknown) {
+  return String(value || "").trim();
 }
 
 function normalizeConfidence(value: unknown): "high" | "medium" | "low" {

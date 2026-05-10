@@ -85,6 +85,17 @@ npm run dev
 16. Listing input tab order:
    - Confirm tab order is `Screenshot`, `Link`, `Manual`.
    - Confirm `Screenshot` is selected by default on initial page load.
+17. Screenshot AI extraction price parsing:
+   - Upload a screenshot containing:
+     - Title: `Fuji Blaster Girls 21 Speed Mountain Bike`
+     - Visible price: `$35`
+   - Run `Extract listing details from screenshot`.
+   - Expected extraction:
+     - Asking price = `35`
+     - Brand = `Fuji`
+     - Model = `Blaster`
+     - Bike type = `Mountain Bike`
+   - Confirm asking price input is populated and remains editable.
 
 Expected behavior: the app remains fully functional without API keys.
 
