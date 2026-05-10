@@ -32,6 +32,15 @@ The `/app` implementation uses:
   - `/api/message`
   - `/api/report`
 
+All listed API routes are migrated under `/app/app/api`.
+
+## Build Verification Status
+
+- `npm` is not available in the current Codex environment.
+- `npm install`, `npm run dev`, and `npm run build` could not be verified here.
+- Build verification must be completed later in an environment with Node.js/npm, such as a local machine, GitHub Actions, or Vercel.
+- GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
+
 ## Not Implemented Yet
 
 - Real OCR.
@@ -43,6 +52,6 @@ The `/app` implementation uses:
 
 ## Legacy Code
 
-The old `web/` folder remains as a legacy static prototype. It should not be used as the production Vercel root.
+The old `web/` folder remains as a legacy static prototype only. It should not be used as the production Vercel root.
 
 The older Python `src/listing_monitor/` package remains historical/experimental and is not the current product direction.

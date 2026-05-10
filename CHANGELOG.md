@@ -11,6 +11,7 @@
 - Added in-memory daily limits and search caching.
 - Added testing notes for no-key, live-key, limit, fallback, and sample listing scenarios.
 - Expanded the PRD source of truth with the full Phase 1.5 environment-variable, model, API-key safety, server-side-only, no-initial-LLM-call, and durable limit/cache requirements.
+- Added GitHub Actions workflow `.github/workflows/app-build.yml` to verify the `/app` Next.js build (and lint when configured) on push and pull request.
 
 ## v0.4
 

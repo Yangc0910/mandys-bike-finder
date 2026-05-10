@@ -63,15 +63,34 @@ Then open:
 
 - `http://localhost:3000/`
 
+Current verification note:
+
+- `npm` is not available in the current Codex environment.
+- `npm install`, `npm run dev`, and `npm run build` could not be verified here.
+- Build verification must be done later in an environment with Node.js/npm, such as a local machine, GitHub Actions, or Vercel.
+- GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
+
 The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search, email, and backend logging currently remain provider-interface placeholders with fallback behavior. Never put API keys in frontend code.
 
-The older `web/` folder is retained as a legacy prototype until the Next.js app is fully verified in deployment. New production work should happen in `/app`.
+The older `web/` folder is legacy prototype only. New production work should happen in `/app`.
 
 ## Vercel Deployment
 
 The first public MVP can be deployed on the free Vercel-provided domain, for example:
 
 - `mandys-bike-finder.vercel.app`
+
+Custom domain status:
+
+- `mandysbikefinder.com` has been registered.
+- Do not configure custom domain deployment yet.
+- Deployment should happen later in this order:
+1. Finish Next.js migration under `/app`.
+2. Verify local build.
+3. Deploy first to a Vercel free domain.
+4. Test the MVP flow.
+5. Then connect `mandysbikefinder.com`.
+- API cost-control safeguards must be verified before any public deployment.
 
 ### 1. Connect GitHub to Vercel
 

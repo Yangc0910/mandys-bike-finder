@@ -1,0 +1,38 @@
+name: App Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Check for lint script
+        id: has_lint
+        run: |
+          node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); process.stdout.write(pkg.scripts && pkg.scripts.lint ? 'true' : 'false');" > has_lint.txt
+          echo "value=$(cat has_lint.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Lint
+        if: steps.has_lint.outputs.value == 'true'
+        run: npm run lint

@@ -43,7 +43,13 @@ No real external APIs in Phase 1.
 - Configure Vercel's root directory as `app`.
 - Configure feature flags, API limits, and provider credentials only through Vercel Environment Variables.
 - Confirm deployment by opening the Vercel URL, running a sample listing analysis, and verifying fallback behavior when APIs are disabled.
-- Add a custom domain later through Vercel's Domains settings after the MVP flow is validated.
+- `mandysbikefinder.com` is registered, but custom-domain deployment should happen later in this order:
+1. Finish Next.js migration under `/app`.
+2. Verify local build.
+3. Deploy first to a Vercel free domain.
+4. Test the MVP flow.
+5. Then connect `mandysbikefinder.com`.
+- Verify API cost-control safeguards before any public deployment.
 - Never commit API keys, `.env`, OAuth secrets, database URLs, credentials, or tokens to GitHub.
 - Keep the old `web/` folder as a legacy prototype until the `/app` deployment path is fully verified.
 

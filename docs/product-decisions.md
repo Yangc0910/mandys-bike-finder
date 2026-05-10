@@ -56,6 +56,19 @@ Decision: The production deployment path for Mandy's Bike Finder is a Vercel-hos
 
 Reason: Vercel and Next.js provide a clean path for a web MVP with server-side API routes, environment-variable management, and future deployment to a free Vercel-provided domain. The older `web/` prototype remains in the repository as a legacy prototype until the `/app` implementation is verified.
 
+## Custom Domain Registration and Deployment Sequence
+
+Decision: `mandysbikefinder.com` has been registered, but custom-domain deployment is intentionally deferred.
+
+Reason: Deployment should happen in this order:
+1. Finish Next.js migration under `/app`.
+2. Verify local build.
+3. Deploy first to a Vercel free domain.
+4. Test the full MVP flow.
+5. Then connect `mandysbikefinder.com`.
+
+Additional guardrail: API cost-control safeguards must be verified before any public deployment.
+
 ## Email Report Added for User Value and Retention
 
 Decision: Add an email report flow.
