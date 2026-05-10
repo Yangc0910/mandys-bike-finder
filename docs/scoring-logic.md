@@ -1,200 +1,93 @@
 # Scoring Logic
 
-Current PRD: `docs/PRD.md` v0.4
+Current implementation reference: `app/lib/analysis.ts`
 
-## Principle
+## User-Facing Rule
 
-The app may use internal scores, but the user-facing product must show qualitative red/yellow/green guidance with short reasoning. Numeric scores should not be shown to users.
+- The UI shows only qualitative meters: `green`, `yellow`, `red`.
+- No numeric score is shown.
 
-## Internal Dimensions
+## Dimensions (Implemented)
 
-Internal analysis can calculate:
+1. Fit
+2. Price
+3. Condition
+4. Brand
+5. Kid Appeal
+6. Risk
 
-- `fit_score`.
-- `price_score`.
-- `condition_score`.
-- `brand_score`.
-- `color_appeal_score`.
-- `risk_score`.
+Overall result:
 
-Each dimension maps to:
+- Any red in dimensions => overall red (`Probably skip`)
+- Else if yellow count >= 3 => overall yellow (`Ask more before deciding`)
+- Else => overall green (`Worth contacting`)
 
-- Green: strong or low concern.
-- Yellow: possible but needs confirmation.
-- Red: likely mismatch or high concern.
+## Fit (Implemented)
 
-## Red / Yellow / Green Mapping
+- Uses child height + riding experience via `recommendWheelSize`.
+- Compares listing wheel size against recommended size using normalized numeric parsing.
+- Supports inputs like `24`, `24 in.`, `24 inch`, `24/26 inch`, `24-26 inch`.
 
-Suggested internal mapping:
+Outcomes:
 
-- Green: dimension is favorable or risk is low.
-- Yellow: dimension is uncertain, mixed, or needs seller confirmation.
-- Red: dimension is unfavorable or missing in a way that materially affects the decision.
+- Green: listing size matches recommended size/range.
+- Yellow: size is near recommendation and may work with test ride.
+- Red: likely mismatch.
+- Yellow fallback: wheel size not detected.
 
-Overall meter should be conservative:
+## Price (Implemented)
 
-- Green if most important dimensions are green and no major red flags exist.
-- Yellow if the bike may work but fit, price, condition, or risk needs confirmation.
-- Red if fit is poor, repair risk is high, price is unreasonable, or key information is missing.
+- Uses `listing.askingPrice` and local/reference range.
+- If asking price missing => yellow (`Price unclear`).
+- Ratio-based thresholds against reference high value:
+  - <= 0.45 => green (`Looks reasonable`)
+  - <= 0.70 => yellow (`Fair if condition checks out`)
+  - > 0.70 => red (`Price looks high`)
 
-## Fit Logic
+Note:
 
-Use child height and riding experience to recommend wheel size.
+- Live retailer search provider is not implemented yet; default is local fallback range.
 
-| Child height | Beginner | Comfortable | Confident |
-| --- | --- | --- | --- |
-| 115-130 cm | 20 inch | 20 inch | 20/24 inch |
-| 130-145 cm | 24 inch | 24 inch | 24 inch |
-| 145-155 cm | 24 inch | 24/26 inch | 26 inch |
-| 155+ cm | 26 inch | 26 inch | 26/27.5 inch |
+## Condition (Implemented)
 
-Fit assessment:
+- Text signals are parsed from title/condition/description.
+- Red if repair-risk phrases appear (e.g. broken, rust, needs repair).
+- Green for positive condition phrases (e.g. like new, excellent).
+- Yellow when condition needs confirmation.
 
-- Green when listing wheel size matches recommended size or range.
-- Yellow when size may work but depends on experience or test ride.
-- Red when wheel size is clearly too small or too large.
+## Brand (Implemented)
 
-Fit matching should use normalized numeric wheel-size parsing, not raw string comparison.
+- Brand tiers are hardcoded:
+  - Entry: Huffy, Dynacraft, Hyper, Kent
+  - Mid: Schwinn, Mongoose, Raleigh, Diamondback
+  - High: Woom, Trek, Specialized, Giant, Cannondale, Guardian
 
-Examples:
+Outcomes:
 
-- `24`, `24 in`, `24 in.`, `24 inch`, `24 inches`, `24-inch` should normalize to `24 inch`.
-- `24` should match recommendation `24/26 inch`.
-- `26` should match recommendation `24/26 inch`.
-- `20` should not match recommendation `24/26 inch`.
-- Range recommendations such as `24-26 inch` should match listing sizes within range.
+- Green: high-tier brand
+- Yellow: mid-tier, entry-tier, unknown, or unlisted brand
 
-Edge case:
+## Kid Appeal (Implemented)
 
-For a child around 145 cm, 24 inch is likely safer and easier now. 26 inch may give more growth room if the child is confident and can test ride safely.
+- Uses child color preferences + style preference vs listing text.
+- Green for clear preference/style match or no-preference setup.
+- Yellow for unclear style match / check-with-child cases.
 
-## Price Logic
+## Risk (Implemented)
 
-Use trusted retailer reference ranges when live search is available. Phase 1 uses local estimated ranges.
+- Penalizes missing key fields:
+  - wheel size
+  - condition/description
+  - brand
+  - asking price
+- Red when repair-risk signals appear.
+- Yellow when 2+ key fields are missing.
+- Yellow when price reference confidence is low.
+- Green when key details exist and no repair-risk signals are detected.
 
-Trusted sources:
+## Not Implemented (Planned/TODO)
 
-- Walmart.
-- Target.
-- Amazon.
-- Dick's Sporting Goods.
-- REI.
-- Costco.
-- Sam's Club.
-- Official bike brand websites.
-
-Avoid marketplace and auction sources for new-price references.
-
-Price assessment:
-
-- Green when used price appears meaningfully below reasonable new range and condition is good.
-- Yellow when price is fair but condition or brand needs confirmation.
-- Red when price seems too close to new price, too high for entry-level brand, or condition risk is high.
-
-## Condition Logic
-
-Condition signals:
-
-- Green: new, like new, excellent, lightly used, good brakes, good tires, recently serviced.
-- Yellow: used, good condition, some wear, condition unclear.
-- Red: needs repair, rust, flat tires, broken brakes, missing chain, parts only, unclear safety condition.
-
-Always call out missing safety information:
-
-- Brakes.
-- Tires.
-- Chain.
-- Rust.
-- Gears.
-
-## Brand Logic
-
-Brand tiers:
-
-- Entry-level: Huffy, Dynacraft, Hyper, Kent.
-- Mid-level: Schwinn, Mongoose, Raleigh, Diamondback.
-- Higher-quality: Woom, Trek, Specialized, Giant, Cannondale, Guardian.
-
-Brand assessment:
-
-- Green for higher-quality brands at reasonable used prices.
-- Yellow for mid-level or unknown brands.
-- Red only when brand and price/condition combine into poor value.
-
-## Color / Kid Appeal Logic
-
-Compare listing color/style to the child's preference.
-
-Possible reasoning:
-
-- Likely appealing.
-- Check with child.
-- May feel too babyish.
-- Neutral and may age well.
-
-Color should not override safety or fit, but it can change whether the bike is worth contacting the seller about.
-
-## Risk Logic
-
-Risk increases when:
-
-- Wheel size is missing.
-- Photos or screenshot are unclear.
-- Condition details are missing.
-- Safety parts are not mentioned.
-- Seller mentions repair needs.
-- Price reference is unavailable.
-- Distance or pickup burden is high.
-
-Risk assessment:
-
-- Green when key information is present and no repair signals appear.
-- Yellow when details need seller confirmation.
-- Red when missing details or repair signals make the listing risky.
-
-## Example Cases
-
-### Example 1: Strong Candidate
-
-Child: 132 cm, comfortable rider.  
-Listing: 24 inch Schwinn kids bike, $70, good condition, blue, working brakes.
-
-Likely result:
-
-- Overall: Green.
-- Fit: Green.
-- Price: Green or yellow depending on reference range.
-- Condition: Green.
-- Brand: Yellow/mid-level.
-- Color: Green if blue/green preferred.
-- Risk: Green or yellow.
-
-### Example 2: Ask More Before Deciding
-
-Child: 145 cm, confident rider.  
-Listing: 26 inch Giant, $120, no wheel size in title but photo suggests larger bike, condition unclear.
-
-Likely result:
-
-- Overall: Yellow.
-- Fit: Yellow with growth-room nuance.
-- Price: Yellow.
-- Condition: Yellow.
-- Brand: Green.
-- Color: Check with child.
-- Risk: Yellow due to missing details.
-
-### Example 3: Probably Skip
-
-Child: 120 cm, beginner.  
-Listing: 26 inch Huffy, $150, needs brake work.
-
-Likely result:
-
-- Overall: Red.
-- Fit: Red.
-- Price: Red or yellow.
-- Condition: Red.
-- Brand: Yellow or red depending on price.
-- Color: Secondary.
-- Risk: Red.
+- Distance/location-based scoring.
+- Listing recency / just-listed weighting.
+- Stale listing filtering.
+- Marketplace-wide ranking engine.

@@ -20,7 +20,9 @@ The `/app` implementation uses:
 - Landing/intro content.
 - Child profile form.
 - Child-profile-only bike recommendation panel (local rule-based).
-- Listing input by link, screenshot placeholder, or manual fields.
+- Listing input by screenshot, link, and manual fields.
+- Screenshot preview + explicit user-triggered AI extraction button.
+- Link-mode action button behavior by platform (Craigslist direct extraction, Facebook/other link guidance with pasted-text fallback).
 - Listing field confirmation.
 - Red/yellow/green result meter.
 - Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
@@ -94,7 +96,7 @@ Child recommendation current rules:
 - Real email provider.
 - Real database or Supabase adapter.
 - Durable deployed usage limits/cache.
-- Public Vercel deployment verification.
+- Automated end-to-end browser tests for production flows.
 
 ## Legacy Code
 

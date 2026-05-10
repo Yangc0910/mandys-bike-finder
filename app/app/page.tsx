@@ -644,9 +644,6 @@ export default function Home() {
                 >
                   {isExtractingScreenshot ? "Extracting..." : "Extract listing details from screenshot"}
                 </button>
-                <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
-                  Screenshot uploaded. You can extract listing details with AI or enter them manually.
-                </p>
               </div>
             )}
             <div className="mb-4 flex items-center gap-2">

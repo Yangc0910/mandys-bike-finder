@@ -2,114 +2,64 @@
 
 Current PRD: `docs/PRD.md` v0.4
 
-## Flow 1: Child Profile Only
+## Flow 1: Child Profile Recommendation
 
-Goal: Let a parent understand likely bike size before analyzing a listing.
+1. User enters child profile in Step 1.
+2. Required for this feature: height, age, riding experience.
+3. Optional: weight, style preference, color preference.
+4. User clicks `Recommend bike type and size`.
+5. App returns local rule-based recommendation with:
+   - bike category
+   - wheel size
+   - growth option
+   - explanation and checklists
+   - category illustration (if mapped image exists)
 
-1. User opens Mandy's Bike Finder.
-2. User enters child height in centimeters.
-3. User optionally enters age and weight.
-4. User selects riding experience: beginner, comfortable, confident, or advanced.
-5. User selects style/gender preference.
-6. User optionally selects color/style preference.
-7. App shows a general bike size recommendation with nuance.
-8. App invites user to paste a listing link, upload a screenshot, or enter listing details manually.
+## Flow 2: Listing Input (Screenshot First)
 
-Expected output:
+1. Step 2 defaults to `Screenshot` tab.
+2. User uploads screenshot and sees preview.
+3. Source label switches to screenshot mode.
+4. AI extraction runs only if user clicks `Extract listing details from screenshot`.
+5. Extracted fields populate Step 3 confirmation fields.
+6. User can edit all extracted fields.
 
-- Recommended wheel size range.
-- Growth-room note.
-- Reminder to confirm fit and test ride before purchase.
+Fallback behavior:
 
-## Flow 2: Analyze Listing From Link
+- If LLM is disabled, key missing, request fails, or limit reached, user keeps manual edit path.
 
-Goal: Analyze a bike listing starting from the parent workflow of copying a marketplace URL.
+## Flow 3: Listing Input (Link Mode)
 
-1. User enters child profile.
-2. User pastes a Facebook Marketplace, Craigslist, OfferUp, parent group, or other listing link.
-3. App attempts lightweight link classification and field prefill where possible.
-4. If the app cannot read the listing, it explains that some marketplaces block automated access.
-5. App asks the user to upload a screenshot or manually enter details.
-6. App shows a listing field confirmation step.
-7. User edits title, price, brand, wheel size, color, condition, description, platform, location, and link as needed.
-8. User submits for analysis.
-9. App shows overall red/yellow/green result and dimension-level assessments.
+1. User switches to `Link` tab and pastes URL.
+2. Action button remains visible when URL exists.
+3. Platform behavior:
+   - Craigslist URL: `Analyze listing link` triggers controlled server-side extraction.
+   - Facebook Marketplace URL: URL is stored, user is guided to paste listing text or upload screenshot.
+   - Other URL: URL is stored as reference; user is guided to paste text or enter details manually.
+4. If pasted listing text is present, link-mode action runs text extraction and preserves URL as source reference.
 
-Expected output:
+## Flow 4: Listing Input (Manual Mode)
 
-- Overall meter.
-- Fit, price, condition, brand, color/kid appeal, and risk assessments.
-- Seller questions.
-- Suggested seller message.
+1. User switches to `Manual` tab.
+2. User edits Step 3 fields directly.
+3. Source label reflects manual mode/edits.
+4. No external API required for this path.
 
-## Flow 3: Analyze Listing From Screenshot
+## Flow 5: Confirm Listing Fields + Analyze
 
-Goal: Analyze a listing when the link cannot be accessed or the user has a screenshot.
+1. Step 3 shows editable listing fields.
+2. User confirms title, asking price, brand/model, wheel size, bike type, color/style, condition/description, platform, and link metadata.
+3. `Analyze bike` remains gated until minimum required inputs are present.
+4. After analyze, app shows:
+   - recommended bike size card
+   - overall red/yellow/green result
+   - dimension cards (Fit, Price, Condition, Brand, Kid Appeal, Risk)
+   - seller questions
+   - negotiation boost
+   - email report panel
 
-1. User enters child profile.
-2. User uploads a listing screenshot.
-3. Phase 1 shows a local placeholder preview and asks the user to confirm fields manually.
-4. Later phases attempt OCR/listing extraction from the screenshot.
-5. App shows extracted fields in editable form.
-6. User corrects missing or incorrect fields.
-7. User submits for analysis.
-8. App shows result and suggested next actions.
+## Flow 6: Negotiation Boost + Email Report
 
-Expected output:
-
-- Extracted or manually confirmed listing fields.
-- Same analysis output as link flow.
-
-## Flow 4: Manual Fallback
-
-Goal: Keep the product useful even when link reading and screenshot extraction are unavailable.
-
-1. User enters child profile.
-2. User selects manual entry.
-3. User fills listing title, asking price, brand, wheel size, bike type, color/style, condition, description, platform, link, and optional location.
-4. App validates minimum required fields.
-5. User submits for analysis.
-6. App shows result with lower confidence for missing fields.
-
-Expected output:
-
-- Result works without any external API.
-- Missing data becomes part of the risk assessment.
-
-## Flow 5: Negotiation Boost
-
-Goal: Help the parent write a concise seller message.
-
-1. User reviews the analysis result.
-2. User clicks "Need a negotiation boost?"
-3. User selects message goal.
-4. User selects tone: friendly, concise, very polite, or firm but respectful.
-5. If making a lower offer, user enters target offer, pickup timing, and optional reason.
-6. App generates a short natural message.
-7. User can edit or copy the message.
-
-Expected output:
-
-- A short seller message.
-- No automatic seller contact.
-
-## Flow 6: Email Report
-
-Goal: Let a user keep or share the recommendation.
-
-1. User reviews the analysis result.
-2. User clicks "Email this report."
-3. User enters email address.
-4. User optionally enters recipient name and note.
-5. Phase 1 shows a report preview and records mock metadata locally in memory only.
-6. Later phases send the report through a backend email service.
-
-Expected report content:
-
-- Listing summary and link.
-- Asking price.
-- Overall meter.
-- Dimension assessments.
-- Seller questions.
-- Suggested message.
-- Disclaimer.
+1. User chooses message goal/tone and generates seller message.
+2. User can preview/email report.
+3. In fallback mode, email is simulated and report is still generated for review.

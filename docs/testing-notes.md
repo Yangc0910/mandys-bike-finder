@@ -40,9 +40,11 @@ npm run dev
    - Source: pasted text AI extraction.
    - Source: screenshot.
    - Source: manual entry.
-   - Source: link only.
+   - Source: link.
    - Source: link + manual edits.
+   - Source: link + pasted text AI extraction.
    - Source: Craigslist link extraction.
+   - Source: Craigslist link extraction + manual edits.
    - After screenshot upload and manual edits, source can show `screenshot + manual edits`.
 12. In link mode, platform-specific helper copy:
    - Facebook Marketplace URL:
@@ -58,11 +60,11 @@ npm run dev
    - Confirm `platform` is recognized as `Craigslist` from URL only.
    - Confirm title/price/brand/wheel size/description remain empty unless user provides pasted text, screenshot extraction, or manual entry.
    - Confirm Analyze remains disabled for link-only input.
-   - Confirm source label shows `link only`; after manual field edits, source changes to `link + manual edits`.
+   - Confirm source label shows `link`; after manual field edits, source changes to `link + manual edits`.
 14. Controlled Craigslist link extraction:
    - Paste the test URL:
      - `https://boston.craigslist.org/bmw/bik/d/wayland-trek-mt220-girls-mountain-bike/7919424984.html`
-   - Click `Extract details from Craigslist link`.
+   - Click `Analyze listing link`.
    - Confirm extracted fields populate when available (title/price/description/location/platform/listingLink).
    - Confirm source label becomes `Craigslist link extraction`.
    - Edit any field and confirm source becomes `Craigslist link extraction + manual edits`.
@@ -73,7 +75,6 @@ npm run dev
    - Source switches to `screenshot` immediately.
    - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.
    - The file name is shown as secondary metadata under the preview.
-   - After screenshot upload, `Load sample listing` is hidden to avoid conflicting source actions.
    - In screenshot mode, the UI shows:
      - "Screenshot uploaded. You can extract listing details with AI or enter them manually."
    - Uploading a screenshot does not trigger automatic OpenAI extraction.

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       fallback: true,
-      statusMessage: "We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.",
+      statusMessage: "We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.",
     });
   }
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       fallback: true,
-      statusMessage: "We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.",
+      statusMessage: "We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.",
     });
   }
 }

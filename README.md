@@ -72,6 +72,21 @@ Implemented now:
     - Facebook Marketplace: guide user to paste listing text or upload screenshot; URL is preserved as listing reference
     - Other links: preserve URL as reference and use pasted text/manual details for analysis
 
+Current listing fields used by the app:
+
+- listingLink
+- title
+- askingPrice
+- brand
+- model
+- wheelSize
+- bikeType
+- colorStyle
+- platform
+- location
+- condition
+- description
+
 Not implemented now:
 
 - Automatic Facebook Marketplace scraping.
@@ -81,6 +96,21 @@ Not implemented now:
 - Automated feed-level ranking rules such as "just listed" filtering, stale listing filtering, distance ranking, or location-based ranking.
 
 The MVP still excludes automatic Facebook/Craigslist scraping, user accounts, payments, and iOS app work.
+
+## UI Assets
+
+Current image assets are under `app/public/images` and referenced with `/images/<filename>`:
+
+- Hero: `mandy-bike-hero.jpg`
+- Bike category illustrations:
+  - `Balance bike.png`
+  - `Training-wheel bike.png`
+  - `Kids pedal bike.png`
+  - `Kids mountain bike.png`
+  - `Cruiser comfort bike.png`
+  - `Youth hybrid bike.png`
+
+Recommendation panel illustration mapping is keyword-based (`balance`, `training`, `pedal`, `mountain`, `cruiser`/`comfort`, `hybrid`) with placeholder fallback when unmatched.
 
 ## Local Web App
 

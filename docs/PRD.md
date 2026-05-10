@@ -128,7 +128,7 @@ The app should support a child-profile-only recommendation flow before listing a
   - bike style recommendation
   - short "what to look for" checklist
   - short "what to avoid" checklist
-  - polished placeholder for future bike-type illustration
+  - bike-type illustration when category-image mapping exists (fallback placeholder if no match)
 - This feature must use local rule-based logic only.
 - No API calls are required for this recommendation flow.
 - If child profile changes after recommendation is shown, prompt:
@@ -238,11 +238,12 @@ The app should show a small source label for listing field origin, such as:
 - Source: pasted text AI extraction.
 - Source: screenshot.
 - Source: manual entry.
-- Source: link only.
+- Source: link.
 - Source: link + manual edits.
 - Source: screenshot AI extraction.
-- Source: pasted text AI extraction.
+- Source: link + pasted text AI extraction.
 - Source: Craigslist link extraction.
+- Source: Craigslist link extraction + manual edits.
 
 Phase 1 may use mock extraction or local text parsing. Phase 1.5 may use a server-side LLM provider to extract structured fields from pasted or OCR text when `ENABLE_LLM_ANALYSIS` is enabled. The app must still show a confirmation/editing step before analysis. Automatic Facebook Marketplace scraping remains out of scope.
 
