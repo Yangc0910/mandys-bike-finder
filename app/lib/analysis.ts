@@ -99,17 +99,23 @@ export function generateSellerMessage(
 
 function assessFit(child: ChildProfile, listing: Listing): MeterResult {
   const recommendation = recommendWheelSize(child.heightCm, child.experience);
-  const wheel = String(listing.wheelSize || "");
-  if (!wheel) {
-    return meter("yellow", "Confirm wheel size", `Recommended size: ${recommendation.recommended}. Ask the seller to confirm the wheel size before deciding.`);
+  const wheelRaw = String(listing.wheelSize || "");
+  const listingSizes = parseWheelSizes(wheelRaw);
+  const recommendationLabel = normalizeWheelSizeLabel(recommendation.recommended);
+
+  if (!wheelRaw || listingSizes.length === 0) {
+    return meter("yellow", "Wheel size not detected", "We couldn't confidently detect the bike wheel size from this listing.");
   }
-  if (recommendation.sizes.includes(wheel)) {
-    return meter("green", "Likely fits", `${wheel} inch matches the current recommendation. ${recommendation.note}`);
+
+  const listingLabel = normalizeWheelSizeLabel(wheelRaw);
+  if (isWheelSizeMatch(wheelRaw, recommendation.recommended)) {
+    return meter("green", "Good size match", `${listingLabel} matches the current recommendation of ${recommendationLabel}. ${recommendation.note}`);
   }
-  if (recommendation.recommended.includes(wheel) || isNearSize(wheel, recommendation.sizes)) {
-    return meter("yellow", "May fit with test ride", `${wheel} inch is close to the recommendation. ${recommendation.note}`);
+
+  if (isNearSize(listingSizes, recommendation.sizes)) {
+    return meter("yellow", "May fit with test ride", `${listingLabel} is close to the recommendation of ${recommendationLabel}. ${recommendation.note}`);
   }
-  return meter("red", "Likely size mismatch", `${wheel} inch does not match the current recommendation of ${recommendation.recommended}.`);
+  return meter("red", "Likely size mismatch", `${listingLabel} does not match the current recommendation of ${recommendationLabel}.`);
 }
 
 function assessPrice(listing: Listing, reference: PriceReference): MeterResult {
@@ -250,9 +256,9 @@ function listingText(listing: Listing) {
   return `${listing.title || ""} ${listing.condition || ""} ${listing.description || ""}`.toLowerCase();
 }
 
-function isNearSize(wheel: string, sizes: string[]) {
-  const numericWheel = Number(wheel);
-  return sizes.some((size) => Math.abs(Number(size) - numericWheel) <= 2);
+function isNearSize(listingSizes: number[], recommendedSizes: string[]) {
+  const targetSizes = recommendedSizes.map((size) => Number(size)).filter((size) => Number.isFinite(size));
+  return listingSizes.some((listingSize) => targetSizes.some((target) => Math.abs(target - listingSize) <= 2));
 }
 
 function colorMatches(preference: string, text: string) {
@@ -265,4 +271,41 @@ function colorMatches(preference: string, text: string) {
     "mature / simple style": ["simple", "mature", "black", "white", "gray", "grey", "blue"],
   };
   return (groups[preference] || []).some((color) => text.includes(color));
+}
+
+export function normalizeWheelSizeLabel(value: string) {
+  const sizes = parseWheelSizes(value);
+  if (!sizes.length) return "";
+  const lower = value.toLowerCase();
+  const isRange = (lower.includes("-") || lower.includes(" to ")) && sizes.length >= 2;
+  if (isRange) return `${formatWheelNumber(Math.min(...sizes))}-${formatWheelNumber(Math.max(...sizes))} inch`;
+  if (sizes.length === 1) return `${formatWheelNumber(sizes[0])} inch`;
+  return `${sizes.map((size) => formatWheelNumber(size)).join("/")} inch`;
+}
+
+export function parseWheelSizes(value: string) {
+  const normalized = String(value || "").toLowerCase().replace(/inches|inch|in\./g, "").replace(/\s+/g, " ").trim();
+  const matches = normalized.match(/\d+(?:\.\d+)?/g) || [];
+  const parsed = matches.map((item) => Number(item)).filter((item) => Number.isFinite(item));
+  return Array.from(new Set(parsed));
+}
+
+export function isWheelSizeMatch(listingSize: string, recommendedSize: string) {
+  const listingSizes = parseWheelSizes(listingSize);
+  const recommendedSizes = parseWheelSizes(recommendedSize);
+  if (!listingSizes.length || !recommendedSizes.length) return false;
+
+  const lowerRecommended = recommendedSize.toLowerCase();
+  const isRange = (lowerRecommended.includes("-") || lowerRecommended.includes(" to ")) && recommendedSizes.length >= 2;
+  if (isRange) {
+    const min = Math.min(...recommendedSizes);
+    const max = Math.max(...recommendedSizes);
+    return listingSizes.some((value) => value >= min && value <= max);
+  }
+
+  return listingSizes.some((value) => recommendedSizes.includes(value));
+}
+
+function formatWheelNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : String(value).replace(/\.0$/, "");
 }

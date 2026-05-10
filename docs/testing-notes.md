@@ -256,3 +256,13 @@ Listing text:
 "Kids bike, used, pick up only."
 
 Expected: condition and risk should be yellow because brakes, tires, chain, rust, gears, and wheel size may need confirmation.
+
+## Fit Parsing Regression Checks
+
+- `24` vs recommendation `24/26 inch` should match (green fit).
+- `26` vs recommendation `24/26 inch` should match (green fit).
+- `20` vs recommendation `24/26 inch` should not match (mismatch or caution depending on context).
+- Listing wheel size `24 in.` should display cleanly as `24 inch` (not `24 in. inch`).
+- Missing or undetectable wheel size should show:
+  - `Wheel size not detected`
+  - `We couldn't confidently detect the bike wheel size from this listing.`

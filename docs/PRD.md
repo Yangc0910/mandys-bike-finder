@@ -293,6 +293,8 @@ Under the overall meter, show qualitative red/yellow/green assessments with reas
 
 Assess whether the wheel size and likely frame size fit the child's height and experience. Include growth-room reasoning.
 
+Fit wheel-size matching must compare normalized numeric sizes (single value, multi-value, or range) rather than raw string equality.
+
 ### 2. Price
 
 Assess whether the asking price seems reasonable compared with trusted retailer reference ranges. Use estimated ranges and confidence, not exact price claims.

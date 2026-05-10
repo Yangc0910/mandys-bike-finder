@@ -54,6 +54,16 @@ Fit assessment:
 - Yellow when size may work but depends on experience or test ride.
 - Red when wheel size is clearly too small or too large.
 
+Fit matching should use normalized numeric wheel-size parsing, not raw string comparison.
+
+Examples:
+
+- `24`, `24 in`, `24 in.`, `24 inch`, `24 inches`, `24-inch` should normalize to `24 inch`.
+- `24` should match recommendation `24/26 inch`.
+- `26` should match recommendation `24/26 inch`.
+- `20` should not match recommendation `24/26 inch`.
+- Range recommendations such as `24-26 inch` should match listing sizes within range.
+
 Edge case:
 
 For a child around 145 cm, 24 inch is likely safer and easier now. 26 inch may give more growth room if the child is confident and can test ride safely.

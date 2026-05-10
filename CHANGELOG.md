@@ -35,6 +35,7 @@
 - Added controlled Craigslist link extraction: new server-side Craigslist-only extraction route with timeout, per-session/per-IP limiting, and short-lived caching; link-mode UI can now trigger extraction to populate listing fields and source labels while preserving fallback manual/screenshot flows when extraction fails.
 - Refined child profile recommendation UX and logic: cleaned two-column child-profile layout, marked required vs optional fields, required height+age+riding experience for recommendation gating, and updated local recommendation rules to combine height, age, and riding experience with optional personalization notes from weight/style/color.
 - Documentation alignment pass: updated README/PRD/current-status/testing notes to clearly separate implemented features vs planned items, reflect current source labels and Craigslist extraction behavior, and document required vs optional child-profile recommendation inputs.
+- Fixed wheel-size fit matching and formatting: normalized wheel-size parsing now supports single, multi-size, and range formats (e.g., `24`, `24 in.`, `24/26`, `24-26`), resolves false mismatch cases like `24` vs `24/26`, and standardizes display labels to clean `24 inch` style.
 - Prioritized screenshot input in listing flow: reordered listing tabs to `Screenshot`, `Link`, `Manual` and set `Screenshot` as the default selected tab to match the most reliable input path.
 
 ## v0.4
