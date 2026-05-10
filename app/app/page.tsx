@@ -41,7 +41,7 @@ const colorPreferenceOptions = [
 export default function Home() {
   const [child, setChild] = useState<ChildProfile>(defaultChild);
   const [listing, setListing] = useState<Listing>(defaultListing);
-  const [inputMode, setInputMode] = useState("link");
+  const [inputMode, setInputMode] = useState("screenshot");
   const [listingSource, setListingSource] = useState("Not set");
   const [pastedText, setPastedText] = useState("");
   const [screenshotName, setScreenshotName] = useState("");
@@ -454,7 +454,7 @@ export default function Home() {
             <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
             <SectionTitle step="2" title="Listing input" />
             <div className="mb-4 grid grid-cols-3 gap-2">
-              {["link", "screenshot", "manual"].map((mode) => (
+              {["screenshot", "link", "manual"].map((mode) => (
                 <button key={mode} type="button" onClick={() => handleInputModeChange(mode)} className={`min-h-11 rounded-md border font-bold ${inputMode === mode ? "border-brand bg-brand text-white" : "border-line bg-slate-50"}`}>
                   {mode[0].toUpperCase() + mode.slice(1)}
                 </button>

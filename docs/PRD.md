@@ -135,8 +135,8 @@ The app should support a child-profile-only recommendation flow before listing a
 
 ### Input Priority
 
-1. Paste listing link.
-2. Upload screenshot.
+1. Upload screenshot.
+2. Paste listing link.
 3. Manual entry as fallback.
 
 ### Important Constraint

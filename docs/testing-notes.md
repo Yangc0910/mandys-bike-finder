@@ -77,6 +77,9 @@ npm run dev
    - After successful extraction, listing source becomes `screenshot AI extraction`.
    - After manual edits post extraction, source becomes `screenshot AI extraction + manual edits`.
    - Confirm listing fields stay empty until manual edits or real extraction.
+16. Listing input tab order:
+   - Confirm tab order is `Screenshot`, `Link`, `Manual`.
+   - Confirm `Screenshot` is selected by default on initial page load.
 
 Expected behavior: the app remains fully functional without API keys.
 
