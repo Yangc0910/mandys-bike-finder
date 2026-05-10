@@ -164,6 +164,19 @@ The app should show a small source label for listing field origin, such as:
 
 Phase 1 may use mock extraction or local text parsing. Phase 1.5 may use a server-side LLM provider to extract structured fields from pasted or OCR text when `ENABLE_LLM_ANALYSIS` is enabled. The app must still show a confirmation/editing step before analysis. Automatic Facebook Marketplace or Craigslist scraping remains out of scope.
 
+Controlled beta screenshot extraction behavior:
+
+- Screenshot upload should not trigger automatic LLM calls.
+- A user-triggered action such as "Extract listing details from screenshot" is required before any screenshot extraction call.
+- Screenshot extraction calls must be server-side only and gated by `ENABLE_LLM_ANALYSIS` plus valid server-side `OPENAI_API_KEY`.
+- Screenshot extraction should count against `DAILY_LLM_LIMIT` and `PER_SESSION_LLM_LIMIT`.
+- If LLM extraction is disabled, key is missing, or limits are reached, show a manual-entry fallback message and keep the page functional.
+- Extracted fields must be returned as structured JSON and remain user-editable in the confirmation step.
+- Source labels should reflect flow:
+  - `screenshot`
+  - `screenshot AI extraction`
+  - `screenshot AI extraction + manual edits`
+
 ## H. Overall Result
 
 The user-facing result should use a qualitative red/yellow/green meter, not a numeric score.

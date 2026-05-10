@@ -38,10 +38,16 @@ npm run dev
    - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.
    - The file name is shown as secondary metadata under the preview.
    - After screenshot upload, `Load sample listing` is hidden to avoid conflicting source actions.
-   - In screenshot mode, the UI clearly states:
-     - "Screenshot OCR is not implemented yet. For AI-assisted extraction, please paste the listing text below."
-   - Uploading a screenshot does not trigger image-to-LLM extraction.
-   - Pasted listing text is the current AI-assisted extraction path (server-side via `/api/extract` when `ENABLE_LLM_ANALYSIS=true` and `OPENAI_API_KEY` is configured).
+   - In screenshot mode, the UI shows:
+     - "Screenshot uploaded. You can extract listing details with AI or enter them manually."
+   - Uploading a screenshot does not trigger automatic OpenAI extraction.
+   - Clicking `Extract listing details from screenshot` is required to trigger server-side AI extraction.
+   - If `ENABLE_LLM_ANALYSIS=false` or `OPENAI_API_KEY` is missing, confirm fallback message:
+     - "AI screenshot extraction is currently disabled. Please enter the listing details manually."
+   - If limits are reached, confirm fallback message:
+     - "Daily AI extraction limit reached. Please enter the listing details manually."
+   - After successful extraction, listing source becomes `screenshot AI extraction`.
+   - After manual edits post extraction, source becomes `screenshot AI extraction + manual edits`.
    - Confirm listing fields stay empty until manual edits or real extraction.
 
 Expected behavior: the app remains fully functional without API keys.
@@ -64,6 +70,11 @@ ENABLE_BACKEND_LOGGING=true
 6. Confirm the status pill and API responses indicate live LLM mode if configured. Search, email, and backend logging should still report fallback/mock until those real providers are intentionally implemented.
 
 Expected behavior: live providers run only server-side. No API keys appear in browser source or network payloads.
+
+For screenshot AI extraction:
+
+- Click screenshot extraction button once and verify `/api/extract` request is made only on click.
+- Confirm no extraction request is made on page load or file selection.
 
 ## Test Production Build
 

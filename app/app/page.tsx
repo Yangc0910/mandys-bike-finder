@@ -60,6 +60,8 @@ export default function Home() {
   const [pastedText, setPastedText] = useState("");
   const [screenshotName, setScreenshotName] = useState("");
   const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [isExtractingScreenshot, setIsExtractingScreenshot] = useState(false);
   const [screenshotNotice, setScreenshotNotice] = useState("");
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
   const [heightFeet, setHeightFeet] = useState("");
@@ -110,6 +112,7 @@ export default function Home() {
     setListingSource((current) => {
       if (source !== "manual entry") return source;
       if (current === "screenshot") return "screenshot + manual edits";
+      if (current === "screenshot AI extraction") return "screenshot AI extraction + manual edits";
       return "manual entry";
     });
   }
@@ -143,6 +146,7 @@ export default function Home() {
     setListing(sampleListing);
     setListingSource("sample listing");
     setScreenshotName("");
+    setScreenshotFile(null);
     if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
     setScreenshotPreviewUrl("");
     setScreenshotNotice("");
@@ -165,6 +169,44 @@ export default function Home() {
     setAnalysis(nextAnalysis);
     setStatus(result?.priceReference?.message || providerStatusText(result?.apiStatus || providerModes) || "Analysis complete.");
     setSellerMessage(await generateMessage("lowerOffer", "friendly", listing, false));
+  }
+
+  async function extractScreenshotDetails() {
+    if (!screenshotFile) return;
+    if (screenshotFile.size > 5 * 1024 * 1024) {
+      setScreenshotNotice("Screenshot file is too large. Please upload an image under 5 MB.");
+      return;
+    }
+    if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(screenshotFile.type)) {
+      setScreenshotNotice("Unsupported screenshot format. Please upload jpg, jpeg, png, or webp.");
+      return;
+    }
+
+    setIsExtractingScreenshot(true);
+    try {
+      const prepared = await prepareScreenshotForExtraction(screenshotFile);
+      const result = await apiPost("/api/extract", {
+        imageDataUrl: prepared.dataUrl,
+        imageMimeType: prepared.mimeType,
+        imageSizeBytes: prepared.sizeBytes,
+      });
+      if (result?.result?.fields) {
+        setListing((current) => ({ ...current, ...compactFields(result.result.fields) }));
+        setListingSource("screenshot AI extraction");
+        setScreenshotNotice(
+          `AI extraction complete${result?.result?.confidence ? ` (${result.result.confidence} confidence)` : ""}. Please confirm and edit any unclear fields.`,
+        );
+      } else {
+        setScreenshotNotice(
+          result?.statusMessage || "AI extraction could not read enough listing details. Please enter the details manually.",
+        );
+      }
+      setStatus(result?.statusMessage || providerStatusText(result?.apiStatus || providerModes) || "Screenshot extraction complete.");
+    } catch {
+      setScreenshotNotice("AI extraction could not read enough listing details. Please enter the details manually.");
+    } finally {
+      setIsExtractingScreenshot(false);
+    }
   }
 
   async function generateMessage(goal = messageGoal, tone = messageTone, currentListing = listing, updateStatus = true) {
@@ -315,7 +357,7 @@ export default function Home() {
                   <textarea className={inputClass} rows={4} placeholder="Paste title, price, description, or seller text" value={pastedText} onChange={(e) => setPastedText(e.target.value)} onBlur={extractPastedText} />
                 </Field>
                 <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
-                  AI-assisted extraction currently supports pasted listing text. Screenshot OCR is not implemented yet.
+                  AI-assisted extraction supports pasted listing text. You can also use screenshot extraction in screenshot mode.
                 </p>
                 {listing.listingLink && !pastedText.trim() && !screenshotName && (
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
@@ -327,16 +369,17 @@ export default function Home() {
             {inputMode === "screenshot" && (
               <div className="mb-5 grid gap-3">
                 <Field label="Listing screenshot">
-                  <input className={inputClass} type="file" accept="image/*" onChange={(event) => {
+                  <input className={inputClass} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" onChange={(event) => {
                     const file = event.target.files?.[0];
                     const nextName = file?.name || "";
                     setScreenshotName(nextName);
+                    setScreenshotFile(file || null);
                     if (!nextName) return;
                     if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
                     setScreenshotPreviewUrl(URL.createObjectURL(file as Blob));
                     setListing(defaultListing);
                     setListingSource("screenshot");
-                    setScreenshotNotice("Screenshot uploaded. Please review and enter listing details manually unless you paste listing text for AI-assisted extraction.");
+                    setScreenshotNotice("Screenshot uploaded. You can extract listing details with AI or enter them manually.");
                   }} />
                 </Field>
                 <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-2 text-muted">
@@ -356,8 +399,16 @@ export default function Home() {
                     {screenshotNotice}
                   </p>
                 )}
+                <button
+                  className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand disabled:cursor-not-allowed disabled:opacity-60"
+                  type="button"
+                  disabled={!screenshotFile || isExtractingScreenshot}
+                  onClick={extractScreenshotDetails}
+                >
+                  {isExtractingScreenshot ? "Extracting..." : "Extract listing details from screenshot"}
+                </button>
                 <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
-                  Screenshot OCR is not implemented yet. For AI-assisted extraction, please paste the listing text below.
+                  Screenshot uploaded. You can extract listing details with AI or enter them manually.
                 </p>
               </div>
             )}
@@ -548,4 +599,26 @@ function lbToKg(weightLb: string) {
 function toFixed(value: string, decimals: number) {
   const n = Number(value);
   return Number.isFinite(n) ? n.toFixed(decimals).replace(/\.0$/, "") : "";
+}
+
+async function prepareScreenshotForExtraction(file: File): Promise<{ dataUrl: string; mimeType: string; sizeBytes: number }> {
+  const maxEdge = 1400;
+  const bitmap = await createImageBitmap(file);
+  const ratio = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * ratio));
+  const height = Math.max(1, Math.round(bitmap.height * ratio));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Canvas not available");
+  context.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const preferredType = file.type === "image/png" ? "image/png" : "image/jpeg";
+  const dataUrl = canvas.toDataURL(preferredType, preferredType === "image/jpeg" ? 0.82 : undefined);
+  const base64 = dataUrl.split(",")[1] || "";
+  const sizeBytes = Math.floor((base64.length * 3) / 4);
+  return { dataUrl, mimeType: preferredType, sizeBytes };
 }

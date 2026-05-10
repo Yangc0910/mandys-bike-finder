@@ -25,6 +25,7 @@
 - Improved screenshot upload UX: the screenshot panel now renders a real image preview with aspect-ratio-safe fit, keeps the file name as secondary text, and hides `Load sample listing` after screenshot upload to prevent conflicting source state.
 - Clarified screenshot analysis behavior: screenshot mode now explicitly states OCR is not implemented yet and directs users to pasted text for AI-assisted extraction; screenshot images are not sent to OpenAI in this step.
 - Refined result assessment card UI: removed small meter pill badges and switched to full-card qualitative styling (green/yellow/red tint with stronger accents), larger dimension titles, and clearer hierarchy for status line and reasoning text.
+- Added controlled AI-assisted screenshot extraction: screenshot preview remains client-side, extraction is user-triggered via button, calls stay server-side behind `ENABLE_LLM_ANALYSIS` + `OPENAI_API_KEY`, LLM usage limits are enforced, large/unsupported files are rejected with friendly messages, extracted fields populate confirm form with editable `screenshot AI extraction` source tracking, and failures fall back to manual entry messaging.
 
 ## v0.4
 

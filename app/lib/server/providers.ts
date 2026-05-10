@@ -47,6 +47,62 @@ export async function openAiExtractListingFields(text: string, apiKey: string, m
   return { provider: "openai", fields: JSON.parse(content) as Partial<Listing> };
 }
 
+export async function openAiExtractListingFieldsFromImage(
+  imageDataUrl: string,
+  apiKey: string,
+  model: string,
+) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.1,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "Extract only visible marketplace listing details for a used kids bike screenshot. Return strict JSON with keys: title, askingPrice, brand, model, wheelSize, bikeType, colorStyle, condition, description, platform, confidence, missingFields. Do not invent missing values. Use empty strings for unknown string fields. confidence must be one of high, medium, low. missingFields must list unknown or unclear fields.",
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Read this marketplace screenshot and extract listing fields." },
+            { type: "image_url", image_url: { url: imageDataUrl } },
+          ],
+        },
+      ],
+    }),
+  });
+  if (!response.ok) throw new Error(`LLM vision provider failed with ${response.status}`);
+  const json = await response.json();
+  const content = String(json.choices?.[0]?.message?.content || "").trim();
+  const parsed = parseStructuredJson(content);
+  return {
+    provider: "openai",
+    fields: {
+      title: parsed.title || "",
+      askingPrice: parsed.askingPrice || "",
+      brand: parsed.brand || "",
+      model: parsed.model || "",
+      wheelSize: parsed.wheelSize || "",
+      bikeType: parsed.bikeType || "",
+      colorStyle: parsed.colorStyle || "",
+      condition: parsed.condition || "",
+      description: parsed.description || "",
+      platform: parsed.platform || "",
+    } as Partial<Listing>,
+    confidence: normalizeConfidence(parsed.confidence),
+    missingFields: Array.isArray(parsed.missingFields)
+      ? parsed.missingFields.map((value) => String(value))
+      : [],
+  };
+}
+
 export async function openAiGenerateMessage(
   apiKey: string,
   model: string,
@@ -177,6 +233,24 @@ async function openAiChatText(
   if (!response.ok) throw new Error(`LLM provider failed with ${response.status}`);
   const json = await response.json();
   return String(json.choices?.[0]?.message?.content || "").trim();
+}
+
+function parseStructuredJson(content: string): Record<string, unknown> {
+  try {
+    return JSON.parse(content) as Record<string, unknown>;
+  } catch {
+    const match = content.match(/\{[\s\S]*\}/);
+    if (match) {
+      return JSON.parse(match[0]) as Record<string, unknown>;
+    }
+    throw new Error("Invalid JSON returned from LLM.");
+  }
+}
+
+function normalizeConfidence(value: unknown): "high" | "medium" | "low" {
+  const v = String(value || "").toLowerCase();
+  if (v === "high" || v === "medium" || v === "low") return v;
+  return "low";
 }
 
 function capitalize(value: string) {

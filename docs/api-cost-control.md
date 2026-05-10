@@ -78,6 +78,7 @@ Every real API integration must include:
 - Server-side API calls only.
 - No API keys exposed to the frontend.
 - API failure logging that does not break the user experience.
+- Explicit user-triggered calls for costly screenshot AI extraction (no auto-call on page load or file upload).
 
 ## Caching
 
@@ -115,6 +116,21 @@ Graceful messages should be plain and useful:
 - "Live price lookup is unavailable right now, so this estimate uses built-in reference ranges."
 - "This price estimate has lower confidence because no live retailer search was run."
 - "Daily live lookup limit reached. You can still analyze the listing with local guidance."
+- "AI screenshot extraction is currently disabled. Please enter the listing details manually."
+- "Daily AI extraction limit reached. Please enter the listing details manually."
+- "AI extraction could not read enough listing details. Please enter the details manually."
+
+## Controlled Screenshot AI Extraction
+
+Phase 1.5 supports controlled screenshot extraction through a server-side LLM route:
+
+- Frontend uploads must not auto-call LLM on file select.
+- User must click a dedicated extraction button.
+- Supported image types: `jpg`, `jpeg`, `png`, `webp`.
+- Max screenshot size: 5 MB with friendly rejection message.
+- Image should be resized/compressed before provider call where possible to reduce token/cost.
+- Extraction consumes LLM limits (`DAILY_LLM_LIMIT`, `PER_SESSION_LLM_LIMIT`).
+- If disabled, limited, or failed, the flow must fall back to manual entry without breaking the page.
 
 ## Phase 1 Implementation
 
