@@ -133,6 +133,7 @@ Confirmed on deployed MVP:
 - Dimension cards use full-card qualitative styling (green/yellow/red tint + stronger accent) instead of small GREEN/YELLOW/RED pill badges.
 - Dimension title is the most prominent label, with short status line and secondary reasoning beneath.
 - `/api/status` remains `200 OK` with safe fallback mode and real APIs disabled.
+- Landing/header visual polish: one simplified hero, clearer parent-facing headline, three value chips, improved spacing/typography, and technical provider status moved to a subtle `Beta status` section.
 
 ## Test Fallback Behavior
 

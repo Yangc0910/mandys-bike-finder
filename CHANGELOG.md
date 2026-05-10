@@ -26,6 +26,7 @@
 - Clarified screenshot analysis behavior: screenshot mode now explicitly states OCR is not implemented yet and directs users to pasted text for AI-assisted extraction; screenshot images are not sent to OpenAI in this step.
 - Refined result assessment card UI: removed small meter pill badges and switched to full-card qualitative styling (green/yellow/red tint with stronger accents), larger dimension titles, and clearer hierarchy for status line and reasoning text.
 - Added controlled AI-assisted screenshot extraction: screenshot preview remains client-side, extraction is user-triggered via button, calls stay server-side behind `ENABLE_LLM_ANALYSIS` + `OPENAI_API_KEY`, LLM usage limits are enforced, large/unsupported files are rejected with friendly messages, extracted fields populate confirm form with editable `screenshot AI extraction` source tracking, and failures fall back to manual entry messaging.
+- Polished landing/header UI for a cleaner parent-facing MVP: merged duplicate top sections into one concise hero, reduced visual dominance of the hero image, improved typography and spacing, added three value chips, and moved technical provider details into a subtle `Beta status` disclosure.
 
 ## v0.4
 

@@ -243,33 +243,35 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4 md:p-6">
-      <section className="mx-auto max-w-[1440px]">
-        <div className="relative mb-6 overflow-hidden rounded-xl border border-line shadow-panel">
-          <div
-            className="h-[260px] bg-cover md:h-[340px]"
-            style={{ backgroundImage: "url('/images/mandy-bike-hero.jpg')", backgroundPosition: "68% center" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-transparent" />
-          <div className="absolute inset-y-0 left-0 flex max-w-xl flex-col justify-center p-4 text-white md:p-8">
-            <p className="text-xs font-bold uppercase tracking-wide text-white/90">Mandy&apos;s Bike Finder</p>
-            <h2 className="mt-1 text-2xl font-bold md:text-4xl">Find the right used bike with confidence</h2>
-            <p className="mt-2 text-sm text-white/90 md:text-base">
-              Fit, price, condition, style, and a ready-to-send message in one flow.
-            </p>
+    <main className="min-h-screen bg-slate-50/70 px-4 py-5 md:px-6 md:py-7">
+      <section className="mx-auto max-w-[1320px]">
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-panel">
+          <div className="grid items-stretch md:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative z-10 p-6 md:p-8">
+              <p className="text-xs font-bold uppercase tracking-wide text-brand">Mandy&apos;s Bike Finder</p>
+              <h1 className="mt-2 max-w-xl text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
+                Find the right used kids bike before you message the seller
+              </h1>
+              <p className="mt-3 max-w-lg text-base text-slate-600">
+                Check fit, price, condition, brand, and kid appeal in one simple flow.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                {["Fit for your child", "Deal quality", "Seller message help"].map((item) => (
+                  <span key={item} className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="relative min-h-[200px] md:min-h-[260px]">
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: "url('/images/mandy-bike-hero.jpg')" }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent md:bg-gradient-to-l md:from-transparent md:via-transparent md:to-white/10" />
+            </div>
           </div>
         </div>
-
-        <header className="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="mb-1 text-xs font-bold uppercase text-muted">Mandy&apos;s Bike Finder</p>
-            <h1 className="text-4xl font-bold tracking-normal md:text-6xl">Used kids bike check</h1>
-            <p className="mt-3 max-w-3xl text-muted">
-              Decide whether a used kids bike is the right fit, right style, and a good enough deal before messaging the seller.
-            </p>
-          </div>
-          <div className="rounded-full border border-line bg-blue-50 px-3 py-2 text-sm font-bold text-brand">{status}</div>
-        </header>
 
         <div className="grid gap-5 lg:grid-cols-[0.95fr_1.15fr]">
           <form onSubmit={analyze} className="rounded-lg border border-line bg-white p-5 shadow-panel">
@@ -501,6 +503,10 @@ export default function Home() {
             </PanelTitle>
           </section>
         </div>
+        <details className="mt-6 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-panel">
+          <summary className="cursor-pointer font-semibold text-slate-700">Beta status</summary>
+          <p className="mt-2">{status}</p>
+        </details>
       </section>
     </main>
   );
