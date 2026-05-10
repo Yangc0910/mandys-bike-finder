@@ -81,7 +81,9 @@ The first working MVP may include real API integrations, but only in controlled 
   - Support centimeters in MVP.
   - Support feet/inches input in MVP via a unit selector.
   - Normalize to centimeters internally before analysis.
-- Age, optional.
+- Age.
+  - Required for child-profile-only bike recommendation.
+  - Optional for listing analysis flow.
 - Weight, optional.
   - Support pounds or kilograms via a unit selector in MVP.
   - Default to pounds for US users.
@@ -132,6 +134,17 @@ The app should support a child-profile-only recommendation flow before listing a
 - If child profile changes after recommendation is shown, prompt:
   - `Child profile changed. Re-run recommendation.`
 - Height should drive wheel-size range first, age should act as a reasonableness check, and riding experience should adjust category and confidence.
+- Required inputs for this recommendation:
+  - height
+  - age
+  - riding experience
+- Optional personalization inputs:
+  - weight
+  - style preference
+  - color preference
+- Output should include both:
+  - recommended bike type/category
+  - recommended wheel size
 
 ## F. Listing Input Requirements
 
@@ -140,6 +153,21 @@ The app should support a child-profile-only recommendation flow before listing a
 1. Upload screenshot.
 2. Paste listing link.
 3. Manual entry as fallback.
+
+### Currently Implemented Input and Extraction Paths
+
+- Screenshot upload with optional AI screenshot extraction (controlled by feature flags and limits).
+- Pasted listing text with optional AI extraction.
+- Manual field entry.
+- Marketplace link as metadata/reference.
+- Controlled Craigslist link extraction (server-side only) for a single provided URL.
+
+### Not Implemented in Current MVP
+
+- Automatic Facebook Marketplace scraping.
+- General marketplace crawling.
+- Multi-link crawling or watchlist crawling.
+- "Just listed" filtering, stale listing filtering, distance ranking, or location scoring as an automated search system.
 
 ### Important Constraint
 
@@ -158,6 +186,7 @@ Marketplace link behavior in MVP:
   - For Craigslist URLs, the backend may attempt lightweight server-side extraction of public listing fields.
   - This extraction should be single-URL only (no crawling), time-limited, and rate-limited.
   - If extraction fails, keep fallback guidance and manual/screenshot flows available.
+  - The app should not claim extraction success unless fields are actually extracted.
 
 ### Listing Data To Capture
 
@@ -189,14 +218,18 @@ From screenshot or pasted text, the app should attempt to identify:
 
 After extraction, the app must show a confirmation/editing step before analysis. The user must be able to correct extracted fields.
 
-The app should keep listing fields empty on initial page load. It should only populate confirmation fields after user input (pasted text extraction, screenshot flow, or manual entry). Optional sample/demo listing data may be provided behind an explicit action such as a "Load sample listing" button, not as default prefilled values.
+The app should keep listing fields empty on initial page load. It should only populate confirmation fields after user input (pasted text extraction, screenshot flow, manual entry, or controlled Craigslist link extraction). Sample listing actions are not part of the normal production user flow.
 
 The app should show a small source label for listing field origin, such as:
 
-- Source: pasted text.
+- Source: pasted text AI extraction.
 - Source: screenshot.
 - Source: manual entry.
-- Source: sample listing.
+- Source: link only.
+- Source: link + manual edits.
+- Source: screenshot AI extraction.
+- Source: pasted text AI extraction.
+- Source: Craigslist link extraction.
 
 Phase 1 may use mock extraction or local text parsing. Phase 1.5 may use a server-side LLM provider to extract structured fields from pasted or OCR text when `ENABLE_LLM_ANALYSIS` is enabled. The app must still show a confirmation/editing step before analysis. Automatic Facebook Marketplace or Craigslist scraping remains out of scope.
 

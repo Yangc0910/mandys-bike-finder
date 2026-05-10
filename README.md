@@ -27,7 +27,8 @@ The current product direction is a Web MVP, not iOS first.
 Phase 1 includes:
 
 - Child profile form.
-- Listing input by link, screenshot, or manual fallback.
+- Child-profile-only local bike recommendation panel.
+- Listing input by screenshot, link, or manual fallback.
 - Listing field confirmation.
 - Local/mock bike fit and deal analysis.
 - Red/yellow/green overall result.
@@ -44,6 +45,36 @@ Phase 1.5 supports provider interfaces for:
 - Trusted-retailer search price reference.
 - Email report sending.
 - Backend metadata/API usage logging.
+
+## Current Implemented Behavior (As of 2026-05-10)
+
+Implemented now:
+
+- Child-profile-only recommendation requires:
+  - height
+  - age
+  - riding experience
+- Optional child personalization:
+  - weight
+  - style preference
+  - color preference
+- Child recommendation outputs both:
+  - bike type/category
+  - wheel size
+- Listing input and extraction paths:
+  - screenshot upload + controlled AI screenshot extraction
+  - pasted text + controlled AI text extraction
+  - manual listing entry
+  - marketplace link as reference metadata
+  - controlled Craigslist single-link extraction (server-side only)
+
+Not implemented now:
+
+- Automatic Facebook Marketplace scraping.
+- Generic multi-marketplace crawling.
+- Live retailer search provider in production mode.
+- Real email provider and durable backend storage provider.
+- Automated feed-level ranking rules such as "just listed" filtering, stale listing filtering, distance ranking, or location-based ranking.
 
 The MVP still excludes automatic Facebook/Craigslist scraping, user accounts, payments, and iOS app work.
 

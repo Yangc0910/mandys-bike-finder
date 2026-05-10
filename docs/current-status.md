@@ -19,6 +19,7 @@ The `/app` implementation uses:
 
 - Landing/intro content.
 - Child profile form.
+- Child-profile-only bike recommendation panel (local rule-based).
 - Listing input by link, screenshot placeholder, or manual fields.
 - Listing field confirmation.
 - Red/yellow/green result meter.
@@ -28,11 +29,19 @@ The `/app` implementation uses:
 - API routes:
   - `/api/status`
   - `/api/extract`
+  - `/api/extract-link`
   - `/api/analyze`
   - `/api/message`
   - `/api/report`
 
 All listed API routes are migrated under `/app/app/api`.
+
+Child recommendation current rules:
+
+- Required inputs: height, age, riding experience.
+- Optional personalization: weight, style preference, color preference.
+- Output includes both bike type and wheel size.
+- Logic uses height as primary size driver, age as reasonableness check, and riding experience to adjust category/confidence.
 
 ## Build Verification Status
 

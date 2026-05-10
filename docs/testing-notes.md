@@ -37,10 +37,12 @@ npm run dev
    - Change key child or listing fields.
    - Confirm prior result is replaced by an "update and re-run analysis" style state until Analyze is clicked again.
 11. Confirm listing source label appears and changes appropriately:
-   - Source: pasted text.
+   - Source: pasted text AI extraction.
    - Source: screenshot.
    - Source: manual entry.
-   - Source: sample listing.
+   - Source: link only.
+   - Source: link + manual edits.
+   - Source: Craigslist link extraction.
    - After screenshot upload and manual edits, source can show `screenshot + manual edits`.
 12. In link mode, if only a link is entered, confirm the note appears:
    - "Some marketplace links cannot be read directly. Please paste the listing text or upload a screenshot for best results."
@@ -162,6 +164,11 @@ Expected behavior: the second call falls back gracefully and explains that the d
    - Confirm recommendation allows `26 inch` consideration after safe test ride.
 5. Change child profile after recommendation:
    - Confirm prompt appears: `Child profile changed. Re-run recommendation.`
+6. Recommendation output contract:
+   - Confirm recommendation includes both bike type and wheel size.
+   - Confirm explanation references height, age, and riding experience.
+7. Optional personalization behavior:
+   - Confirm optional notes appear only when optional fields (weight/style/color) are provided.
 
 ## Manual Verification on Live Deployment
 
