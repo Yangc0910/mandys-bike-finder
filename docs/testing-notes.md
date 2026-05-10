@@ -43,8 +43,15 @@ npm run dev
    - Source: sample listing.
    - After screenshot upload and manual edits, source can show `screenshot + manual edits`.
 12. In link mode, if only a link is entered, confirm the note appears:
-   - "Marketplace links may not be readable directly yet. Please paste listing text or upload a screenshot."
-13. Screenshot upload behavior:
+   - "Some marketplace links cannot be read directly. Please paste the listing text or upload a screenshot for best results."
+13. Craigslist link-only case:
+   - Paste a Craigslist URL, for example:
+     - `https://boston.craigslist.org/bmw/bik/d/wayland-trek-mt220-girls-mountain-bike/7919424984.html`
+   - Confirm `platform` is recognized as `Craigslist` from URL only.
+   - Confirm title/price/brand/wheel size/description remain empty unless user provides pasted text, screenshot extraction, or manual entry.
+   - Confirm Analyze remains disabled for link-only input.
+   - Confirm source label shows `link only`; after manual field edits, source changes to `link + manual edits`.
+14. Screenshot upload behavior:
    - Uploading a screenshot clears previously loaded sample listing values.
    - Source switches to `screenshot` immediately.
    - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.

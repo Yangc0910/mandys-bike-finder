@@ -28,20 +28,6 @@ const defaultListing: Listing = {
   description: "",
 };
 
-const sampleListing: Listing = {
-  listingLink: "",
-  title: "24 inch Schwinn kids bike, blue, good condition",
-  askingPrice: "70",
-  brand: "Schwinn",
-  model: "",
-  wheelSize: "24",
-  bikeType: "kids bike",
-  colorStyle: "blue",
-  platform: "Facebook Marketplace",
-  location: "",
-  description: "Good condition. Brakes work. Some normal scratches.",
-};
-
 const colorPreferenceOptions = [
   "No preference / all colors are fine",
   "pink / purple",
@@ -118,7 +104,7 @@ export default function Home() {
   const analyzeDisabledReason = !hasHeight || !hasExperience
     ? "Enter child height and riding experience."
     : !hasCoreListing && !hasScreenshotManualListing
-      ? "Add at least one listing detail before analyzing."
+      ? "Please add listing text, screenshot extraction, or key bike details before analyzing."
       : "";
 
   useEffect(() => {
@@ -140,6 +126,7 @@ export default function Home() {
     setListing((current) => ({ ...current, [field]: value }));
     setListingSource((current) => {
       if (source !== "manual entry") return source;
+      if (current === "link only") return "link + manual edits";
       if (current === "screenshot") return "screenshot + manual edits";
       if (current === "screenshot AI extraction") return "screenshot AI extraction + manual edits";
       return "manual entry";
@@ -166,29 +153,14 @@ export default function Home() {
     const result = await apiPost("/api/extract", { text: pastedText });
     const fields = result?.result?.fields || localExtract(pastedText);
     setListing((current) => ({ ...current, ...compactFields(fields) }));
-    setListingSource("pasted text");
+    setListingSource("pasted text AI extraction");
     setScreenshotNotice("");
     setStatus(result?.statusMessage || providerStatusText(result?.apiStatus || providerModes) || "Listing fields extracted.");
-  }
-
-  function loadSampleListing() {
-    setListing(sampleListing);
-    setListingSource("sample listing");
-    setScreenshotName("");
-    setScreenshotFile(null);
-    if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
-    setScreenshotPreviewUrl("");
-    setScreenshotNotice("");
-    setStatus("Sample listing loaded.");
   }
 
   function handleInputModeChange(mode: string) {
     setInputMode(mode);
     setScreenshotNotice("");
-    if (mode === "screenshot" && listingSource === "sample listing") {
-      setListing(defaultListing);
-      setListingSource("Not set");
-    }
   }
 
   async function analyze(event: FormEvent) {
@@ -400,7 +372,27 @@ export default function Home() {
             {inputMode === "link" && (
               <div className="mb-5 grid gap-3">
                 <Field label="Listing link">
-                  <input className={inputClass} type="url" placeholder="https://www.facebook.com/marketplace/item/..." value={listing.listingLink} onChange={(e) => updateListingField("listingLink", e.target.value, "manual entry")} />
+                  <input
+                    className={inputClass}
+                    type="url"
+                    placeholder="https://www.facebook.com/marketplace/item/... or Craigslist URL"
+                    value={listing.listingLink}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const lower = value.toLowerCase();
+                      const platform = lower.includes("craigslist.org")
+                        ? "Craigslist"
+                        : lower.includes("facebook.com/marketplace")
+                          ? "Facebook Marketplace"
+                          : "";
+                      setListing((current) => ({ ...current, listingLink: value, platform: platform || current.platform || "" }));
+                      setListingSource((current) => {
+                        if (!value.trim()) return current === "link only" ? "Not set" : current;
+                        if (current === "Not set") return "link only";
+                        return current;
+                      });
+                    }}
+                  />
                 </Field>
                 <Field label="Pasted listing text">
                   <textarea className={inputClass} rows={4} placeholder="Paste title, price, description, or seller text" value={pastedText} onChange={(e) => setPastedText(e.target.value)} onBlur={extractPastedText} />
@@ -408,9 +400,9 @@ export default function Home() {
                 <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
                   AI-assisted extraction supports pasted listing text. You can also use screenshot extraction in screenshot mode.
                 </p>
-                {listing.listingLink && !pastedText.trim() && !screenshotName && (
+                {listing.listingLink && (
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
-                    Marketplace links may not be readable directly yet. Please paste listing text or upload a screenshot.
+                    Some marketplace links cannot be read directly. Please paste the listing text or upload a screenshot for best results.
                   </p>
                 )}
               </div>
@@ -462,11 +454,6 @@ export default function Home() {
               </div>
             )}
             <div className="mb-4 flex items-center gap-2">
-              {!screenshotName && (
-                <button className="min-h-10 rounded-md border border-line bg-slate-50 px-3 text-sm font-bold" type="button" onClick={loadSampleListing}>
-                  Load sample listing
-                </button>
-              )}
               <span className="text-xs text-muted">Source: {listingSource}</span>
             </div>
 

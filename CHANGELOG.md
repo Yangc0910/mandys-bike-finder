@@ -30,6 +30,7 @@
 - Improved main flow layout and recommendation visibility: top inputs are now balanced side-by-side (`Child profile` + `Listing input`) with confirmation fields kept in listing flow, results render below the inputs after analyze, and a dedicated `Recommended bike size` section clearly shows best size now, growth option, caution, and reasoning.
 - Added analysis gating and empty-state behavior: result sections are hidden until minimum child/listing inputs are provided and Analyze is run, Analyze button now shows disabled reasons when inputs are insufficient, and stale results are replaced with a clear re-run prompt after key input changes.
 - Polished hero visual design: upgraded to a premium rounded container with soft gradient background, smoother text-to-image blend, refined branded headline typography, polished eyebrow label, and cleaner value chips while preserving existing functionality.
+- Simplified listing input and clarified link-only behavior: removed sample listing action from production UI, treated marketplace links (including Craigslist) as reference metadata, added clear message that some links cannot be read directly, refined source labels for link/manual/text/screenshot flows, and tightened analyze gating so link-only input cannot trigger evaluation.
 
 ## v0.4
 

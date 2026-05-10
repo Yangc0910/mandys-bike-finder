@@ -123,6 +123,14 @@ The app should not depend on automatic Facebook Marketplace or Craigslist scrapi
 
 If the user enters only a marketplace link and no pasted text or screenshot, show a clear note that direct link reading may not be supported yet and guide the user to paste listing text or upload a screenshot.
 
+Marketplace link behavior in MVP:
+
+- Treat pasted marketplace links as reference metadata by default.
+- Store the URL in `listingLink` and infer `platform` only when obvious from URL (for example, Craigslist or Facebook Marketplace).
+- Do not assume automatic page scraping or successful extraction from link alone.
+- Do not populate title, price, brand, wheel size, condition, or description from link unless real extraction succeeds.
+- Link-only input should not be treated as sufficient for full analysis; users should add pasted listing text, screenshot extraction, or key listing fields.
+
 ### Listing Data To Capture
 
 - Listing title.
