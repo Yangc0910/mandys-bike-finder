@@ -32,6 +32,7 @@
 - Polished hero visual design: upgraded to a premium rounded container with soft gradient background, smoother text-to-image blend, refined branded headline typography, polished eyebrow label, and cleaner value chips while preserving existing functionality.
 - Simplified listing input and clarified link-only behavior: removed sample listing action from production UI, treated marketplace links (including Craigslist) as reference metadata, added clear message that some links cannot be read directly, refined source labels for link/manual/text/screenshot flows, and tightened analyze gating so link-only input cannot trigger evaluation.
 - Added child-profile-only bike recommendation panel: new `Recommend bike type and size` action under Child Profile with local rule-based category/size guidance, growth option, style recommendation, look-for/avoid checklists, future illustration placeholder, and re-run prompt when child profile changes.
+- Added controlled Craigslist link extraction: new server-side Craigslist-only extraction route with timeout, per-session/per-IP limiting, and short-lived caching; link-mode UI can now trigger extraction to populate listing fields and source labels while preserving fallback manual/screenshot flows when extraction fails.
 
 ## v0.4
 

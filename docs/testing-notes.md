@@ -51,7 +51,16 @@ npm run dev
    - Confirm title/price/brand/wheel size/description remain empty unless user provides pasted text, screenshot extraction, or manual entry.
    - Confirm Analyze remains disabled for link-only input.
    - Confirm source label shows `link only`; after manual field edits, source changes to `link + manual edits`.
-14. Screenshot upload behavior:
+14. Controlled Craigslist link extraction:
+   - Paste the test URL:
+     - `https://boston.craigslist.org/bmw/bik/d/wayland-trek-mt220-girls-mountain-bike/7919424984.html`
+   - Click `Extract details from Craigslist link`.
+   - Confirm extracted fields populate when available (title/price/description/location/platform/listingLink).
+   - Confirm source label becomes `Craigslist link extraction`.
+   - Edit any field and confirm source becomes `Craigslist link extraction + manual edits`.
+   - If extraction fails, confirm message:
+     - `We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.`
+15. Screenshot upload behavior:
    - Uploading a screenshot clears previously loaded sample listing values.
    - Source switches to `screenshot` immediately.
    - The preview box renders the uploaded image (not just file name), keeps aspect ratio, and prevents overflow.

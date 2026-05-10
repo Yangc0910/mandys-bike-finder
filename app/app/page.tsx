@@ -48,7 +48,9 @@ export default function Home() {
   const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [isExtractingScreenshot, setIsExtractingScreenshot] = useState(false);
+  const [isExtractingLink, setIsExtractingLink] = useState(false);
   const [screenshotNotice, setScreenshotNotice] = useState("");
+  const [linkNotice, setLinkNotice] = useState("");
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
   const [heightFeet, setHeightFeet] = useState("");
   const [heightInches, setHeightInches] = useState("");
@@ -135,6 +137,7 @@ export default function Home() {
     setListingSource((current) => {
       if (source !== "manual entry") return source;
       if (current === "link only") return "link + manual edits";
+      if (current === "Craigslist link extraction") return "Craigslist link extraction + manual edits";
       if (current === "screenshot") return "screenshot + manual edits";
       if (current === "screenshot AI extraction") return "screenshot AI extraction + manual edits";
       return "manual entry";
@@ -169,6 +172,7 @@ export default function Home() {
   function handleInputModeChange(mode: string) {
     setInputMode(mode);
     setScreenshotNotice("");
+    setLinkNotice("");
   }
 
   async function analyze(event: FormEvent) {
@@ -218,6 +222,31 @@ export default function Home() {
       setScreenshotNotice("AI extraction could not read enough listing details. Please enter the details manually.");
     } finally {
       setIsExtractingScreenshot(false);
+    }
+  }
+
+  async function extractCraigslistLink() {
+    const url = (listing.listingLink || "").trim();
+    if (!url) return;
+    setIsExtractingLink(true);
+    try {
+      const result = await apiPost("/api/extract-link", { url });
+      if (result?.result?.fields) {
+        setListing((current) => ({ ...current, ...compactFields(result.result.fields) }));
+        setListingSource("Craigslist link extraction");
+        setLinkNotice("Craigslist listing details were extracted. Please confirm and edit any missing fields.");
+        setStatus(result?.cached ? "Craigslist details loaded from cache." : "Craigslist extraction complete.");
+      } else {
+        const message = result?.statusMessage || "We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.";
+        setLinkNotice(message);
+        setStatus(message);
+      }
+    } catch {
+      const message = "We could not read this Craigslist listing automatically. Please paste the listing text or enter details manually.";
+      setLinkNotice(message);
+      setStatus(message);
+    } finally {
+      setIsExtractingLink(false);
     }
   }
 
@@ -448,6 +477,7 @@ export default function Home() {
                           ? "Facebook Marketplace"
                           : "";
                       setListing((current) => ({ ...current, listingLink: value, platform: platform || current.platform || "" }));
+                      setLinkNotice("");
                       setListingSource((current) => {
                         if (!value.trim()) return current === "link only" ? "Not set" : current;
                         if (current === "Not set") return "link only";
@@ -466,6 +496,21 @@ export default function Home() {
                   <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
                     Some marketplace links cannot be read directly. Please paste the listing text or upload a screenshot for best results.
                   </p>
+                )}
+                {String(listing.listingLink || "").toLowerCase().includes("craigslist.org") && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={extractCraigslistLink}
+                      disabled={isExtractingLink}
+                      className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isExtractingLink ? "Extracting Craigslist link..." : "Extract details from Craigslist link"}
+                    </button>
+                    {linkNotice && (
+                      <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">{linkNotice}</p>
+                    )}
+                  </>
                 )}
               </div>
             )}

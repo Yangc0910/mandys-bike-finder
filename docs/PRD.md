@@ -152,6 +152,10 @@ Marketplace link behavior in MVP:
 - Do not assume automatic page scraping or successful extraction from link alone.
 - Do not populate title, price, brand, wheel size, condition, or description from link unless real extraction succeeds.
 - Link-only input should not be treated as sufficient for full analysis; users should add pasted listing text, screenshot extraction, or key listing fields.
+- Controlled Craigslist enhancement:
+  - For Craigslist URLs, the backend may attempt lightweight server-side extraction of public listing fields.
+  - This extraction should be single-URL only (no crawling), time-limited, and rate-limited.
+  - If extraction fails, keep fallback guidance and manual/screenshot flows available.
 
 ### Listing Data To Capture
 

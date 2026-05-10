@@ -79,6 +79,7 @@ Every real API integration must include:
 - No API keys exposed to the frontend.
 - API failure logging that does not break the user experience.
 - Explicit user-triggered calls for costly screenshot AI extraction (no auto-call on page load or file upload).
+- Controlled link extraction attempts with per-session/per-IP limits, timeout, and short-lived URL caching.
 
 ## Caching
 
@@ -131,6 +132,16 @@ Phase 1.5 supports controlled screenshot extraction through a server-side LLM ro
 - Image should be resized/compressed before provider call where possible to reduce token/cost.
 - Extraction consumes LLM limits (`DAILY_LLM_LIMIT`, `PER_SESSION_LLM_LIMIT`).
 - If disabled, limited, or failed, the flow must fall back to manual entry without breaking the page.
+
+## Controlled Craigslist Link Extraction
+
+- Server-side only extraction route (no frontend page scraping).
+- Craigslist URLs only (`craigslist.org` domains).
+- Fetch only the exact user-provided listing URL.
+- Use short timeout to prevent long-running requests.
+- Apply per-session/per-IP usage limits.
+- Cache recent extraction results briefly to avoid repeated fetch costs.
+- If extraction fails, return friendly fallback guidance and keep manual/screenshot flows available.
 
 ## Phase 1 Implementation
 
