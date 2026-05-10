@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mandy's Bike Finder</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-labelledby="app-title">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Mandy's Bike Finder</p>
+            <h1 id="app-title">Used kids bike check</h1>
+          </div>
+          <div class="status-pill" id="cost-status">Local mode</div>
+        </header>
+
+        <div class="layout">
+          <form class="panel form-panel" id="analysis-form">
+            <div class="section-heading">
+              <span class="step-dot">1</span>
+              <h2>Child profile</h2>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                Height
+                <div class="unit-row">
+                  <input id="height-cm" name="heightCm" type="number" min="80" max="190" value="128" required>
+                  <span>cm</span>
+                </div>
+              </label>
+              <label>
+                Age
+                <input id="age" name="age" type="number" min="2" max="18" placeholder="Optional">
+              </label>
+              <label>
+                Weight
+                <input id="weight" name="weight" type="number" min="10" max="90" placeholder="Optional">
+              </label>
+              <label>
+                Riding experience
+                <select id="experience" name="experience">
+                  <option value="beginner">Beginner</option>
+                  <option value="comfortable" selected>Comfortable</option>
+                  <option value="confident">Confident</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </label>
+              <label>
+                Style preference
+                <select id="style-preference" name="stylePreference">
+                  <option value="all good / no preference">All good / no preference</option>
+                  <option value="boy-style">Boy-style</option>
+                  <option value="girl-style">Girl-style</option>
+                </select>
+              </label>
+              <label>
+                Color preference
+                <select id="color-preference" name="colorPreference">
+                  <option value="no strong preference">No strong preference</option>
+                  <option value="pink/purple">Pink/purple</option>
+                  <option value="blue/green">Blue/green</option>
+                  <option value="red/orange">Red/orange</option>
+                  <option value="black/white/neutral">Black/white/neutral</option>
+                  <option value="bright colors">Bright colors</option>
+                  <option value="mature/simple style">Mature/simple style</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="section-heading">
+              <span class="step-dot">2</span>
+              <h2>Listing input</h2>
+            </div>
+
+            <div class="tabs" role="tablist" aria-label="Listing input type">
+              <button class="tab is-active" type="button" data-input-mode="link">Link</button>
+              <button class="tab" type="button" data-input-mode="screenshot">Screenshot</button>
+              <button class="tab" type="button" data-input-mode="manual">Manual</button>
+            </div>
+
+            <div class="input-mode is-active" data-mode-panel="link">
+              <label>
+                Listing link
+                <input id="listing-link" name="listingLink" type="url" placeholder="https://www.facebook.com/marketplace/item/...">
+              </label>
+              <label>
+                Pasted listing text
+                <textarea id="pasted-text" name="pastedText" rows="4" placeholder="Paste title, price, description, or seller text"></textarea>
+              </label>
+            </div>
+
+            <div class="input-mode" data-mode-panel="screenshot">
+              <label>
+                Listing screenshot
+                <input id="screenshot" name="screenshot" type="file" accept="image/*">
+              </label>
+              <div class="screenshot-preview" id="screenshot-preview">
+                <span>No image selected</span>
+              </div>
+            </div>
+
+            <div class="input-mode" data-mode-panel="manual">
+              <p class="quiet-note">Manual fields below are always editable before analysis.</p>
+            </div>
+
+            <div class="section-heading">
+              <span class="step-dot">3</span>
+              <h2>Confirm listing fields</h2>
+            </div>
+
+            <div class="form-grid">
+              <label class="wide">
+                Title
+                <input id="title" name="title" type="text" value="24 inch Schwinn kids bike, blue, good condition">
+              </label>
+              <label>
+                Asking price
+                <div class="unit-row">
+                  <span>$</span>
+                  <input id="asking-price" name="askingPrice" type="number" min="0" value="70">
+                </div>
+              </label>
+              <label>
+                Brand
+                <input id="brand" name="brand" type="text" value="Schwinn">
+              </label>
+              <label>
+                Model
+                <input id="model" name="model" type="text" placeholder="Optional">
+              </label>
+              <label>
+                Wheel size
+                <select id="wheel-size" name="wheelSize">
+                  <option value="">Unknown</option>
+                  <option value="12">12 inch</option>
+                  <option value="14">14 inch</option>
+                  <option value="16">16 inch</option>
+                  <option value="18">18 inch</option>
+                  <option value="20">20 inch</option>
+                  <option value="24" selected>24 inch</option>
+                  <option value="26">26 inch</option>
+                  <option value="27.5">27.5 inch</option>
+                </select>
+              </label>
+              <label>
+                Bike type
+                <select id="bike-type" name="bikeType">
+                  <option value="">Unknown</option>
+                  <option value="kids bike" selected>Kids bike</option>
+                  <option value="mountain bike">Mountain bike</option>
+                  <option value="hybrid bike">Hybrid bike</option>
+                  <option value="road bike">Road bike</option>
+                  <option value="bmx">BMX</option>
+                </select>
+              </label>
+              <label>
+                Color/style
+                <input id="color-style" name="colorStyle" type="text" value="blue">
+              </label>
+              <label>
+                Platform
+                <select id="platform" name="platform">
+                  <option value="Facebook Marketplace" selected>Facebook Marketplace</option>
+                  <option value="Craigslist">Craigslist</option>
+                  <option value="OfferUp">OfferUp</option>
+                  <option value="Local parent group">Local parent group</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+              <label>
+                Location
+                <input id="location" name="location" type="text" placeholder="Optional">
+              </label>
+              <label class="wide">
+                Condition / description
+                <textarea id="description" name="description" rows="4">Good condition. Brakes work. Some normal scratches.</textarea>
+              </label>
+            </div>
+
+            <button class="primary-action" type="submit">Analyze bike</button>
+          </form>
+
+          <section class="results-panel" aria-live="polite">
+            <div class="result-hero" id="overall-card">
+              <div class="meter-signal meter-yellow"></div>
+              <div>
+                <p class="eyebrow">Overall</p>
+                <h2 id="overall-label">Ask more before deciding</h2>
+                <p id="overall-reason">Enter or confirm listing details, then run the analysis.</p>
+              </div>
+            </div>
+
+            <div class="dimension-grid" id="dimension-grid"></div>
+
+            <div class="panel action-panel">
+              <div class="section-heading">
+                <span class="step-dot">4</span>
+                <h2>Seller questions</h2>
+              </div>
+              <ul class="question-list" id="seller-questions"></ul>
+            </div>
+
+            <div class="panel action-panel">
+              <div class="section-heading">
+                <span class="step-dot">5</span>
+                <h2>Negotiation Boost</h2>
+              </div>
+              <div class="boost-grid">
+                <label>
+                  Goal
+                  <select id="message-goal">
+                    <option value="askAvailability">Ask if still available</option>
+                    <option value="askQuestions">Ask key questions</option>
+                    <option value="lowerOffer" selected>Make a lower offer</option>
+                    <option value="confirmPickup">Confirm pickup time</option>
+                    <option value="walkAway">Walk away politely</option>
+                  </select>
+                </label>
+                <label>
+                  Tone
+                  <select id="message-tone">
+                    <option value="friendly" selected>Friendly</option>
+                    <option value="concise">Concise</option>
+                    <option value="very polite">Very polite</option>
+                    <option value="firm but respectful">Firm but respectful</option>
+                  </select>
+                </label>
+                <label>
+                  Target offer
+                  <div class="unit-row">
+                    <span>$</span>
+                    <input id="target-offer" type="number" min="0" value="50">
+                  </div>
+                </label>
+                <label>
+                  Pickup timing
+                  <input id="pickup-timing" type="text" value="today or tomorrow">
+                </label>
+                <label class="wide">
+                  Reason
+                  <select id="offer-reason">
+                    <option value="can pick up today" selected>Can pick up today</option>
+                    <option value="need to confirm condition">Need to confirm condition</option>
+                    <option value="budget limit">Budget limit</option>
+                    <option value="similar price reference">Similar price reference</option>
+                    <option value="no reason">No reason, keep it simple</option>
+                  </select>
+                </label>
+              </div>
+              <button class="secondary-action" type="button" id="generate-message">Need a negotiation boost?</button>
+              <textarea class="message-output" id="seller-message" rows="4" aria-label="Suggested seller message"></textarea>
+            </div>
+
+            <div class="panel action-panel">
+              <div class="section-heading">
+                <span class="step-dot">6</span>
+                <h2>Email report</h2>
+              </div>
+              <div class="boost-grid">
+                <label>
+                  Email
+                  <input id="report-email" type="email" placeholder="parent@example.com">
+                </label>
+                <label>
+                  Recipient name
+                  <input id="recipient-name" type="text" placeholder="Optional">
+                </label>
+                <label class="wide">
+                  Note
+                  <textarea id="report-note" rows="3" placeholder="Optional"></textarea>
+                </label>
+              </div>
+              <button class="secondary-action" type="button" id="preview-report">Email this report</button>
+              <pre class="report-preview" id="report-preview"></pre>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

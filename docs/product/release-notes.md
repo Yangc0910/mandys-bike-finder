@@ -1,17 +1,7 @@
-# Release Notes
+# Release Notes Redirect
 
-## Unreleased
+Release notes and product version changes are now tracked in:
 
-- Added repository documentation structure for product requirements, decisions, prompts, architecture, and operations.
-- Formalized PRD v0.4 as the current product baseline.
-- Added GitHub issue and pull request templates.
-- Added configurable bike-specific scoring signals for desired bike types, excluded bike types, preferred sizes, wheel sizes, and pickup constraints.
+- [../../CHANGELOG.md](../../CHANGELOG.md)
 
-## v0.4 Baseline
-
-- Local Python listing monitor prototype.
-- Visible Playwright browser collection.
-- YAML source and scoring configuration.
-- SQLite deduplication.
-- Gmail summary delivery.
-- Conservative safety posture for personal-use listing monitoring.
+This file is kept for compatibility with the earlier documentation structure.

@@ -1,30 +1,26 @@
 # Documentation Index
 
-This folder is the source of truth for Mandy's Bike Finder product knowledge.
+The current product source of truth is:
 
-## Product Requirements
+- [PRD.md](PRD.md)
 
-- `prd/current.md`: current approved PRD
-- `prd/history.md`: PRD changelog and version lineage
-- `prd/versions/`: archived PRD versions
+Supporting product docs:
 
-## Product Knowledge
+- [user-flows.md](user-flows.md)
+- [scoring-logic.md](scoring-logic.md)
+- [api-cost-control.md](api-cost-control.md)
+- [roadmap.md](roadmap.md)
+- [product-decisions.md](product-decisions.md)
 
-- `product/roadmap.md`: planned releases and future questions
-- `product/release-notes.md`: user-facing product changes over time
+Historical PRDs:
 
-## Decisions
+- [prd-history/PRD-v0.1.md](prd-history/PRD-v0.1.md)
+- [prd-history/PRD-v0.2.md](prd-history/PRD-v0.2.md)
+- [prd-history/PRD-v0.3.md](prd-history/PRD-v0.3.md)
+- [prd-history/PRD-v0.4.md](prd-history/PRD-v0.4.md)
 
-- `decisions/README.md`: decision log index
-- `decisions/0001-repository-as-product-system-of-record.md`: why this repository stores PRD, decisions, prompts, and code together
-- `decisions/0002-conservative-visible-browser-automation.md`: safety posture for listing collection
+Other documentation:
 
-## Build Prompts
-
-- `prompts/README.md`: prompt log conventions
-- `prompts/2026-05-10-initial-repository-structure.md`: initial repository-structure prompt and implementation notes
-
-## Engineering Notes
-
-- `architecture/overview.md`: current architecture and future direction
-- `operations/local-runbook.md`: local setup and operating notes
+- [architecture/overview.md](architecture/overview.md)
+- [operations/local-runbook.md](operations/local-runbook.md)
+- [prompts/README.md](prompts/README.md)

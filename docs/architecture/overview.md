@@ -1,40 +1,42 @@
 # Architecture Overview
 
-## Current System
+Current PRD: `docs/PRD.md` v0.4
 
-Mandy's Bike Finder currently exists as a local Python prototype built around a simple pipeline:
+## Current Direction
+
+Mandy's Bike Finder is now a web-first MVP. The initial implementation should be a front-end web app with local/mock analysis logic and service interfaces for future external capabilities.
+
+## Phase 1 Architecture
 
 ```text
-Configured sources
-    -> visible browser collection
-    -> listing extraction
-    -> filtering
-    -> scoring
-    -> selection
-    -> SQLite deduplication
-    -> Gmail summary
+User input
+  -> child profile form
+  -> listing link / screenshot / manual input
+  -> listing field confirmation
+  -> local analysis engine
+  -> red/yellow/green result
+  -> negotiation message generator
+  -> email report preview
 ```
 
-## Main Components
+## Future Service Boundaries
 
-- `src/listing_monitor/browser.py`: visible browser setup.
-- `src/listing_monitor/config.py`: YAML configuration loading and validation.
-- `src/listing_monitor/extractors.py`: listing extraction from visible page content.
-- `src/listing_monitor/filters.py`: broad eligibility filtering.
-- `src/listing_monitor/scoring.py`: configurable opportunity scoring.
-- `src/listing_monitor/selection.py`: final top-N selection.
-- `src/listing_monitor/db.py`: local seen-listing storage.
-- `src/listing_monitor/gmail_sender.py`: Gmail summary delivery.
-- `src/listing_monitor/monitor.py`: end-to-end orchestration.
+Future phases should add services behind interfaces:
+
+- Listing extraction / OCR provider.
+- Trusted-retailer search provider.
+- Email report sender.
+- Backend metadata logger.
+
+## Legacy Prototype
+
+The existing `src/listing_monitor/` Python package is a legacy local listing monitor prototype. It is not the current product architecture because the current PRD is web-first and does not depend on automatic Facebook or Craigslist scraping.
 
 ## Architectural Principles
 
-- Keep collection transparent and visible.
-- Keep ranking explainable.
-- Keep sensitive state local and out of version control.
-- Prefer configuration for personal preferences before adding code.
-- Add app UI only after the core listing and scoring model is stable.
-
-## Future Direction
-
-Future app code can remain in `src/` while the product model matures. If the project grows into a UI app, add the UI as a clearly named package or app folder and preserve this documentation structure as the shared product context.
+- PRD first.
+- Web MVP first.
+- No real external APIs in Phase 1.
+- Avoid fake precision in user-facing recommendations.
+- Keep costly services behind limitable interfaces.
+- Minimize child personal data storage.

@@ -1,0 +1,38 @@
+# Changelog
+
+## v0.4
+
+- Added action, reporting, and retention requirements.
+- Added style/gender preference to child profile.
+- Added dimension-level qualitative assessments for fit, price, condition, brand, color/kid appeal, and risk.
+- Confirmed that internal scores may exist but user-facing output should remain red/yellow/green.
+- Added Negotiation Boost.
+- Added Email Report.
+- Added backend metadata logging requirements with privacy-preserving buckets.
+
+## v0.3
+
+- Added color/style and kid appeal as key decision factors.
+- Prioritized listing link and screenshot upload over manual entry.
+- Made manual entry the fallback.
+- Replaced numeric user-facing score with qualitative red/yellow/green meter.
+- Added API cost-control requirements.
+- Shifted deal logic toward parent-centered decision support.
+
+## v0.2
+
+- Shifted platform direction from iOS to Web MVP.
+- Adopted the Mandy's Bike Finder product name direction.
+- Added the personal Mandy story.
+- Elevated price reference checking.
+- Added web-friendly listing input flows.
+- Chose trusted retailer references over marketplace price references.
+- Identified need for replaceable search provider abstraction and fallback modes.
+
+## v0.1
+
+- Explored initial iOS app concept.
+- Framed the project as a portfolio product and product-development learning exercise.
+- Considered several broad product directions.
+- Selected used kids bike advisor as the first specific direction.
+- Identified initial features: child-to-bike size advisor, listing analyzer, screenshot upload, seller questions, and message generation.

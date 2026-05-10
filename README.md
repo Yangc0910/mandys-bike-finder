@@ -1,352 +1,119 @@
 # Mandy's Bike Finder
 
-Mandy's Bike Finder is a personal-use product for finding promising bike listings from pages the user already has access to in a real, visible browser.
+Mandy's Bike Finder is a web-first product project for helping parents decide whether a used kids bike listing is worth contacting the seller about.
 
-This repository is intentionally more than an app codebase. It stores the product requirements, PRD version history, decisions, build prompts, operating notes, and the future application code.
+The project is inspired by helping Mandy find the right used bike. It is also a learning project for practicing the full software product development process: product story, PRD, version history, decisions, user flows, implementation phases, testing, and release discipline.
 
-## Repository Map
+## Product One-Liner
+
+Mandy's Bike Finder helps parents decide whether a used kids bike is the right size, the right style, and a good enough deal to contact the seller.
+
+## Problem
+
+Parents browsing Facebook Marketplace, Craigslist, OfferUp, local parent groups, or similar marketplaces often need quick help answering:
+
+- Does this bike fit my child?
+- Is the asking price reasonable?
+- Is the brand reliable or entry-level?
+- Is the color/style something my child will actually like?
+- What should I ask the seller?
+- What concise message should I send?
+- Can I share or save this recommendation?
+
+## Current MVP Scope
+
+The current product direction is a Web MVP, not iOS first.
+
+Phase 1 should include:
+
+- Child profile form.
+- Listing input by link, screenshot, or manual fallback.
+- Listing field confirmation.
+- Local/mock bike fit and deal analysis.
+- Red/yellow/green overall result.
+- Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
+- Negotiation Boost UI and local message generation.
+- Email Report UI placeholder and local report preview.
+- Service interfaces for future search, OCR, email, and backend metadata logging.
+
+Phase 1 should not include real external APIs, real OCR, real email sending, real database, user accounts, payments, or iOS app work.
+
+## Source of Truth
+
+The current complete PRD is:
+
+- [docs/PRD.md](docs/PRD.md)
+
+All future implementation should align with that PRD. If code conflicts with the PRD, update the code or record the discrepancy in:
+
+- [docs/product-decisions.md](docs/product-decisions.md)
+
+## PRD Version History
+
+Historical PRDs are stored under:
+
+- [docs/prd-history/PRD-v0.1.md](docs/prd-history/PRD-v0.1.md)
+- [docs/prd-history/PRD-v0.2.md](docs/prd-history/PRD-v0.2.md)
+- [docs/prd-history/PRD-v0.3.md](docs/prd-history/PRD-v0.3.md)
+- [docs/prd-history/PRD-v0.4.md](docs/prd-history/PRD-v0.4.md)
+
+The changelog is:
+
+- [CHANGELOG.md](CHANGELOG.md)
+
+## Repository Structure
 
 ```text
 .
-|-- .github/                  GitHub issue and pull request templates
 |-- docs/
-|   |-- prd/                  Current PRD, version history, and archived PRD versions
-|   |-- decisions/            Product and technical decision records
-|   |-- prompts/              Build prompts and AI collaboration log
-|   |-- product/              Roadmap, release notes, and product operating notes
-|   |-- architecture/         System architecture notes
-|   `-- operations/           Local setup, safety, and runbook notes
-|-- src/                      Future and current app code
-|-- tests/                    Automated tests
-|-- config.example.yaml       Safe example configuration
-|-- pyproject.toml            Python project metadata
-`-- requirements.txt          Runtime dependencies
+|   |-- PRD.md                         Current source-of-truth PRD
+|   |-- prd-history/                   Historical PRD versions
+|   |-- user-flows.md                  MVP user flows
+|   |-- scoring-logic.md               Analysis and qualitative meter rules
+|   |-- api-cost-control.md            API limit, caching, and fallback design
+|   |-- roadmap.md                     Product implementation roadmap
+|   |-- product-decisions.md           Key product decisions and discrepancies
+|   |-- architecture/                  Architecture notes
+|   |-- operations/                    Local setup and runbook notes
+|   `-- prompts/                       Earlier build prompt records
+|-- prompts/
+|   `-- product-discussion-log.md      Product discussion summary
+|-- web/
+|   |-- index.html                     Phase 1 web MVP entry point
+|   |-- styles.css                     UI styling
+|   `-- src/                           Local/mock front-end logic and interfaces
+|-- src/
+|   `-- listing_monitor/               Legacy Python listing monitor prototype
+|-- tests/                             Existing Python prototype tests
+|-- CHANGELOG.md
+|-- pyproject.toml
+`-- README.md
 ```
 
-Start here:
+## Product Plan
 
-- [Current PRD](docs/prd/current.md)
-- [PRD version history](docs/prd/history.md)
-- [Decision index](docs/decisions/README.md)
-- [Build prompt log](docs/prompts/README.md)
-- [Product roadmap](docs/product/roadmap.md)
-- [Architecture overview](docs/architecture/overview.md)
+1. Phase 0: documentation and repo setup.
+2. Phase 1: front-end MVP with mock/local rules.
+3. Phase 2: screenshot upload and extraction.
+4. Phase 3: live trusted-retailer price reference search.
+5. Phase 4: email report backend.
+6. Phase 5: polish, shareable reports, and analytics.
+7. Future: PWA/iOS, affiliate, saved listings, user accounts.
 
-## Current Implementation Snapshot
+See [docs/roadmap.md](docs/roadmap.md) for details.
 
-The current codebase is a Python listing monitor prototype that can be adapted into the Mandy's Bike Finder app over time.
+## Legacy Prototype Note
 
-It uses:
+The repository contains an older Python `listing_monitor` prototype. It is not the current product direction. The current PRD is web-first and explicitly avoids automatic Facebook/Craigslist scraping. The legacy code can be treated as experimental history unless future work intentionally adapts parts of it into PRD-aligned service logic.
 
-- Python 3.11+
-- Playwright with a persistent browser profile in headed mode
-- SQLite for local deduplication
-- YAML configuration
-- Configurable deal scoring
-- Gmail API OAuth for daily email summaries
+## Development Direction
 
-This tool is intentionally conservative. It does not bypass authentication, CAPTCHAs, paywalls, bot checks, or any website protection. It only processes visible content from pages that your logged-in browser can already display.
+Before adding implementation, read:
 
-## Current Prototype Code
+- [docs/PRD.md](docs/PRD.md)
+- [docs/user-flows.md](docs/user-flows.md)
+- [docs/scoring-logic.md](docs/scoring-logic.md)
+- [docs/api-cost-control.md](docs/api-cost-control.md)
+- [docs/product-decisions.md](docs/product-decisions.md)
 
-```text
-src/listing_monitor/
-|-- browser.py
-|-- config.py
-|-- db.py
-|-- email_templates.py
-|-- extractors.py
-|-- filters.py
-|-- gmail_sender.py
-|-- models.py
-|-- monitor.py
-|-- scoring.py
-`-- selection.py
-```
-
-## Windows Setup
-
-Open PowerShell in this folder.
-
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
-python -m playwright install chromium
-Copy-Item config.example.yaml config.yaml
-Copy-Item .env.example .env
-```
-
-If PowerShell blocks virtualenv activation, run:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-## Gmail OAuth Setup
-
-1. Go to Google Cloud Console.
-2. Create or select a project.
-3. Enable the Gmail API.
-4. Configure an OAuth consent screen for personal use.
-5. Create OAuth Client ID credentials for a Desktop app.
-6. Download the JSON file.
-7. Save it as `credentials/client_secret.json`, or update `.env` with its path.
-
-On first email send, a browser consent window opens. After approval, the token is saved locally at `credentials/gmail_token.json`.
-
-The app requests only the Gmail send scope.
-
-## Configure Sources
-
-Copy `config.example.yaml` to `config.yaml`, then edit:
-
-- `sources`: pages you already visit manually
-- `filters.include_keywords`
-- `filters.exclude_keywords`
-- `filters.min_price`
-- `filters.max_price`
-- `deal_scoring.absolute_max_price`
-- `deal_scoring.top_n`
-- `deal_scoring.low_price_threshold`
-- `deal_scoring.positive_keywords`
-- `deal_scoring.negative_keywords`
-- `deal_scoring.brand_keywords`
-- `deal_scoring.desired_bike_types`
-- `deal_scoring.excluded_bike_types`
-- `deal_scoring.preferred_frame_sizes`
-- `deal_scoring.preferred_wheel_sizes`
-- `deal_scoring.pickup_constraint_keywords`
-- `selection.primary_source`
-- `selection.top_n`
-- `selection.min_primary_ratio`
-- `preference_examples.liked_item_urls`
-- `gmail.sender`
-- `gmail.recipient`
-
-For best results, configure CSS selectors per site:
-
-```yaml
-sources:
-  - name: "My saved search"
-    url: "https://example.com/search"
-    listing_selector: ".listing-card"
-    fields:
-      title: ".title"
-      price: ".price"
-      location: ".location"
-      link: "a"
-```
-
-If selectors are omitted, the tool falls back to a simple visible-link heuristic. The heuristic only reads rendered, visible text and visible links from the current page.
-
-## Preference Examples
-
-`preference_examples.liked_item_urls` is a place to store item URLs that represent listings you personally like. These URLs are not fetched, opened, scored, or used by the current runtime. They are only saved in config as examples for possible future scoring refinement.
-
-## Result Selection
-
-`selection` controls which scored listings make the final email. Scoring itself is unchanged; selection only chooses from already-scored candidates.
-
-```yaml
-selection:
-  primary_source: "FB Recommended"
-  top_n: 10
-  min_primary_ratio: 0.5
-```
-
-With `top_n: 10` and `min_primary_ratio: 0.5`, the email tries to include at least five items from `FB Recommended`, then fills the remaining slots from other sources by score. If the primary source has fewer than five usable items, other sources fill the remaining space.
-
-## Deal Scoring
-
-Each new matching listing receives a local `deal_score` and `deal_reason`. Gmail summaries are sorted by score from highest to lowest, and only the configured top N results are sent.
-
-Use filters for broad eligibility only. Leave `filters.include_keywords` empty to allow all visible listings from your configured source pages, then let `deal_scoring` rank them. This keeps free listings prioritized without hiding strong non-free deals under `absolute_max_price`.
-
-The scorer is designed to avoid over-prioritizing free but low-quality listings. Free gets a strong bonus, while repair, parts-only, missing-parts, disassembly, and similar phrases apply strong penalties. If a listing is both free and negative, the score is capped.
-
-Bike-specific preferences can be configured without code changes. Desired bike types, frame sizes, and wheel sizes add capped bonuses; excluded bike types and pickup-friction phrases apply capped penalties. These signals are intentionally keyword-based for now because marketplace titles and snippets are inconsistent.
-
-Example:
-
-```yaml
-deal_scoring:
-  enabled: true
-  absolute_max_price: 100
-  top_n: 10
-  low_price_threshold: 100
-  free_score: 50
-  low_price_score: 25
-  positive_keyword_score: 15
-  brand_keyword_score: 20
-  negative_keyword_penalty: 40
-  unknown_price_penalty: 10
-  max_positive_keyword_score: 30
-  max_brand_keyword_score: 40
-  max_negative_penalty: 80
-  free_with_negative_cap: 35
-  bike_type_score: 20
-  size_keyword_score: 15
-  excluded_bike_type_penalty: 40
-  pickup_constraint_penalty: 20
-  max_bike_type_score: 40
-  max_size_keyword_score: 30
-  max_excluded_bike_type_penalty: 80
-  max_pickup_constraint_penalty: 40
-  positive_keywords:
-    - "like new"
-    - "barely used"
-    - "new in box"
-    - "excellent condition"
-    - "moving sale"
-    - "must go"
-    - "pickup today"
-    - "priced to sell"
-    - "lightly used"
-  negative_keywords:
-    - "broken"
-    - "needs repair"
-    - "need repair"
-    - "belt needs repair"
-    - "parts only"
-    - "for parts"
-    - "not working"
-    - "damaged"
-    - "missing parts"
-    - "pickup only if removed"
-    - "must disassemble"
-    - "no delivery"
-    - "scrap"
-    - "wanted"
-  brand_keywords:
-    - "nordictrack"
-    - "bowflex"
-    - "peloton"
-    - "horizon"
-    - "sole"
-    - "life fitness"
-    - "precor"
-    - "gorilla"
-    - "lifetime"
-    - "rubbermaid"
-    - "craftsman"
-    - "dewalt"
-    - "milwaukee"
-    - "makita"
-  desired_bike_types:
-    - "commuter bike"
-    - "road bike"
-    - "hybrid bike"
-  excluded_bike_types:
-    - "kids bike"
-    - "bmx"
-    - "stationary bike"
-  preferred_frame_sizes:
-    - "medium frame"
-    - "54cm"
-  preferred_wheel_sizes:
-    - "700c"
-    - "27.5"
-  pickup_constraint_keywords:
-    - "pickup only"
-    - "must disassemble"
-    - "no delivery"
-```
-
-Scoring model:
-
-- Base score starts at `0`
-- Free listing: `+50`
-- Price at or below `low_price_threshold`: `+25`
-- Positive opportunity keyword: `+15` each, capped at `+30`
-- Brand keyword: `+20` each, capped at `+40`
-- Desired bike type: `+20` each, capped at `+40`
-- Preferred frame or wheel size: `+15` each, capped at `+30`
-- Excluded bike type: `-40` each, capped at `-80`
-- Pickup constraint: `-20` each, capped at `-40`
-- Negative keyword: `-40` each, capped at `-80`
-- Unknown price: `-10`, unless the listing appears to be free
-- Known price above `absolute_max_price`: score `0` with reason `above absolute max price`
-- Free listing with any negative keyword is capped at `35`
-- Final score is clamped from `0` to `100`
-- Email subject/body uses `Top 10 listing opportunities` when `top_n` is `10`
-
-Deal reasons are shown in the email as readable phrases such as `free listing`, `positive keyword: like new`, `brand keyword: nordictrack`, `negative keyword: needs repair`, and `unknown price penalty`.
-
-Scoring is only a ranking aid for your email summary. The tool does not auto-message, auto-purchase, or take action on listings.
-
-## First Login
-
-Run:
-
-```powershell
-listing-monitor login
-```
-
-A visible Chromium browser opens using the persistent profile from `config.yaml`. Log in manually to the websites you want to monitor. Close the browser when finished.
-
-The tool does not automate login.
-
-## Run Once
-
-```powershell
-listing-monitor run
-```
-
-The browser opens visibly, visits each configured URL at a conservative pace, extracts visible listing data, filters results, stores seen links in SQLite, and emails new matches.
-
-Useful options:
-
-```powershell
-listing-monitor run --config config.yaml
-listing-monitor run --dry-run
-listing-monitor init-db
-listing-monitor show-seen --limit 20
-```
-
-## Daily Schedule on Windows
-
-Use Windows Task Scheduler:
-
-1. Open Task Scheduler.
-2. Create Basic Task.
-3. Trigger: Daily.
-4. Action: Start a program.
-5. Program/script:
-
-```text
-<path-to-mandys-bike-finder>\.venv\Scripts\listing-monitor.exe
-```
-
-6. Add arguments:
-
-```text
-run --config "<path-to-mandys-bike-finder>\config.yaml"
-```
-
-7. Start in:
-
-```text
-<path-to-mandys-bike-finder>
-```
-
-The task runs headed, so schedule it for a time when you are logged into Windows and a visible browser is acceptable.
-
-## Safety Notes
-
-- Use only URLs you are allowed to access.
-- Log in manually.
-- Do not use this for hidden, private, or non-visible data.
-- Do not use this to bypass CAPTCHAs, paywalls, anti-bot systems, or access controls.
-- Keep delays conservative.
-- Respect each website's terms and acceptable-use policies.
-
-## Troubleshooting
-
-If the browser opens but a site is logged out, run `listing-monitor login` again and sign in manually.
-
-If no listings are found, add site-specific selectors in `config.yaml`. Websites vary too much for a single generic extractor to be perfect.
-
-If Gmail OAuth fails, confirm the Gmail API is enabled and `GMAIL_CLIENT_SECRET_FILE` points to your desktop OAuth client JSON.
+Then implement only the next roadmap phase.
