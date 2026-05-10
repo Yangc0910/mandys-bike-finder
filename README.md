@@ -67,6 +67,10 @@ Implemented now:
   - manual listing entry
   - marketplace link as reference metadata
   - controlled Craigslist single-link extraction (server-side only)
+  - Link-mode action is always visible when a URL is present:
+    - Craigslist: analyze listing link via controlled server-side extraction
+    - Facebook Marketplace: guide user to paste listing text or upload screenshot; URL is preserved as listing reference
+    - Other links: preserve URL as reference and use pasted text/manual details for analysis
 
 Not implemented now:
 

@@ -49,6 +49,9 @@ npm run dev
      - `Facebook Marketplace links usually cannot be read directly. Please upload a screenshot or paste the listing text for AI-assisted extraction.`
    - Other marketplace URL:
      - `This link will be saved as a reference. For analysis, please paste listing text, upload a screenshot, or enter key details manually.`
+   - Confirm a Link-mode action button is visible when a URL is present for both Craigslist and Facebook Marketplace.
+   - For Facebook links with no pasted text, confirm the button stays visible but disabled with clear helper text.
+   - For Facebook links with pasted text, confirm the button runs text extraction and keeps URL as listing reference.
 13. Craigslist link-only case:
    - Paste a Craigslist URL, for example:
      - `https://boston.craigslist.org/bmw/bik/d/wayland-trek-mt220-girls-mountain-bike/7919424984.html`
@@ -85,6 +88,7 @@ npm run dev
 16. Listing input tab order:
    - Confirm tab order is `Screenshot`, `Link`, `Manual`.
    - Confirm `Screenshot` is selected by default on initial page load.
+   - Confirm source label stays aligned with tab context when switching modes (`screenshot`, `link`, `manual`).
 17. Screenshot AI extraction price parsing:
    - Upload a screenshot containing:
      - Title: `Fuji Blaster Girls 21 Speed Mountain Bike`

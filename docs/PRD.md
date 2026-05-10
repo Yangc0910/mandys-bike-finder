@@ -184,13 +184,17 @@ Marketplace link behavior in MVP:
 - Link-only input should not be treated as sufficient for full analysis; users should add pasted listing text, screenshot extraction, or key listing fields.
 - Platform-specific behavior:
   - Craigslist URL:
+    - Show a visible link-analysis action in Link mode.
     - Attempt controlled server-side extraction (single provided URL only).
     - If extraction fails, show: `We could not read this Craigslist listing automatically. Please paste the listing text or upload a screenshot.`
   - Facebook Marketplace URL:
     - Do not attempt automatic scraping in MVP.
+    - Keep a visible Link-mode action so the user has an obvious next step.
+    - Use pasted listing text as the primary AI extraction source when provided.
     - Store `listingLink`, set `platform` to `Facebook Marketplace`, and show: `Facebook Marketplace links usually cannot be read directly. Please upload a screenshot or paste the listing text for AI-assisted extraction.`
   - Other marketplace URL:
     - Store link as reference metadata only and show: `This link will be saved as a reference. For analysis, please paste listing text, upload a screenshot, or enter key details manually.`
+    - Keep a visible Link-mode action with clear guidance when pasted text is missing.
 - Controlled Craigslist enhancement:
   - For Craigslist URLs, the backend may attempt lightweight server-side extraction of public listing fields.
   - This extraction should be single-URL only (no crawling), time-limited, and rate-limited.

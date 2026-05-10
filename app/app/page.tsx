@@ -131,6 +131,7 @@ export default function Home() {
   const isCraigslistLink = lowerLinkValue.includes("craigslist.org");
   const isFacebookMarketplaceLink = lowerLinkValue.includes("facebook.com/marketplace");
   const isOtherMarketplaceLikeLink = Boolean(linkValue) && !isCraigslistLink && !isFacebookMarketplaceLink;
+  const canRunLinkAction = Boolean(linkValue) && (isCraigslistLink || Boolean(pastedText.trim()));
 
   useEffect(() => {
     apiGet("/api/status").then((result) => {
@@ -195,6 +196,32 @@ export default function Home() {
     setInputMode(mode);
     setScreenshotNotice("");
     setLinkNotice("");
+    if (mode === "screenshot") {
+      setListingSource("screenshot");
+    } else if (mode === "link") {
+      setListingSource("link");
+    } else {
+      setListingSource("manual");
+    }
+  }
+
+  async function runLinkAction() {
+    if (!linkValue) return;
+    if (isCraigslistLink) {
+      await extractCraigslistLink(linkValue);
+      return;
+    }
+    if (pastedText.trim()) {
+      await extractPastedText();
+      setListingSource("link + pasted text AI extraction");
+      setLinkNotice("Pasted listing text was analyzed. The link is saved as listing reference.");
+      return;
+    }
+    if (isFacebookMarketplaceLink) {
+      setLinkNotice("Facebook Marketplace links usually cannot be read directly. Please paste listing text or upload a screenshot for best results.");
+      return;
+    }
+    setLinkNotice("This link is saved as reference only. Please paste listing text, upload a screenshot, or enter key details manually.");
   }
 
   async function analyze(event: FormEvent) {
@@ -545,16 +572,30 @@ export default function Home() {
                     This link will be saved as a reference. For analysis, please paste listing text, upload a screenshot, or enter key details manually.
                   </p>
                 )}
-                {isCraigslistLink && (
+                {Boolean(linkValue) && (
                   <>
                     <button
                       type="button"
-                      onClick={() => void extractCraigslistLink()}
-                      disabled={isExtractingLink}
+                      onClick={() => void runLinkAction()}
+                      disabled={isExtractingLink || !canRunLinkAction}
                       className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {isExtractingLink ? "Extracting Craigslist link..." : "Extract details from Craigslist link"}
+                      {isExtractingLink
+                        ? "Analyzing listing link..."
+                        : isCraigslistLink
+                          ? "Analyze listing link"
+                          : "Analyze pasted text / link"}
                     </button>
+                    {!canRunLinkAction && isFacebookMarketplaceLink && (
+                      <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                        Paste listing text to run AI-assisted extraction for this Facebook link.
+                      </p>
+                    )}
+                    {!canRunLinkAction && isOtherMarketplaceLikeLink && (
+                      <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                        Add pasted listing text to analyze this link. The URL alone is stored as reference.
+                      </p>
+                    )}
                     {linkNotice && (
                       <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">{linkNotice}</p>
                     )}
