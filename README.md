@@ -50,6 +50,8 @@ Phase 1.5 supports provider interfaces for:
 
 Implemented now:
 
+- Warm, parent-friendly hero with bike illustration and concise intro.
+- Lightweight "How it works" onboarding cards plus expectation-setting callout.
 - Child-profile-only recommendation requires:
   - height
   - age

@@ -358,12 +358,12 @@ export default function Home() {
               <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.08] tracking-[-0.01em] text-slate-900 md:text-[2.8rem]">
                 Find the{" "}
                 <span className="bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
-                  right used kids bike
+                  right kids&apos; bike
                 </span>{" "}
-                before you message the seller
+                with confidence
               </h1>
               <p className="mt-4 max-w-lg text-base leading-7 text-slate-600">
-                Check fit, price, condition, brand, and kid appeal in one simple flow.
+                Enter your child&apos;s profile, add a used-bike listing, and get a practical fit, value, and safety check before messaging the seller.
               </p>
               <div className="mt-6 flex flex-wrap gap-2.5">
                 {["Fit for your child", "Deal quality", "Seller message help"].map((item) => (
@@ -388,10 +388,30 @@ export default function Home() {
           </div>
         </div>
 
+        <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-panel md:p-5">
+          <h2 className="text-lg font-bold text-slate-900">How it works</h2>
+          <p className="mt-1 text-sm text-slate-600">A simple 4-step flow for busy parents.</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <HowItWorksCard icon="1" title="Step 1 - Tell us about your child" copy="Add height, age, and riding experience so we can estimate the right bike size and style." />
+            <HowItWorksCard icon="2" title="Step 2 - Add a bike listing" copy="Upload a screenshot, paste a listing link, or enter details manually." />
+            <HowItWorksCard icon="3" title="Step 3 - Confirm details" copy="Review price, wheel size, condition, and description before analysis." />
+            <HowItWorksCard icon="4" title="Step 4 - Get recommendation" copy="See fit, value, and practical things to check before pickup." />
+          </div>
+        </section>
+
+        <section className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-slate-700 shadow-panel">
+          <p className="font-semibold text-slate-900">What this tool can and cannot do</p>
+          <p className="mt-1">
+            This tool gives a practical parent-friendly recommendation from available listing details. Used bikes still need a real-world check:
+            fit, brakes, tires, rust, and how comfortable your child feels during a test ride. AI extraction can miss details, and some marketplace pages are not directly readable. Manual edits are expected and welcome.
+          </p>
+        </section>
+
         <form onSubmit={analyze} className="mb-6 grid gap-5">
           <div className="grid gap-5 lg:grid-cols-2">
             <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
-              <SectionTitle step="1" title="Child profile" />
+              <SectionTitle step="1" title="Tell us about your rider" />
+              <p className="mb-4 text-sm text-slate-600">Height, age, and riding confidence help us estimate the right wheel size and bike style.</p>
               <div className="grid gap-3 md:grid-cols-2">
               <Field label="Height" required>
                 <div className="grid grid-cols-[110px_1fr] gap-2">
@@ -458,7 +478,7 @@ export default function Home() {
                   disabled={!hasHeight || !hasAgeForRecommendation || !hasExperience}
                   className="min-h-11 rounded-md bg-blue-50 px-4 text-left font-bold text-brand disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Recommend bike type and size
+                  Find the best bike fit
                 </button>
                 {(!hasHeight || !hasAgeForRecommendation || !hasExperience) && (
                   <p className="text-sm text-slate-600">Enter height, age, and riding experience to get a bike recommendation.</p>
@@ -471,7 +491,8 @@ export default function Home() {
                       Child profile changed. Re-run recommendation.
                     </p>
                   )}
-                  <h3 className="text-lg font-bold text-slate-900">Child profile recommendation</h3>
+                  <h3 className="text-lg font-bold text-slate-900">Step 2 - Recommended bike fit</h3>
+                  <p className="mt-1 text-sm text-slate-600">This is a starting point. A quick test ride is still the best final check.</p>
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <InfoLine label="Recommended bike type" value={profileRecommendation.category} />
                     <InfoLine label="Recommended wheel size" value={profileRecommendation.wheelSize} />
@@ -525,7 +546,8 @@ export default function Home() {
             </section>
 
             <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
-            <SectionTitle step="2" title="Listing input" />
+            <SectionTitle step="3" title="Add the bike you found" />
+            <p className="mb-4 text-sm text-slate-600">Marketplace pages can be tricky. Screenshots and pasted listing text often give the best results.</p>
             <div className="mb-4 grid grid-cols-3 gap-2">
               {["screenshot", "link", "manual"].map((mode) => (
                 <button key={mode} type="button" onClick={() => handleInputModeChange(mode)} className={`min-h-11 rounded-md border font-bold ${inputMode === mode ? "border-brand bg-brand text-white" : "border-line bg-slate-50"}`}>
@@ -553,7 +575,7 @@ export default function Home() {
                     }}
                   />
                 </Field>
-                <Field label="Pasted listing text">
+              <Field label="Pasted listing text">
                   <textarea className={inputClass} rows={4} placeholder="Paste title, price, description, or seller text" value={pastedText} onChange={(e) => setPastedText(e.target.value)} onBlur={extractPastedText} />
                 </Field>
                 <p className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700">
@@ -582,10 +604,10 @@ export default function Home() {
                       {isExtractingLink
                         ? "Analyzing listing link..."
                         : detectedMarketplace.extractionMode === "direct_supported"
-                          ? "Analyze listing link"
+                          ? "Analyze this listing"
                           : detectedMarketplace.extractionMode === "best_effort"
                             ? "Try link analysis"
-                            : "Analyze pasted listing text"}
+                            : "Analyze pasted text"}
                     </button>
                     {!canRunLinkAction && detectedMarketplace.extractionMode === "fallback_only" && (
                       <p className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
@@ -679,7 +701,8 @@ export default function Home() {
               )}
             </div>
 
-            <SectionTitle step="3" title="Confirm listing fields" />
+            <SectionTitle step="4" title="Double-check the listing details" />
+            <p className="mb-4 text-sm text-slate-600">AI can miss details, especially from screenshots, so please adjust anything that looks wrong.</p>
             <div className="grid gap-3 md:grid-cols-2">
               <Field label="Title" wide>
                 <input className={inputClass} value={listing.title} onChange={(e) => updateListingField("title", e.target.value)} />
@@ -722,7 +745,7 @@ export default function Home() {
               type="submit"
               disabled={!canAnalyze}
             >
-              Analyze bike
+              Check this bike
             </button>
             {!canAnalyze && <p className="text-sm text-slate-600">{analyzeDisabledReason}</p>}
             {canAnalyze && (
@@ -739,7 +762,7 @@ export default function Home() {
             <div className="grid min-h-40 grid-cols-[72px_1fr] items-center gap-5 rounded-lg border border-line bg-white p-6 shadow-panel">
               <div className={`h-16 w-16 rounded-full border-8 ${meterSignal(visibleAnalysis.overall.meter)}`} />
               <div>
-                <p className="mb-1 text-xs font-bold uppercase text-muted">Overall</p>
+                <p className="mb-1 text-xs font-bold uppercase text-muted">Step 5 - Is this bike a good match?</p>
                 <h2 className="text-3xl font-bold md:text-4xl">{visibleAnalysis.overall.label}</h2>
                 <p className="mt-2 text-muted">{visibleAnalysis.overall.reasoning}</p>
               </div>
@@ -827,6 +850,16 @@ function InfoLine({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
     </div>
+  );
+}
+
+function HowItWorksCard({ icon, title, copy }: { icon: string; title: string; copy: string }) {
+  return (
+    <article className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+      <p className="text-lg" aria-hidden>{icon}</p>
+      <h3 className="mt-1 text-sm font-bold text-slate-900">{title}</h3>
+      <p className="mt-1 text-sm text-slate-600">{copy}</p>
+    </article>
   );
 }
 

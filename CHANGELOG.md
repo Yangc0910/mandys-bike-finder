@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- UI/UX polish pass: added warmer parent-friendly hero copy, a lightweight "How it works" onboarding section, expectation-setting guidance, friendlier step labels/microcopy, and clearer primary action labels while preserving existing recommendation/extraction logic.
 - Added marketplace-aware listing link support layer with domain detection and platform-specific guidance for Craigslist, Facebook Marketplace, eBay, OfferUp, Pinkbike BuySell, Bicycle Blue Book, Buycycle, The Pro's Closet, BikeExchange, and unknown links.
 - Added extraction-mode routing (`direct_supported`, `best_effort`, `fallback_only`) in Link mode, including detected marketplace indicator, clearer button behavior, and pasted-text/screenshot fallback guidance.
 - Expanded server-side `/api/extract-link` into controlled public-page extraction for allowlisted best-effort marketplaces with timeout, caching, usage limits, and SSRF guardrails; fallback-only marketplaces remain guidance-first without login-gated scraping.

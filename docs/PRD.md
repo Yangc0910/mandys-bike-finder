@@ -296,6 +296,9 @@ Child-profile recommendation card includes:
 
 ## 15. UI / UX Requirements
 
+- Warm parent-friendly hero with concise intro copy and bike illustration.
+- Lightweight "How it works" onboarding cards before the form.
+- Expectation-setting callout explaining AI/link limitations and real-world safety checks.
 - Responsive child-profile and listing-input layout.
 - Required/optional labels visible.
 - Recommendation button disabled until required child fields exist.
