@@ -6,15 +6,29 @@ import { analyzeBike, generateSellerMessage, localPriceReference } from "@/lib/a
 import type { AnalysisResult, ChildProfile, Listing, MeterResult, ProviderModes } from "@/lib/types";
 
 const defaultChild: ChildProfile = {
-  heightCm: "128",
+  heightCm: "",
   age: "",
   weight: "",
   experience: "comfortable",
   stylePreference: "all good / no preference",
-  colorPreference: "no strong preference",
+  colorPreferences: ["No preference / all colors are fine"],
 };
 
 const defaultListing: Listing = {
+  listingLink: "",
+  title: "",
+  askingPrice: "",
+  brand: "",
+  model: "",
+  wheelSize: "",
+  bikeType: "",
+  colorStyle: "",
+  platform: "",
+  location: "",
+  description: "",
+};
+
+const sampleListing: Listing = {
   listingLink: "",
   title: "24 inch Schwinn kids bike, blue, good condition",
   askingPrice: "70",
@@ -28,12 +42,29 @@ const defaultListing: Listing = {
   description: "Good condition. Brakes work. Some normal scratches.",
 };
 
+const colorPreferenceOptions = [
+  "No preference / all colors are fine",
+  "pink / purple",
+  "blue / green",
+  "red / orange",
+  "black / white / neutral",
+  "bright colors",
+  "mature / simple style",
+] as const;
+
 export default function Home() {
   const [child, setChild] = useState<ChildProfile>(defaultChild);
   const [listing, setListing] = useState<Listing>(defaultListing);
   const [inputMode, setInputMode] = useState("link");
+  const [listingSource, setListingSource] = useState("Not set");
   const [pastedText, setPastedText] = useState("");
   const [screenshotName, setScreenshotName] = useState("");
+  const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
+  const [heightFeet, setHeightFeet] = useState("");
+  const [heightInches, setHeightInches] = useState("");
+  const [heightCmInput, setHeightCmInput] = useState("");
+  const [weightUnit, setWeightUnit] = useState<"lb" | "kg">("lb");
+  const [weightInput, setWeightInput] = useState("");
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [status, setStatus] = useState("Local fallback ready");
   const [providerModes, setProviderModes] = useState<ProviderModes | null>(null);
@@ -48,7 +79,13 @@ export default function Home() {
   const [reportNote, setReportNote] = useState("");
   const [reportPreview, setReportPreview] = useState("");
 
-  const localAnalysis = useMemo(() => analyzeBike(child, listing, localPriceReference(listing)), [child, listing]);
+  const normalizedChild = useMemo(() => {
+    const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
+    const normalizedWeightKg = weightInput ? (weightUnit === "lb" ? lbToKg(weightInput) : toFixed(weightInput, 1)) : "";
+    return { ...child, heightCm: normalizedHeightCm, weight: normalizedWeightKg };
+  }, [child, heightCmInput, heightFeet, heightInches, heightUnit, weightInput, weightUnit]);
+
+  const localAnalysis = useMemo(() => analyzeBike(normalizedChild, listing, localPriceReference(listing)), [normalizedChild, listing]);
   const visibleAnalysis = analysis || localAnalysis;
 
   useEffect(() => {
@@ -60,18 +97,45 @@ export default function Home() {
     });
   }, []);
 
+  function updateListingField<K extends keyof Listing>(field: K, value: Listing[K], source = "manual entry") {
+    setListing((current) => ({ ...current, [field]: value }));
+    setListingSource(source);
+  }
+
+  function toggleColorPreference(option: string) {
+    setChild((current) => {
+      const values = current.colorPreferences || [];
+      if (option === "No preference / all colors are fine") {
+        return { ...current, colorPreferences: ["No preference / all colors are fine"] };
+      }
+      const next = values.filter((value) => value !== "No preference / all colors are fine");
+      if (next.includes(option)) {
+        const filtered = next.filter((value) => value !== option);
+        return { ...current, colorPreferences: filtered.length ? filtered : ["No preference / all colors are fine"] };
+      }
+      return { ...current, colorPreferences: [...next, option] };
+    });
+  }
+
   async function extractPastedText() {
     if (!pastedText.trim()) return;
     const result = await apiPost("/api/extract", { text: pastedText });
     const fields = result?.result?.fields || localExtract(pastedText);
     setListing((current) => ({ ...current, ...compactFields(fields) }));
+    setListingSource("pasted text");
     setStatus(result?.statusMessage || providerStatusText(result?.apiStatus || providerModes) || "Listing fields extracted.");
+  }
+
+  function loadSampleListing() {
+    setListing(sampleListing);
+    setListingSource("sample listing");
+    setStatus("Sample listing loaded.");
   }
 
   async function analyze(event: FormEvent) {
     event.preventDefault();
-    const result = await apiPost("/api/analyze", { child, listing });
-    const nextAnalysis = result?.analysis || analyzeBike(child, listing, localPriceReference(listing));
+    const result = await apiPost("/api/analyze", { child: normalizedChild, listing });
+    const nextAnalysis = result?.analysis || analyzeBike(normalizedChild, listing, localPriceReference(listing));
     setAnalysis(nextAnalysis);
     setStatus(result?.priceReference?.message || providerStatusText(result?.apiStatus || providerModes) || "Analysis complete.");
     setSellerMessage(await generateMessage("lowerOffer", "friendly", listing, false));
@@ -92,7 +156,7 @@ export default function Home() {
   async function previewReport() {
     const currentAnalysis = analysis || localAnalysis;
     const payload = {
-      child,
+      child: normalizedChild,
       listing,
       analysis: currentAnalysis,
       email: reportEmail,
@@ -129,16 +193,38 @@ export default function Home() {
             <SectionTitle step="1" title="Child profile" />
             <div className="mb-6 grid gap-3 md:grid-cols-2">
               <Field label="Height">
-                <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-                  <input className={inputClass} type="number" min="80" max="190" value={child.heightCm} onChange={(e) => setChild({ ...child, heightCm: e.target.value })} />
-                  <span>cm</span>
+                <div className="grid gap-2">
+                  <select className={inputClass} value={heightUnit} onChange={(e) => setHeightUnit(e.target.value as "cm" | "ft-in")}>
+                    <option value="cm">cm</option>
+                    <option value="ft-in">ft-in</option>
+                  </select>
+                  {heightUnit === "cm" ? (
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+                      <input className={inputClass} type="number" min="80" max="220" value={heightCmInput} onChange={(e) => setHeightCmInput(e.target.value)} />
+                      <span>cm</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <input className={inputClass} type="number" min="2" max="7" placeholder="feet" value={heightFeet} onChange={(e) => setHeightFeet(e.target.value)} />
+                      <input className={inputClass} type="number" min="0" max="11" placeholder="inches" value={heightInches} onChange={(e) => setHeightInches(e.target.value)} />
+                    </div>
+                  )}
                 </div>
               </Field>
               <Field label="Age">
                 <input className={inputClass} type="number" placeholder="Optional" value={child.age} onChange={(e) => setChild({ ...child, age: e.target.value })} />
               </Field>
               <Field label="Weight">
-                <input className={inputClass} type="number" placeholder="Optional" value={child.weight} onChange={(e) => setChild({ ...child, weight: e.target.value })} />
+                <div className="grid gap-2">
+                  <select className={inputClass} value={weightUnit} onChange={(e) => setWeightUnit(e.target.value as "lb" | "kg")}>
+                    <option value="lb">lb</option>
+                    <option value="kg">kg</option>
+                  </select>
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+                    <input className={inputClass} type="number" placeholder="Optional" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} />
+                    <span>{weightUnit}</span>
+                  </div>
+                </div>
               </Field>
               <Field label="Riding experience">
                 <select className={inputClass} value={child.experience} onChange={(e) => setChild({ ...child, experience: e.target.value as ChildProfile["experience"] })}>
@@ -156,15 +242,18 @@ export default function Home() {
                 </select>
               </Field>
               <Field label="Color preference">
-                <select className={inputClass} value={child.colorPreference} onChange={(e) => setChild({ ...child, colorPreference: e.target.value })}>
-                  <option>no strong preference</option>
-                  <option>pink/purple</option>
-                  <option>blue/green</option>
-                  <option>red/orange</option>
-                  <option>black/white/neutral</option>
-                  <option>bright colors</option>
-                  <option>mature/simple style</option>
-                </select>
+                <div className="grid gap-2 rounded-md border border-slate-300 bg-slate-50 p-2">
+                  {colorPreferenceOptions.map((option) => (
+                    <label key={option} className="flex items-center gap-2 text-sm font-normal text-slate-700">
+                      <input
+                        type="checkbox"
+                        checked={child.colorPreferences.includes(option)}
+                        onChange={() => toggleColorPreference(option)}
+                      />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
               </Field>
             </div>
 
@@ -179,40 +268,55 @@ export default function Home() {
             {inputMode === "link" && (
               <div className="mb-5 grid gap-3">
                 <Field label="Listing link">
-                  <input className={inputClass} type="url" placeholder="https://www.facebook.com/marketplace/item/..." value={listing.listingLink} onChange={(e) => setListing({ ...listing, listingLink: e.target.value })} />
+                  <input className={inputClass} type="url" placeholder="https://www.facebook.com/marketplace/item/..." value={listing.listingLink} onChange={(e) => updateListingField("listingLink", e.target.value, "manual entry")} />
                 </Field>
                 <Field label="Pasted listing text">
                   <textarea className={inputClass} rows={4} placeholder="Paste title, price, description, or seller text" value={pastedText} onChange={(e) => setPastedText(e.target.value)} onBlur={extractPastedText} />
                 </Field>
+                {listing.listingLink && !pastedText.trim() && !screenshotName && (
+                  <p className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-slate-700">
+                    Marketplace links may not be readable directly yet. Please paste listing text or upload a screenshot.
+                  </p>
+                )}
               </div>
             )}
             {inputMode === "screenshot" && (
               <div className="mb-5 grid gap-3">
                 <Field label="Listing screenshot">
-                  <input className={inputClass} type="file" accept="image/*" onChange={(event) => setScreenshotName(event.target.files?.[0]?.name || "")} />
+                  <input className={inputClass} type="file" accept="image/*" onChange={(event) => {
+                    const nextName = event.target.files?.[0]?.name || "";
+                    setScreenshotName(nextName);
+                    if (nextName) setListingSource("screenshot");
+                  }} />
                 </Field>
                 <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-muted">
                   {screenshotName || "No image selected"}
                 </div>
               </div>
             )}
+            <div className="mb-4 flex items-center gap-2">
+              <button className="min-h-10 rounded-md border border-line bg-slate-50 px-3 text-sm font-bold" type="button" onClick={loadSampleListing}>
+                Load sample listing
+              </button>
+              <span className="text-xs text-muted">Source: {listingSource}</span>
+            </div>
 
             <SectionTitle step="3" title="Confirm listing fields" />
             <div className="mb-6 grid gap-3 md:grid-cols-2">
               <Field label="Title" wide>
-                <input className={inputClass} value={listing.title} onChange={(e) => setListing({ ...listing, title: e.target.value })} />
+                <input className={inputClass} value={listing.title} onChange={(e) => updateListingField("title", e.target.value)} />
               </Field>
               <Field label="Asking price">
-                <input className={inputClass} type="number" value={listing.askingPrice} onChange={(e) => setListing({ ...listing, askingPrice: e.target.value })} />
+                <input className={inputClass} type="number" value={listing.askingPrice} onChange={(e) => updateListingField("askingPrice", e.target.value)} />
               </Field>
               <Field label="Brand">
-                <input className={inputClass} value={listing.brand} onChange={(e) => setListing({ ...listing, brand: e.target.value })} />
+                <input className={inputClass} value={listing.brand} onChange={(e) => updateListingField("brand", e.target.value)} />
               </Field>
               <Field label="Model">
-                <input className={inputClass} value={listing.model} onChange={(e) => setListing({ ...listing, model: e.target.value })} />
+                <input className={inputClass} value={listing.model} onChange={(e) => updateListingField("model", e.target.value)} />
               </Field>
               <Field label="Wheel size">
-                <select className={inputClass} value={listing.wheelSize} onChange={(e) => setListing({ ...listing, wheelSize: e.target.value })}>
+                <select className={inputClass} value={listing.wheelSize} onChange={(e) => updateListingField("wheelSize", e.target.value)}>
                   <option value="">Unknown</option>
                   {["12", "14", "16", "18", "20", "24", "26", "27.5"].map((size) => (
                     <option key={size} value={size}>{size} inch</option>
@@ -220,16 +324,16 @@ export default function Home() {
                 </select>
               </Field>
               <Field label="Bike type">
-                <input className={inputClass} value={listing.bikeType} onChange={(e) => setListing({ ...listing, bikeType: e.target.value })} />
+                <input className={inputClass} value={listing.bikeType} onChange={(e) => updateListingField("bikeType", e.target.value)} />
               </Field>
               <Field label="Color/style">
-                <input className={inputClass} value={listing.colorStyle} onChange={(e) => setListing({ ...listing, colorStyle: e.target.value })} />
+                <input className={inputClass} value={listing.colorStyle} onChange={(e) => updateListingField("colorStyle", e.target.value)} />
               </Field>
               <Field label="Platform">
-                <input className={inputClass} value={listing.platform} onChange={(e) => setListing({ ...listing, platform: e.target.value })} />
+                <input className={inputClass} value={listing.platform} onChange={(e) => updateListingField("platform", e.target.value)} />
               </Field>
               <Field label="Condition / description" wide>
-                <textarea className={inputClass} rows={4} value={listing.description} onChange={(e) => setListing({ ...listing, description: e.target.value })} />
+                <textarea className={inputClass} rows={4} value={listing.description} onChange={(e) => updateListingField("description", e.target.value)} />
               </Field>
             </div>
             <button className="min-h-12 w-full rounded-md bg-brand px-4 font-bold text-white" type="submit">Analyze bike</button>
@@ -299,11 +403,11 @@ function PanelTitle({ step, title, children }: { step: string; title: string; ch
 function DimensionCard({ name, item }: { name: string; item: MeterResult }) {
   const border = item.meter === "green" ? "border-l-good" : item.meter === "red" ? "border-l-danger" : "border-l-caution";
   const badge = item.meter === "green" ? "bg-good" : item.meter === "red" ? "bg-danger" : "bg-caution";
-  return <article className={`min-h-36 rounded-lg border border-line border-l-8 bg-white p-4 ${border}`}><span className={`rounded-full px-2 py-1 text-xs font-bold text-white ${badge}`}>{item.meter.toUpperCase()}</span><h3 className="mt-3 font-bold">{name}: {item.label}</h3><p className="mt-2 text-muted">{item.reasoning}</p></article>;
+  return <article className={`min-h-36 rounded-lg border border-line border-l-8 bg-white p-4 ${border}`}><span className={`rounded-full px-2 py-1 text-xs font-bold text-white ${badge}`}>{item.meter.toUpperCase()}</span><h3 className="mt-3 font-bold">{name}</h3><p className="text-sm font-semibold text-slate-800">{item.label}</p><p className="mt-2 text-muted">{item.reasoning}</p></article>;
 }
 
 function dimensionCards(analysis: AnalysisResult): Array<[string, MeterResult]> {
-  return [["Fit", analysis.dimensions.fit], ["Price", analysis.dimensions.price], ["Condition", analysis.dimensions.condition], ["Brand", analysis.dimensions.brand], ["Color / kid appeal", analysis.dimensions.color], ["Risk", analysis.dimensions.risk]];
+  return [["Fit", analysis.dimensions.fit], ["Price", analysis.dimensions.price], ["Condition", analysis.dimensions.condition], ["Brand", analysis.dimensions.brand], ["Kid Appeal", analysis.dimensions.color], ["Risk", analysis.dimensions.risk]];
 }
 
 function meterSignal(meter: MeterResult["meter"]) {
@@ -347,4 +451,22 @@ function compactFields(fields: Partial<Listing>) {
 
 function localReport(payload: { listing: Listing; analysis: AnalysisResult; message: string; note?: string }) {
   return `Report preview generated locally.\n\nListing: ${payload.listing.title}\nOverall: ${payload.analysis.overall.label}\n${payload.analysis.overall.reasoning}\n\nSuggested message:\n${payload.message || "Generate a seller message before sending."}\n\nNote:\n${payload.note || "None"}\n\n${payload.analysis.disclaimer}`;
+}
+
+function feetInchesToCm(feet: string, inches: string) {
+  const f = Number(feet || 0);
+  const i = Number(inches || 0);
+  if (!f && !i) return "";
+  return String(Math.round((f * 12 + i) * 2.54));
+}
+
+function lbToKg(weightLb: string) {
+  const value = Number(weightLb);
+  if (!value) return "";
+  return toFixed(String(value * 0.45359237), 1);
+}
+
+function toFixed(value: string, decimals: number) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toFixed(decimals).replace(/\.0$/, "") : "";
 }

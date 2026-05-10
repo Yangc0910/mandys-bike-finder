@@ -80,6 +80,19 @@ The first public MVP can be deployed on the free Vercel-provided domain, for exa
 
 - `mandys-bike-finder.vercel.app`
 
+Current live deployment:
+
+- `https://mandys-bike-finder.vercel.app/`
+- `/api/status` returns `200 OK`
+- Safe fallback mode is active:
+  - `liveSearch=false`
+  - `llmAnalysis=false`
+  - `emailReport=false`
+  - `backendLogging=false`
+  - providers are `mock/fallback`
+  - `DAILY_LLM_LIMIT=30`
+  - `PER_SESSION_LLM_LIMIT=3`
+
 Custom domain status:
 
 - `mandysbikefinder.com` has been registered.
@@ -121,28 +134,26 @@ The current production-path app lives in `/app`. The older `web/` folder is a le
 
 ### 3. Configure Environment Variables
 
-In Vercel, open the project and go to **Settings -> Environment Variables**. Configure only the variables needed for the current beta:
+In Vercel, open the project and go to **Settings -> Environment Variables**.
+
+For the first deployment, use safe fallback mode with real API features disabled:
 
 ```text
-ENABLE_LIVE_SEARCH
-ENABLE_LLM_ANALYSIS
-ENABLE_EMAIL_REPORT
-ENABLE_BACKEND_LOGGING
-DAILY_SEARCH_LIMIT
+ENABLE_LLM_ANALYSIS=false
+ENABLE_LIVE_SEARCH=false
+ENABLE_EMAIL_REPORT=false
+ENABLE_BACKEND_LOGGING=false
+OPENAI_MODEL=gpt-5.4-mini
 DAILY_LLM_LIMIT
-DAILY_EMAIL_LIMIT
-SEARCH_CACHE_TTL_HOURS
-OPENAI_API_KEY
-OPENAI_MODEL
-SEARCH_API_KEY
-SEARCH_API_URL
-EMAIL_API_KEY
-EMAIL_API_URL
-EMAIL_FROM
-DATABASE_URL
+PER_SESSION_LLM_LIMIT
 ```
 
-Use safe defaults first, such as feature flags set to `false`, then enable one integration at a time.
+Recommended values for first deployment:
+
+```text
+DAILY_LLM_LIMIT=30
+PER_SESSION_LLM_LIMIT=3
+```
 
 Important: API keys must be added only in Vercel Environment Variables. Never commit API keys, OAuth secrets, `.env`, `config.yaml`, credentials, database URLs, or tokens to GitHub.
 
@@ -150,12 +161,13 @@ Important: API keys must be added only in Vercel Environment Variables. Never co
 
 After Vercel deploys:
 
-1. Open the Vercel-provided URL, such as `https://mandys-bike-finder.vercel.app`.
+1. Open the Vercel preview or free-domain URL, such as `https://mandys-bike-finder.vercel.app`.
 2. Confirm the home page loads.
 3. Enter a child profile and sample bike listing.
 4. Confirm the app returns a red/yellow/green result.
-5. Confirm fallback messaging appears when live APIs are disabled.
-6. If a feature flag is enabled, confirm the related server-side API works without exposing keys in browser source or client-side network payloads.
+5. Confirm fallback behavior is active with all real API feature flags set to `false`.
+6. Confirm no API keys appear in browser source or client-side network payloads.
+7. Confirm `/api/status` reports fallback/mock provider modes.
 
 ### 5. Add a Custom Domain Later
 
@@ -166,6 +178,12 @@ When ready:
 3. Add the custom domain.
 4. Follow Vercel's DNS instructions at the domain registrar.
 5. Wait for DNS and SSL certificate provisioning to complete.
+
+Reminder: do not connect `mandysbikefinder.com` until the Vercel free-domain deployment has been tested.
+
+Reminder: API cost-control safeguards must be verified before any public deployment.
+
+Reminder: do not enable real APIs yet for the first public fallback-mode rollout.
 
 ## Source of Truth
 

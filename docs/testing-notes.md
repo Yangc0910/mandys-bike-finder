@@ -19,10 +19,18 @@ npm run dev
 5. Confirm the status pill says providers are mock/fallback.
 6. Confirm the app still shows:
    - Overall red/yellow/green meter.
-   - Fit, price, condition, brand, color/kid appeal, and risk assessments.
+   - Fit, price, condition, brand, kid appeal, and risk assessments.
    - Seller questions.
    - Negotiation Boost message.
    - Email report preview or simulated send.
+7. Confirm initial listing fields are empty on first page load (no prefilled sample data).
+8. Confirm listing source label appears and changes appropriately:
+   - Source: pasted text.
+   - Source: screenshot.
+   - Source: manual entry.
+   - Source: sample listing.
+9. In link mode, if only a link is entered, confirm the note appears:
+   - "Marketplace links may not be readable directly yet. Please paste listing text or upload a screenshot."
 
 Expected behavior: the app remains fully functional without API keys.
 
@@ -72,6 +80,18 @@ Then:
 3. Preview/send a second report.
 
 Expected behavior: the second call falls back gracefully and explains that the daily limit was reached.
+
+## Test Unit and Preference UX
+
+1. Height unit selector:
+   - Switch between `cm` and `ft-in`.
+   - In `ft-in`, enter feet and inches and confirm analysis still runs.
+2. Weight unit selector:
+   - Switch between `lb` and `kg`.
+   - Leave weight blank and confirm analysis still runs.
+3. Color preference multi-select:
+   - Select multiple colors and confirm they remain selected.
+   - Select `No preference / all colors are fine` and confirm it overrides/clears other selections.
 
 ## Test Fallback Behavior
 

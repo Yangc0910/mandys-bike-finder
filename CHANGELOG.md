@@ -12,6 +12,11 @@
 - Added testing notes for no-key, live-key, limit, fallback, and sample listing scenarios.
 - Expanded the PRD source of truth with the full Phase 1.5 environment-variable, model, API-key safety, server-side-only, no-initial-LLM-call, and durable limit/cache requirements.
 - Added GitHub Actions workflow `.github/workflows/app-build.yml` to verify the `/app` Next.js build (and lint when configured) on push and pull request.
+- First Vercel deployment is live at `https://mandys-bike-finder.vercel.app/`.
+- Verified `/api/status` returns `200 OK`.
+- Confirmed deployment is running in safe fallback mode with `liveSearch=false`, `llmAnalysis=false`, `emailReport=false`, `backendLogging=false`, providers `mock/fallback`, `DAILY_LLM_LIMIT=30`, and `PER_SESSION_LLM_LIMIT=3`.
+- Recorded rollout guardrails: do not connect `mandysbikefinder.com` yet and do not enable real APIs yet.
+- Improved MVP UX: added height unit selector (`cm` / `ft-in`) with internal cm normalization, weight unit selector (`lb` / `kg`) with optional kg normalization, multi-select kid color preferences with no-preference override, empty initial listing fields, optional sample listing loader, listing source labels, link-only readability note, and cleaner dimension card titles including `Kid Appeal`.
 
 ## v0.4
 

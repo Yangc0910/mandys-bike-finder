@@ -152,15 +152,17 @@ function assessBrand(listing: Listing): MeterResult {
 }
 
 function assessColorAppeal(child: ChildProfile, listing: Listing): MeterResult {
-  const preference = child.colorPreference || "no strong preference";
+  const preferences = child.colorPreferences || [];
+  const hasNoPreference = preferences.includes("No preference / all colors are fine") || preferences.length === 0;
   const stylePreference = child.stylePreference || "all good / no preference";
   const text = `${listing.colorStyle || ""} ${listing.title || ""} ${listing.description || ""}`.toLowerCase();
 
-  if (preference === "no strong preference" && stylePreference === "all good / no preference") {
+  if (hasNoPreference && stylePreference === "all good / no preference") {
     return meter("green", "Neutral preference", "No strong style preference is set, so color is unlikely to block the decision.");
   }
-  if (preference !== "no strong preference" && colorMatches(preference, text)) {
-    return meter("green", "Likely appealing", `The listing appears to match the ${preference} preference.`);
+  const matchedPreference = preferences.find((preference) => colorMatches(preference, text));
+  if (!hasNoPreference && matchedPreference) {
+    return meter("green", "Likely appealing", `The listing appears to match the ${matchedPreference} preference.`);
   }
   if (stylePreference !== "all good / no preference" && text.includes(stylePreference.split("-")[0])) {
     return meter("green", "Style likely matches", `The listing language appears to match ${stylePreference}.`);
@@ -255,12 +257,12 @@ function isNearSize(wheel: string, sizes: string[]) {
 
 function colorMatches(preference: string, text: string) {
   const groups: Record<string, string[]> = {
-    "pink/purple": ["pink", "purple", "violet"],
-    "blue/green": ["blue", "green", "teal"],
-    "red/orange": ["red", "orange"],
-    "black/white/neutral": ["black", "white", "gray", "grey", "silver", "neutral"],
+    "pink / purple": ["pink", "purple", "violet"],
+    "blue / green": ["blue", "green", "teal"],
+    "red / orange": ["red", "orange"],
+    "black / white / neutral": ["black", "white", "gray", "grey", "silver", "neutral"],
     "bright colors": ["bright", "rainbow", "yellow", "pink", "orange"],
-    "mature/simple style": ["simple", "mature", "black", "white", "gray", "grey", "blue"],
+    "mature / simple style": ["simple", "mature", "black", "white", "gray", "grey", "blue"],
   };
   return (groups[preference] || []).some((color) => text.includes(color));
 }

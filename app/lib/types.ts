@@ -8,7 +8,7 @@ export type ChildProfile = {
   weight?: string;
   experience: RidingExperience;
   stylePreference: string;
-  colorPreference: string;
+  colorPreferences: string[];
 };
 
 export type Listing = {

@@ -41,6 +41,32 @@ All listed API routes are migrated under `/app/app/api`.
 - Build verification must be completed later in an environment with Node.js/npm, such as a local machine, GitHub Actions, or Vercel.
 - GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
 
+## Vercel Deployment Status (Live)
+
+- First Vercel deployment is live and reachable at:
+  - `https://mandys-bike-finder.vercel.app/`
+- Vercel deployment target is the Next.js project under `/app`.
+- Vercel root directory is `app`.
+- Vercel build command is `npm run build`.
+- `/api/status` returns `200 OK`.
+- Deployment is running in safe fallback mode with real API features disabled:
+  - `ENABLE_LLM_ANALYSIS=false`
+  - `ENABLE_LIVE_SEARCH=false`
+  - `ENABLE_EMAIL_REPORT=false`
+  - `ENABLE_BACKEND_LOGGING=false`
+  - `OPENAI_MODEL=gpt-5.4-mini`
+  - `DAILY_LLM_LIMIT=30`
+  - `PER_SESSION_LLM_LIMIT=3`
+- `/api/status` confirms:
+  - `liveSearch=false`
+  - `llmAnalysis=false`
+  - `emailReport=false`
+  - `backendLogging=false`
+  - providers are `mock/fallback`
+- Vercel preview/free-domain deployment is verified end-to-end before any custom-domain connection.
+- Do not connect `mandysbikefinder.com` until the Vercel free domain is tested.
+- API cost-control safeguards must be verified before public deployment.
+
 ## Not Implemented Yet
 
 - Real OCR.
