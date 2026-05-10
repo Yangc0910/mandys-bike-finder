@@ -29,6 +29,7 @@
 - Polished landing/header UI for a cleaner parent-facing MVP: merged duplicate top sections into one concise hero, reduced visual dominance of the hero image, improved typography and spacing, added three value chips, and moved technical provider details into a subtle `Beta status` disclosure.
 - Improved main flow layout and recommendation visibility: top inputs are now balanced side-by-side (`Child profile` + `Listing input`) with confirmation fields kept in listing flow, results render below the inputs after analyze, and a dedicated `Recommended bike size` section clearly shows best size now, growth option, caution, and reasoning.
 - Added analysis gating and empty-state behavior: result sections are hidden until minimum child/listing inputs are provided and Analyze is run, Analyze button now shows disabled reasons when inputs are insufficient, and stale results are replaced with a clear re-run prompt after key input changes.
+- Polished hero visual design: upgraded to a premium rounded container with soft gradient background, smoother text-to-image blend, refined branded headline typography, polished eyebrow label, and cleaner value chips while preserving existing functionality.
 
 ## v0.4
 

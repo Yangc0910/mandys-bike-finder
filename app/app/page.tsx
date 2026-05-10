@@ -277,30 +277,42 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50/70 px-4 py-5 md:px-6 md:py-7">
       <section className="mx-auto max-w-[1320px]">
-        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-panel">
-          <div className="grid items-stretch md:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative z-10 p-6 md:p-8">
-              <p className="text-xs font-bold uppercase tracking-wide text-brand">Mandy&apos;s Bike Finder</p>
-              <h1 className="mt-2 max-w-xl text-3xl font-bold leading-tight text-slate-900 md:text-4xl">
-                Find the right used kids bike before you message the seller
+        <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/90 bg-gradient-to-br from-white via-amber-50/35 to-blue-50/30 shadow-[0_18px_45px_-22px_rgba(15,23,42,0.35)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(59,130,246,0.12),transparent_42%),radial-gradient(circle_at_36%_72%,rgba(251,191,36,0.10),transparent_46%)]" />
+          <div className="relative grid items-stretch md:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative z-10 p-6 md:p-9">
+              <span className="inline-flex items-center rounded-full border border-blue-200/80 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand backdrop-blur-sm">
+                Mandy&apos;s Bike Finder
+              </span>
+              <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.08] tracking-[-0.01em] text-slate-900 md:text-[2.8rem]">
+                Find the{" "}
+                <span className="bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
+                  right used kids bike
+                </span>{" "}
+                before you message the seller
               </h1>
-              <p className="mt-3 max-w-lg text-base text-slate-600">
+              <p className="mt-4 max-w-lg text-base leading-7 text-slate-600">
                 Check fit, price, condition, brand, and kid appeal in one simple flow.
               </p>
-              <div className="mt-5 flex flex-wrap gap-2.5">
+              <div className="mt-6 flex flex-wrap gap-2.5">
                 {["Fit for your child", "Deal quality", "Seller message help"].map((item) => (
-                  <span key={item} className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
+                  <span
+                    key={item}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-blue-100/90 bg-white/85 px-3.5 py-1.5 text-sm font-semibold text-blue-700 shadow-[0_6px_18px_-14px_rgba(59,130,246,0.55)] backdrop-blur-sm"
+                  >
+                    <span className="text-[11px]">✓</span>
                     {item}
                   </span>
                 ))}
               </div>
             </div>
-            <div className="relative min-h-[200px] md:min-h-[260px]">
+            <div className="relative min-h-[220px] md:min-h-[280px]">
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: "url('/images/mandy-bike-hero.jpg')" }}
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent md:bg-gradient-to-l md:from-transparent md:via-transparent md:to-white/10" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/94 via-white/64 via-34% to-white/8 md:bg-gradient-to-r md:from-white/88 md:via-white/26 md:to-transparent" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_76%_45%,transparent_44%,rgba(15,23,42,0.1)_100%)]" />
             </div>
           </div>
         </div>

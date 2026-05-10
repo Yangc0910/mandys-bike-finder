@@ -148,6 +148,7 @@ Confirmed on deployed MVP:
 - Landing/header visual polish: one simplified hero, clearer parent-facing headline, three value chips, improved spacing/typography, and technical provider status moved to a subtle `Beta status` section.
 - Main flow layout: `Child profile` and `Listing input` now appear side-by-side at the top on desktop (stacked on mobile), with `Confirm listing fields` staying in the listing flow and results rendered below only after clicking `Analyze bike`.
 - Bike size recommendation visibility: after analysis, a dedicated `Recommended bike size` section clearly shows best size now, growth option, caution, and reasoning.
+- Hero visual polish: premium card-style hero with soft warm gradients, smoother left-to-right text/image blending, refined headline typography, polished brand eyebrow label, and cleaner value chips with subtle icon markers.
 
 ## Test Fallback Behavior
 
