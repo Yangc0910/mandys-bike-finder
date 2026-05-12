@@ -1,6 +1,6 @@
 # API Cost Control
 
-Current PRD: `docs/PRD.md` v0.4
+Current PRD: `docs/PRD.md` v0.5
 
 ## Principle
 
@@ -16,6 +16,14 @@ Provider responsibilities:
 - Search trusted retailer sources where possible.
 - Return estimated new price range, sources, confidence, and timestamp.
 - Fail gracefully when unavailable.
+
+Future Bike Scout connector responsibilities:
+
+- Query only supported public listings or official APIs.
+- Accept normalized Bike Scout search params.
+- Return normalized listing records.
+- Enforce server-side caps on source count, listing count, and run frequency.
+- Never expose provider keys to the browser.
 
 Phase 1 uses a mock/local provider by default. Phase 1.5 may use controlled real API providers when feature flags and environment variables are configured.
 
@@ -66,6 +74,14 @@ Example variables:
 
 If the daily limit is reached, the app should switch to fallback mode and explain the limitation.
 
+Bike Scout-specific future controls:
+
+- Cap number of saved search profiles per user.
+- Cap search frequency.
+- Cap number of sources per run.
+- Cap number of listings analyzed per run.
+- Cap optional LLM usage per search/profile if enrichment is later added.
+
 ## Required Controls
 
 Every real API integration must include:
@@ -80,6 +96,7 @@ Every real API integration must include:
 - API failure logging that does not break the user experience.
 - Explicit user-triggered calls for costly screenshot AI extraction (no auto-call on page load or file upload).
 - Controlled link extraction attempts with per-session/per-IP limits, timeout, and short-lived URL caching.
+- Bike Scout scheduled-search caps before any production rollout.
 
 ## Caching
 
@@ -107,6 +124,11 @@ If live search is unavailable, the app should still work using:
 - Built-in brand/size estimated ranges.
 - User-provided reference price.
 - Lower confidence output.
+
+If Bike Scout automation is unavailable later, the product should still fall back to:
+
+- the current one-listing-at-a-time analyzer
+- user-assisted screenshots, pasted text, and manual entry
 
 Fallback mode should never block the full analysis.
 
@@ -156,3 +178,4 @@ The implementation should define service interfaces for:
 - LLM provider for extraction, reasoning, negotiation messages, and report summaries.
 - Email report service.
 - Metadata logging service.
+- Bike Scout marketplace search connectors.

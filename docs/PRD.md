@@ -1,14 +1,26 @@
 # Mandy Bike Finder PRD
 
-Version: v0.4 (consolidated)  
+Version: v0.5 (Bike Scout foundation)  
 Status: Current MVP source of truth  
-Last updated: 2026-05-10
+Last updated: 2026-05-11
 
 ## 1. Product Overview
 
 Mandy Bike Finder helps parents evaluate used kids-bike listings and decide whether a bike is a good fit for their child based on child profile, bike size, bike type, listing details, price, and condition.
 
 The MVP is a practical used-bike decision assistant, not only a generic bike-size calculator.
+
+## 1A. Paid Product Direction
+
+Single paid product only:
+
+- `Mandy Bike Scout`
+
+Positioning:
+
+- Planned paid feature around `$2.99/week` (or generally `$2-3/week` in product copy).
+- No Plus / Pro / Premium tier split.
+- The value is saved time, listing monitoring, filtering weak matches, and surfacing practical fit/value/safety guidance quickly.
 
 ## 2. Target User
 
@@ -38,10 +50,12 @@ Not currently implemented:
 - Fully automated scraping across all marketplaces.
 - Guaranteed Facebook Marketplace page scraping.
 - User accounts and persistence.
-- Saved search/listing history.
-- Automated daily alerts/notifications.
+- Production Bike Scout payments.
+- Production Bike Scout scheduled alerts/notifications.
 - Real-time market-wide price comparison engine.
 - In-app seller messaging, checkout, or transaction handling.
+- Login-gated marketplace automation.
+- Anti-bot bypass or scraping workarounds.
 
 ## 5. Core User Flow
 
@@ -52,6 +66,15 @@ Not currently implemented:
 5. User confirms/edits listing fields.
 6. App evaluates listing quality and fit.
 7. App shows recommendation, reasoning, and practical checks.
+
+Planned Bike Scout flow after backend work:
+
+1. Parent saves a child fit profile and search preferences.
+2. Server-side scheduled job queries supported public sources only.
+3. Listings are normalized into a shared schema.
+4. Existing fit/value/safety scoring is reused.
+5. Top matches above threshold are highlighted.
+6. Future email alerts are sent.
 
 ## 6. Child Profile Requirements
 
@@ -203,6 +226,45 @@ Additional source context in UI:
 - listing source state label (`screenshot`, `link`, `manual`, extraction variants)
 - screenshot filename/preview URL in screenshot mode
 
+## 10A. Bike Scout Prototype Data Model
+
+Current local-only typed prototype model:
+
+- `BikeScoutProfile`
+  - `id`
+  - `name`
+  - `childProfile`
+    - `height`
+    - `heightUnit`
+    - `age`
+    - `ridingExperience`
+    - `weight` optional
+    - `weightUnit` optional
+    - `stylePreference` optional
+    - `colorPreference` optional
+  - `searchPreferences`
+    - `location`
+    - `zipCode`
+    - `radiusMiles`
+    - `minBudget` optional
+    - `maxBudget`
+    - `preferredWheelSizes`
+    - `preferredBikeTypes`
+    - `includedKeywords`
+    - `excludedKeywords`
+    - `marketplaceSources`
+    - `alertFrequency`
+  - `enabled`
+  - `createdAt`
+  - `updatedAt`
+
+Current storage scope:
+
+- Prototype only.
+- Stored in browser `localStorage`.
+- No shared backend database yet.
+- No auth or multi-device sync yet.
+
 ## 11. AI Extraction Behavior
 
 - AI extraction is user-triggered only.
@@ -213,6 +275,47 @@ Additional source context in UI:
 - Pasted-text extraction is available in link flow.
 - Facebook link flow relies on pasted text/screenshot fallback when direct page read is not possible.
 - Manual entry always remains available.
+
+## 11A. Bike Scout Marketplace Connector Foundation
+
+The app now includes a separate typed connector foundation for future Bike Scout marketplace automation:
+
+- `MarketplaceConnector`
+  - `id`
+  - `label`
+  - `search(params: BikeSearchParams): Promise<NormalizedListing[]>`
+  - `supportsLocationSearch`
+  - `supportsRadiusSearch`
+  - `supportsDirectUrlExtraction`
+  - `notes`
+
+Normalized search result shape:
+
+- `NormalizedListing`
+  - `id`
+  - `source`
+  - `sourceListingId` optional
+  - `title`
+  - `price`
+  - `currency`
+  - `location`
+  - `distanceMiles` optional
+  - `url`
+  - `imageUrl` optional
+  - `postedAt` optional
+  - `description`
+  - `brand` optional
+  - `model` optional
+  - `bikeType` optional
+  - `wheelSize` optional
+  - `condition` optional
+  - `rawData` optional
+
+Current implementation status:
+
+- Interface and source catalog are implemented.
+- Automated search execution is not live yet.
+- Any future external searching must stay server-side.
 
 ## 12. Rate Limits And Cost Controls
 
@@ -273,6 +376,22 @@ Not implemented in current scoring:
 - stale listing filtering
 - full market search ranking
 
+Bike Scout reuse direction:
+
+- Saved child profile
+- Normalized listing
+- current fit score
+- wheel size match
+- bike type match
+- rule-based price/value signal
+- condition/safety signal
+- overall recommendation
+
+Important accuracy note:
+
+- Current Bike Scout preview uses the existing rule-based scoring engine.
+- It does not claim live market-wide price comparison unless a real provider is enabled later.
+
 ## 14. Recommendation Output
 
 After analysis, user sees:
@@ -298,6 +417,7 @@ Child-profile recommendation card includes:
 
 - Warm parent-friendly hero with concise intro copy and bike illustration.
 - Lightweight "How it works" onboarding cards before the form.
+- Bike Scout paid-feature card/section that clearly says planned/early MVP when automation is not live.
 - Expectation-setting callout explaining AI/link limitations and real-world safety checks.
 - Responsive child-profile and listing-input layout.
 - Required/optional labels visible.
@@ -307,6 +427,15 @@ Child-profile recommendation card includes:
 - Screenshot preview preserves aspect ratio and avoids cropping.
 - Facebook limitations are clearly explained in link flow.
 - UI supports desktop and mobile usage patterns.
+
+Bike Scout section requirements:
+
+- Title: `Mandy Bike Scout`
+- Badge: `Planned paid feature`
+- Pricing copy: `About $2.99/week`
+- Honest language that alerts/payment/automation are not live yet
+- Optional local prototype form for ZIP/location, radius, budget, and source preferences
+- Saved local profile summary when prototype storage is used
 
 ## 16. Assets
 
@@ -336,6 +465,33 @@ Mapping behavior:
 - Recommendations are guidance, not a substitute for test riding.
 - Used-bike mechanical condition still needs human inspection.
 - Rate-limit/caching storage is in-memory prototype behavior, not durable multi-instance storage.
+- Bike Scout local profiles are browser-local only today.
+- Bike Scout does not send alerts, run cron jobs, or collect payment yet.
+
+## 17A. Source Strategy And Compliance
+
+Automated candidates for future Bike Scout work:
+
+- Craigslist: practical public-search candidate
+- eBay: prefer official API
+- Pinkbike: best-effort planned
+- Bicycle Blue Book: best-effort planned
+- Buycycle: best-effort planned
+- The Pro's Closet: best-effort planned
+- BikeExchange: best-effort planned
+
+User-assisted only:
+
+- Facebook Marketplace
+- OfferUp unless a reliable public access path exists later
+
+Hard rules:
+
+- Do not automate Facebook Marketplace scraping.
+- Do not scrape login-gated pages.
+- Do not bypass anti-bot systems.
+- Validate URLs and fetch only public `http/https` pages.
+- Keep search connectors behind server-side code when real search is added.
 
 ## 18. Future Roadmap
 
@@ -357,6 +513,37 @@ Priority 2 — Nice-to-have after MVP:
 - Alerting/notifications.
 - Broader marketplace integrations.
 - Stronger brand/model normalization.
+- Bike Scout production backend, payments, and durable search history.
+
+## 18A. Future Bike Scout Scheduled Architecture
+
+Planned server-side flow:
+
+1. Load enabled Bike Scout profiles.
+2. Query supported marketplace connectors.
+3. Normalize listings.
+4. Deduplicate by URL/source ID.
+5. Score each listing.
+6. Select top matches above threshold.
+7. Notify user by email.
+8. Store prior results to avoid duplicate alerts.
+
+Possible future infrastructure:
+
+- Vercel Cron
+- Supabase scheduled functions
+- GitHub Actions
+- Render cron
+- Supabase / Neon / Firebase / Vercel Postgres
+- Resend / SendGrid / Postmark
+
+Not implemented now:
+
+- production cron
+- durable database
+- real email alerts
+- Stripe billing
+- user accounts
 
 ## 19. Version / Changelog
 
@@ -373,4 +560,4 @@ Recent updates include:
 
 ## 20. Final Consistency Check
 
-This PRD reflects current implemented MVP behavior and explicitly separates non-implemented items into limitations/roadmap sections. It does not claim full Facebook scraping, full market search, user accounts, or durable backend infrastructure as currently implemented.
+This PRD reflects current implemented MVP behavior and explicitly separates non-implemented items into limitations/roadmap sections. It includes a local-only Bike Scout prototype foundation but does not claim live paid billing, production alerts, Facebook automation, full market search, user accounts, or durable backend infrastructure as currently implemented.

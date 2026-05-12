@@ -1,6 +1,6 @@
 # Product Decisions
 
-Current PRD: `docs/PRD.md` v0.4
+Current PRD: `docs/PRD.md` v0.5
 
 ## Web MVP First, Not iOS First
 
@@ -86,3 +86,21 @@ Reason: Parents may want to save the recommendation, share with a spouse or fami
 Decision: Keep the existing Python listing monitor prototype as historical/experimental code for now, but do not treat it as the current MVP implementation.
 
 Reason: The current PRD is Web MVP first and explicitly avoids automatic Facebook/Craigslist scraping. The Python monitor can remain in the repo temporarily, but future implementation should align with `docs/PRD.md`. Any reused logic should be adapted into local/mock web analysis or future service interfaces without violating the scraping constraints.
+
+## Single Paid Product Only
+
+Decision: If Mandy adds a paid offer, it should be a single paid product called `Mandy Bike Scout`.
+
+Reason: The monetization story should stay simple for parents. The value is time saved, faster filtering, and quicker action on strong used-bike matches, not a confusing Plus/Pro/Premium ladder.
+
+Guardrails:
+
+- Position around `$2.99/week` or generally `$2-3/week`.
+- No Plus / Pro / Premium split.
+- Do not imply payment is active before Stripe or equivalent is actually implemented.
+
+## Facebook Marketplace Remains User-Assisted Only
+
+Decision: Bike Scout should not automate Facebook Marketplace monitoring or scraping.
+
+Reason: The product should not depend on login-gated scraping, anti-bot bypass, or automation that creates compliance and reliability risk. Facebook links can still be used as user-provided references with screenshot, pasted text, or manual entry.

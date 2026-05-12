@@ -1,9 +1,24 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { analyzeBike, generateSellerMessage, localPriceReference, recommendWheelSize } from "@/lib/analysis";
+import {
+  BIKE_SCOUT_PICKUP_CHECKLIST,
+  BIKE_SCOUT_SOURCE_OPTIONS,
+  bikeScoutProfileSummary,
+  buildBikeScoutSellerMessageDraft,
+  defaultBikeScoutProfile,
+  hydrateBikeScoutProfile,
+  loadBikeScoutProfiles,
+  saveBikeScoutProfiles,
+  scoreBikeScoutListing,
+  sourceLabel,
+} from "@/lib/bike-scout";
 import { detectMarketplace } from "@/lib/marketplace";
+import type { MarketplaceId } from "@/lib/marketplace";
+import type { BikeScoutProfile, NormalizedListing } from "@/lib/bike-scout";
 import type { AnalysisResult, ChildProfile, Listing, MeterResult, ProviderModes } from "@/lib/types";
 
 const defaultChild: ChildProfile = {
@@ -37,6 +52,16 @@ const colorPreferenceOptions = [
   "black / white / neutral",
   "bright colors",
   "mature / simple style",
+] as const;
+
+const bikeScoutWheelSizeOptions = ["12 inch", "14 inch", "16 inch", "18 inch", "20 inch", "24 inch", "26 inch"] as const;
+const bikeScoutTypeOptions = [
+  "Balance bike",
+  "Training wheels bike",
+  "Standard kids bike",
+  "Kids cruiser bike",
+  "Kids mountain bike",
+  "Hybrid / neighborhood bike",
 ] as const;
 
 export default function Home() {
@@ -78,6 +103,9 @@ export default function Home() {
   const [showProfileRecommendation, setShowProfileRecommendation] = useState(false);
   const [profileRecommendation, setProfileRecommendation] = useState<ChildBikeRecommendation | null>(null);
   const [profileRecommendationSignature, setProfileRecommendationSignature] = useState("");
+  const [scoutDraft, setScoutDraft] = useState<BikeScoutProfile>(defaultBikeScoutProfile);
+  const [savedScoutProfiles, setSavedScoutProfiles] = useState<BikeScoutProfile[]>([]);
+  const [scoutNotice, setScoutNotice] = useState("Bike Scout profiles are stored only in this browser during this prototype.");
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -136,6 +164,10 @@ export default function Home() {
   const canRunLinkAction = Boolean(linkValue) && (
     detectedMarketplace.extractionMode !== "fallback_only" || hasPastedText
   );
+  const scoutPreview = useMemo(() => {
+    if (!savedScoutProfiles.length) return null;
+    return scoreBikeScoutListing(savedScoutProfiles[0], buildScoutPreviewListing(savedScoutProfiles[0], listing));
+  }, [listing, savedScoutProfiles]);
 
   useEffect(() => {
     apiGet("/api/status").then((result) => {
@@ -144,6 +176,14 @@ export default function Home() {
         setStatus(providerStatusText(result.providers));
       }
     });
+  }, []);
+
+  useEffect(() => {
+    const storedProfiles = loadBikeScoutProfiles();
+    setSavedScoutProfiles(storedProfiles);
+    if (storedProfiles[0]) {
+      setScoutDraft(storedProfiles[0]);
+    }
   }, []);
 
   useEffect(() => {
@@ -158,6 +198,8 @@ export default function Home() {
     if (hasTriedCraigslistAutoExtract === linkValue) return;
     setHasTriedCraigslistAutoExtract(linkValue);
     void extractListingLink(linkValue);
+    // The auto-extract trigger is intentionally keyed to link state, not the function identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detectedMarketplace.isValidUrl, hasTriedCraigslistAutoExtract, inputMode, isCraigslistLink, linkValue]);
 
   function updateListingField<K extends keyof Listing>(field: K, value: Listing[K], source = "manual entry") {
@@ -185,6 +227,83 @@ export default function Home() {
       }
       return { ...current, colorPreferences: [...next, option] };
     });
+  }
+
+  function updateScoutDraft(
+    recipe: (current: BikeScoutProfile) => BikeScoutProfile,
+  ) {
+    setScoutDraft((current) => ({
+      ...recipe(current),
+      updatedAt: new Date().toISOString(),
+    }));
+  }
+
+  function toggleScoutSource(sourceId: MarketplaceId) {
+    updateScoutDraft((current) => {
+      const currentSources = current.searchPreferences.marketplaceSources;
+      const nextSources = currentSources.includes(sourceId)
+        ? currentSources.filter((item) => item !== sourceId)
+        : [...currentSources, sourceId];
+      return {
+        ...current,
+        searchPreferences: {
+          ...current.searchPreferences,
+          marketplaceSources: nextSources,
+        },
+      };
+    });
+  }
+
+  function toggleScoutListValue(field: "preferredWheelSizes" | "preferredBikeTypes", value: string) {
+    updateScoutDraft((current) => {
+      const currentValues = current.searchPreferences[field];
+      const nextValues = currentValues.includes(value)
+        ? currentValues.filter((item) => item !== value)
+        : [...currentValues, value];
+      return {
+        ...current,
+        searchPreferences: {
+          ...current.searchPreferences,
+          [field]: nextValues,
+        },
+      };
+    });
+  }
+
+  function useCurrentChildForScout() {
+    updateScoutDraft((current) =>
+      hydrateBikeScoutProfile(current, {
+        height: normalizedChild.heightCm || current.childProfile.height,
+        heightUnit: "cm",
+        age: normalizedChild.age || current.childProfile.age,
+        ridingExperience: normalizedChild.experience || current.childProfile.ridingExperience,
+        weight: normalizedChild.weight || current.childProfile.weight,
+        weightUnit: "kg",
+        stylePreference: normalizedChild.stylePreference || current.childProfile.stylePreference,
+        colorPreference: normalizedChild.colorPreferences || current.childProfile.colorPreference,
+      }),
+    );
+    setScoutNotice("Copied the current rider profile into the local Bike Scout draft.");
+  }
+
+  function saveScoutProfile() {
+    const hasLocation = scoutDraft.searchPreferences.zipCode.trim() || scoutDraft.searchPreferences.location.trim();
+    const hasBudget = scoutDraft.searchPreferences.maxBudget.trim();
+    if (!hasLocation || !hasBudget) {
+      setScoutNotice("Add a ZIP or location and a max budget before saving this local Bike Scout profile.");
+      return;
+    }
+
+    const nextProfile = {
+      ...scoutDraft,
+      updatedAt: new Date().toISOString(),
+      createdAt: scoutDraft.createdAt || new Date().toISOString(),
+    };
+    const nextProfiles = [nextProfile];
+    setSavedScoutProfiles(nextProfiles);
+    setScoutDraft(nextProfile);
+    saveBikeScoutProfiles(nextProfiles);
+    setScoutNotice("Saved locally. Alerts and automated searches are not active yet in this prototype.");
   }
 
   async function extractPastedText() {
@@ -399,6 +518,351 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="mb-6 overflow-hidden rounded-2xl border border-blue-200/80 bg-gradient-to-br from-sky-50 via-white to-amber-50/70 shadow-panel">
+          <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="border-b border-blue-100/80 p-5 lg:border-b-0 lg:border-r">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center rounded-full border border-blue-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
+                  Planned paid feature
+                </span>
+                <span className="text-sm font-semibold text-slate-700">About $2.99/week</span>
+              </div>
+              <h2 className="mt-4 text-2xl font-bold text-slate-900">Mandy Bike Scout</h2>
+              <p className="mt-2 text-base text-slate-700">Let Mandy help watch nearby listings for the right kids&apos; bike.</p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                Save your child&apos;s bike fit profile and search preferences. Bike Scout will help monitor supported used-bike sources, score new listings, and highlight the best matches for fit, value, and safety.
+              </p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                {[
+                  "Watches nearby used-bike listings",
+                  "Scores fit, value, and safety",
+                  "Highlights the best matches",
+                  "Helps you message sellers faster",
+                ].map((item) => (
+                  <div key={item} className="rounded-xl border border-white/90 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 shadow-[0_10px_25px_-22px_rgba(15,23,42,0.55)]">
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">Free vs paid positioning</p>
+                <p className="mt-2"><span className="font-semibold">Free:</span> analyze one listing at a time by screenshot, link, pasted text, or manual entry, with AI extraction still subject to daily limits.</p>
+                <p className="mt-2"><span className="font-semibold">Bike Scout:</span> save child profile and search preferences, monitor supported nearby listings later, reuse fit/value/safety scoring, generate seller drafts, and prepare pickup checks.</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-900">This screen is a local prototype only. Payment, alerts, and automated marketplace monitoring are not active yet.</p>
+              </div>
+            </div>
+
+            <div className="p-5">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.45)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">Set up a local Bike Scout profile</h3>
+                    <p className="mt-1 text-sm text-slate-600">Prototype storage only. Saved data stays in this browser until a real backend exists.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={useCurrentChildForScout}
+                    className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-brand"
+                  >
+                    Use current rider profile
+                  </button>
+                </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <Field label="Profile name">
+                    <input
+                      className={inputClass}
+                      value={scoutDraft.name}
+                      onChange={(e) => updateScoutDraft((current) => ({ ...current, name: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="ZIP code or location" required>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <input
+                        className={inputClass}
+                        placeholder="ZIP code"
+                        value={scoutDraft.searchPreferences.zipCode}
+                        onChange={(e) => updateScoutDraft((current) => ({
+                          ...current,
+                          searchPreferences: { ...current.searchPreferences, zipCode: e.target.value },
+                        }))}
+                      />
+                      <input
+                        className={inputClass}
+                        placeholder="City or area"
+                        value={scoutDraft.searchPreferences.location}
+                        onChange={(e) => updateScoutDraft((current) => ({
+                          ...current,
+                          searchPreferences: { ...current.searchPreferences, location: e.target.value },
+                        }))}
+                      />
+                    </div>
+                  </Field>
+                  <Field label="Child height (cm)">
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="80"
+                      max="220"
+                      placeholder="Height in cm"
+                      value={scoutDraft.childProfile.height}
+                      onChange={(e) => updateScoutDraft((current) => ({
+                        ...current,
+                        childProfile: { ...current.childProfile, height: e.target.value, heightUnit: "cm" },
+                      }))}
+                    />
+                  </Field>
+                  <Field label="Child age">
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="1"
+                      max="16"
+                      placeholder="Age"
+                      value={scoutDraft.childProfile.age}
+                      onChange={(e) => updateScoutDraft((current) => ({
+                        ...current,
+                        childProfile: { ...current.childProfile, age: e.target.value },
+                      }))}
+                    />
+                  </Field>
+                  <Field label="Riding experience">
+                    <select
+                      className={inputClass}
+                      value={scoutDraft.childProfile.ridingExperience}
+                      onChange={(e) => updateScoutDraft((current) => ({
+                        ...current,
+                        childProfile: {
+                          ...current.childProfile,
+                          ridingExperience: e.target.value as ChildProfile["experience"],
+                        },
+                      }))}
+                    >
+                      <option value="beginner">Beginner</option>
+                      <option value="comfortable">Comfortable</option>
+                      <option value="confident">Confident</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </Field>
+                  <Field label="Radius miles">
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="5"
+                      max="100"
+                      value={scoutDraft.searchPreferences.radiusMiles}
+                      onChange={(e) => updateScoutDraft((current) => ({
+                        ...current,
+                        searchPreferences: { ...current.searchPreferences, radiusMiles: Number(e.target.value || 0) },
+                      }))}
+                    />
+                  </Field>
+                  <Field label="Budget range" required>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <input
+                        className={inputClass}
+                        inputMode="numeric"
+                        placeholder="Min budget (optional)"
+                        value={scoutDraft.searchPreferences.minBudget}
+                        onChange={(e) => updateScoutDraft((current) => ({
+                          ...current,
+                          searchPreferences: { ...current.searchPreferences, minBudget: e.target.value },
+                        }))}
+                      />
+                      <input
+                        className={inputClass}
+                        inputMode="numeric"
+                        placeholder="Max budget"
+                        value={scoutDraft.searchPreferences.maxBudget}
+                        onChange={(e) => updateScoutDraft((current) => ({
+                          ...current,
+                          searchPreferences: { ...current.searchPreferences, maxBudget: e.target.value },
+                        }))}
+                      />
+                    </div>
+                  </Field>
+                </div>
+
+                <div className="mt-4 grid gap-4">
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">Preferred wheel sizes</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {bikeScoutWheelSizeOptions.map((size) => (
+                        <SelectableChip
+                          key={size}
+                          selected={scoutDraft.searchPreferences.preferredWheelSizes.includes(size)}
+                          onClick={() => toggleScoutListValue("preferredWheelSizes", size)}
+                        >
+                          {size}
+                        </SelectableChip>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">Preferred bike types</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {bikeScoutTypeOptions.map((type) => (
+                        <SelectableChip
+                          key={type}
+                          selected={scoutDraft.searchPreferences.preferredBikeTypes.includes(type)}
+                          onClick={() => toggleScoutListValue("preferredBikeTypes", type)}
+                        >
+                          {type}
+                        </SelectableChip>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">Sources</p>
+                    <div className="mt-2 grid gap-2">
+                      {BIKE_SCOUT_SOURCE_OPTIONS.map((source) => (
+                        <label key={source.id} className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-sm text-slate-700">
+                          <div className="flex items-start gap-3">
+                            <input
+                              type="checkbox"
+                              checked={scoutDraft.searchPreferences.marketplaceSources.includes(source.id)}
+                              onChange={() => toggleScoutSource(source.id)}
+                            />
+                            <div>
+                              <p className="font-semibold text-slate-900">{source.label}</p>
+                              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">{renderAutomationLevel(source.automationLevel)}</p>
+                              <p className="mt-1 text-xs leading-5 text-slate-600">{source.notes}</p>
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Field label="Included keywords">
+                      <input
+                        className={inputClass}
+                        placeholder="guardian, woom, lightweight"
+                        value={scoutDraft.searchPreferences.includedKeywords.join(", ")}
+                        onChange={(e) => updateScoutDraft((current) => ({
+                          ...current,
+                          searchPreferences: { ...current.searchPreferences, includedKeywords: splitCommaValues(e.target.value) },
+                        }))}
+                      />
+                    </Field>
+                    <Field label="Excluded keywords">
+                      <input
+                        className={inputClass}
+                        placeholder="repair, rust, too small"
+                        value={scoutDraft.searchPreferences.excludedKeywords.join(", ")}
+                        onChange={(e) => updateScoutDraft((current) => ({
+                          ...current,
+                          searchPreferences: { ...current.searchPreferences, excludedKeywords: splitCommaValues(e.target.value) },
+                        }))}
+                      />
+                    </Field>
+                    <Field label="Alert frequency">
+                      <select
+                        className={inputClass}
+                        value={scoutDraft.searchPreferences.alertFrequency}
+                        onChange={(e) => updateScoutDraft((current) => ({
+                          ...current,
+                          searchPreferences: {
+                            ...current.searchPreferences,
+                            alertFrequency: e.target.value as BikeScoutProfile["searchPreferences"]["alertFrequency"],
+                          },
+                        }))}
+                      >
+                        <option value="daily">Daily (planned)</option>
+                        <option value="twice_daily">Twice daily (planned)</option>
+                        <option value="manual_review">Manual review only</option>
+                      </select>
+                    </Field>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={saveScoutProfile}
+                    className="min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white"
+                  >
+                    Save local Bike Scout profile
+                  </button>
+                  <p className="text-sm text-slate-600">{scoutNotice}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {(savedScoutProfiles[0] || scoutPreview) && (
+            <div className="border-t border-blue-100/80 bg-white/70 p-5">
+              <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+                {savedScoutProfiles[0] && (
+                  <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Saved locally</p>
+                        <h3 className="mt-1 text-lg font-bold text-slate-900">{savedScoutProfiles[0].name}</h3>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${savedScoutProfiles[0].enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
+                        {savedScoutProfiles[0].enabled ? "Prototype enabled" : "Prototype paused"}
+                      </span>
+                    </div>
+                    {(() => {
+                      const summary = bikeScoutProfileSummary(savedScoutProfiles[0]);
+                      return (
+                        <div className="mt-4 grid gap-3 md:grid-cols-2">
+                          <InfoLine label="Location" value={summary.locationLine} />
+                          <InfoLine label="Budget" value={summary.budgetLine} />
+                          <InfoLine label="Wheel sizes" value={summary.wheelSizeLine} />
+                          <InfoLine label="Bike types" value={summary.bikeTypeLine} />
+                          <InfoLine label="Sources" value={summary.sourceLabels.join(", ") || "None selected"} />
+                          <InfoLine label="Alert frequency" value={savedScoutProfiles[0].searchPreferences.alertFrequency.replace("_", " ")} />
+                        </div>
+                      );
+                    })()}
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Bike Scout conveniences planned</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-900">Seller message draft</p>
+                      <p className="mt-1 text-sm text-slate-700">{buildBikeScoutSellerMessageDraft()}</p>
+                      <p className="mt-3 text-sm font-semibold text-slate-900">Pickup inspection checklist</p>
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                        {BIKE_SCOUT_PICKUP_CHECKLIST.map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+                  </article>
+                )}
+
+                {scoutPreview && (
+                  <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Future scoring preview</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-3">
+                      <h3 className="text-lg font-bold text-slate-900">{scoutPreview.listing.title}</h3>
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${meterSignal(scoutPreview.overallRecommendation.meter)}`}>
+                        {scoutPreview.overallRecommendation.label}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-slate-600">
+                      This is a local preview showing how future Bike Scout results can reuse today&apos;s fit, value, and safety logic. No background search or alert has actually run.
+                    </p>
+                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      <InfoLine label="Source" value={sourceLabel(scoutPreview.listing.source as MarketplaceId)} />
+                      <InfoLine label="Wheel size match" value={scoutPreview.wheelSizeMatch} />
+                      <InfoLine label="Price/value" value={scoutPreview.priceValueSignal} />
+                      <InfoLine label="Safety signal" value={scoutPreview.safetySignal} />
+                    </div>
+                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                      {dimensionCards(scoutPreview.analysis).slice(0, 3).map(([name, item]) => (
+                        <div key={name} className={`rounded-xl border p-3 ${meterSignal(item.meter)}`}>
+                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{name}</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-900">{item.label}</p>
+                          <p className="mt-1 text-xs leading-5 text-slate-700">{item.reasoning}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
         <section className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-slate-700 shadow-panel">
           <p className="font-semibold text-slate-900">What this tool can and cannot do</p>
           <p className="mt-1">
@@ -526,10 +990,13 @@ export default function Home() {
                     {profileRecommendationImage ? (
                       <div className="grid gap-3">
                         <div className="overflow-hidden rounded-md border border-slate-200 bg-slate-50">
-                          <img
+                          <Image
                             src={profileRecommendationImage}
                             alt={`${profileRecommendation.category} illustration`}
+                            width={1200}
+                            height={900}
                             className="h-auto w-full object-cover"
+                            unoptimized
                           />
                         </div>
                         <p className="text-sm font-semibold text-slate-800">{profileRecommendation.category} illustration</p>
@@ -646,7 +1113,14 @@ export default function Home() {
                         className="w-full rounded-md border border-slate-200 bg-white p-0 text-left"
                       >
                         <div className="max-h-[500px] overflow-auto md:max-h-[620px]">
-                          <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="block h-auto w-full object-contain" />
+                          <Image
+                            src={screenshotPreviewUrl}
+                            alt="Uploaded listing screenshot preview"
+                            width={1200}
+                            height={1600}
+                            className="block h-auto w-full object-contain"
+                            unoptimized
+                          />
                         </div>
                       </button>
                       <p className="text-xs text-slate-600">{screenshotName}</p>
@@ -674,7 +1148,14 @@ export default function Home() {
                         </button>
                       </div>
                       <div className="max-h-[82vh] overflow-auto bg-slate-50 p-3">
-                        <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot full preview" className="block h-auto w-full object-contain" />
+                        <Image
+                          src={screenshotPreviewUrl}
+                          alt="Uploaded listing screenshot full preview"
+                          width={1200}
+                          height={1600}
+                          className="block h-auto w-full object-contain"
+                          unoptimized
+                        />
                       </div>
                     </div>
                   </div>
@@ -860,6 +1341,26 @@ function HowItWorksCard({ icon, title, copy }: { icon: string; title: string; co
       <h3 className="mt-1 text-sm font-bold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-600">{copy}</p>
     </article>
+  );
+}
+
+function SelectableChip({
+  children,
+  onClick,
+  selected,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  selected: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-3 py-1.5 text-sm font-semibold ${selected ? "border-brand bg-blue-50 text-brand" : "border-slate-200 bg-white text-slate-700"}`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -1220,6 +1721,43 @@ function localExtract(text: string) {
   const priceMatch = text.match(/\$?\b(\d{2,4})\b/);
   const wheelMatch = text.match(/\b(12|14|16|18|20|24|26|27\.5)\s*(?:inch|in|")\b/i);
   return { title: text.split(/\r?\n/).find((line) => line.trim()) || "", askingPrice: priceMatch?.[1] || "", wheelSize: wheelMatch?.[1] || "", description: text };
+}
+
+function splitCommaValues(value: string) {
+  return value.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function renderAutomationLevel(level: "planned_mvp" | "planned_best_effort" | "user_assisted_only") {
+  if (level === "planned_mvp") return "Practical automated candidate";
+  if (level === "planned_best_effort") return "Best-effort planned";
+  return "User-assisted only";
+}
+
+function buildScoutPreviewListing(profile: BikeScoutProfile, listing: Listing): NormalizedListing {
+  const preferredWheelSize = profile.searchPreferences.preferredWheelSizes[0] || "20 inch";
+  const preferredBikeType = profile.searchPreferences.preferredBikeTypes[0] || "Hybrid / neighborhood bike";
+  const title = listing.title || `${preferredWheelSize} ${preferredBikeType} in good condition`;
+  const description = listing.description || "Prototype preview listing using the current Mandy fit, value, and safety rules.";
+
+  return {
+    id: "local-preview-listing",
+    source: (profile.searchPreferences.marketplaceSources[0] || "craigslist") as MarketplaceId,
+    title,
+    price: listing.askingPrice ? Number(listing.askingPrice) : 140,
+    currency: "USD",
+    location: listing.location || profile.searchPreferences.location || profile.searchPreferences.zipCode || "Local area",
+    url: listing.listingLink || "https://example.com/local-bike-preview",
+    description,
+    brand: listing.brand || "Guardian",
+    model: listing.model || "",
+    bikeType: listing.bikeType || preferredBikeType,
+    wheelSize: listing.wheelSize || preferredWheelSize,
+    condition: listing.condition || "Used but ready to ride",
+    rawData: {
+      preview: true,
+      note: "Bike Scout preview only. No live marketplace polling has run.",
+    },
+  };
 }
 
 function resolveBikeTypeImage(category: string, hint = "") {

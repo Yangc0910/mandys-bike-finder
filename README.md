@@ -8,6 +8,12 @@ The project is inspired by helping Mandy find the right used bike. It is also a 
 
 Mandy's Bike Finder helps parents decide whether a used kids bike is the right size, the right style, and a good enough deal to contact the seller.
 
+Planned paid direction:
+
+- Single paid product only: `Mandy Bike Scout`
+- Positioning: around `$2.99/week`
+- No Plus / Pro / Premium tier split
+
 ## Problem
 
 Parents browsing Facebook Marketplace, Craigslist, OfferUp, local parent groups, or similar marketplaces often need quick help answering:
@@ -45,6 +51,13 @@ Phase 1.5 supports provider interfaces for:
 - Trusted-retailer search price reference.
 - Email report sending.
 - Backend metadata/API usage logging.
+
+Bike Scout foundation now adds:
+
+- A local-only saved Bike Scout profile prototype in the Next.js app.
+- Typed Bike Scout saved-search models.
+- Typed marketplace connector interfaces for future server-side monitoring.
+- Honest source classification separating future automated candidates from user-assisted-only marketplaces.
 
 ## Current Implemented Behavior (As of 2026-05-10)
 
@@ -92,12 +105,23 @@ Current listing fields used by the app:
 Not implemented now:
 
 - Automatic Facebook Marketplace scraping.
+- Automated Facebook Marketplace monitoring for Bike Scout.
 - Generic multi-marketplace crawling.
 - Live retailer search provider in production mode.
 - Real email provider and durable backend storage provider.
+- Stripe/payment flow.
+- User login/auth unless added later on purpose.
 - Automated feed-level ranking rules such as "just listed" filtering, stale listing filtering, distance ranking, or location-based ranking.
 
 The MVP still excludes automatic Facebook/Craigslist scraping, user accounts, payments, and iOS app work.
+
+Bike Scout honesty rules:
+
+- Facebook Marketplace remains user-assisted only.
+- OfferUp should remain user-assisted only unless a reliable public integration path exists later.
+- Do not scrape login-gated pages.
+- Do not bypass anti-bot systems.
+- Do not imply alerts/payment are active unless the backend really exists.
 
 ## UI Assets
 
@@ -132,9 +156,11 @@ Then open:
 
 Current verification note:
 
-- `npm` is not available in the current Codex environment.
-- `npm install`, `npm run dev`, and `npm run build` could not be verified here.
-- Build verification must be done later in an environment with Node.js/npm, such as a local machine, GitHub Actions, or Vercel.
+- Run checks from `/app` when Node.js/npm is available:
+  - `npm install`
+  - `npm run lint`
+  - `npm run build`
+- There is not currently a dedicated `test` or `typecheck` script under `/app`.
 - GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
 
 The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search, email, and backend logging currently remain provider-interface placeholders with fallback behavior. Never put API keys in frontend code.
@@ -323,6 +349,15 @@ The changelog is:
 6. Phase 4: email report backend hardening.
 7. Phase 5: polish, shareable reports, and analytics.
 8. Future: PWA/iOS, affiliate, saved listings, user accounts.
+
+Bike Scout-specific future items:
+
+- Real database-backed saved searches.
+- Scheduled search jobs.
+- Email alerts.
+- Official eBay API integration.
+- Safe server-side public-source connectors.
+- Payment integration after product validation.
 
 See [docs/roadmap.md](docs/roadmap.md) for details.
 
