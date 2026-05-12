@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added `Mandy Bike Scout` paid-feature foundation with single-tier positioning (`about $2.99/week`), a clearly labeled planned-paid UI section, and a local-only Bike Scout profile prototype stored in browser `localStorage`.
+- Added typed Bike Scout foundation under `app/lib/bike-scout.ts`, including `BikeScoutProfile`, `BikeSearchParams`, `NormalizedListing`, marketplace connector interfaces, source classification metadata, seller-message draft helper, pickup checklist helper, and a preview bridge that reuses existing scoring logic without claiming live alerts.
+- Documented Bike Scout product direction and guardrails across PRD/README/architecture/current-status/user-flows/scoring/API-cost docs, including single paid tier only, no Stripe yet, no auth yet, planned scheduled-search architecture, and Facebook Marketplace remaining user-assisted only.
 - UI/UX polish pass: added warmer parent-friendly hero copy, a lightweight "How it works" onboarding section, expectation-setting guidance, friendlier step labels/microcopy, and clearer primary action labels while preserving existing recommendation/extraction logic.
 - Added marketplace-aware listing link support layer with domain detection and platform-specific guidance for Craigslist, Facebook Marketplace, eBay, OfferUp, Pinkbike BuySell, Bicycle Blue Book, Buycycle, The Pro's Closet, BikeExchange, and unknown links.
 - Added extraction-mode routing (`direct_supported`, `best_effort`, `fallback_only`) in Link mode, including detected marketplace indicator, clearer button behavior, and pasted-text/screenshot fallback guidance.

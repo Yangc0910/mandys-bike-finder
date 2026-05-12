@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-05-10
+Last updated: 2026-05-11
 
 ## Production Path
 
@@ -28,6 +28,8 @@ The `/app` implementation uses:
 - Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
 - Negotiation Boost UI.
 - Email report UI and simulated send fallback.
+- Bike Scout planned-paid feature section with local-only profile prototype.
+- Typed Bike Scout marketplace/source foundation for future saved-search work.
 - API routes:
   - `/api/status`
   - `/api/extract`
@@ -47,9 +49,11 @@ Child recommendation current rules:
 
 ## Build Verification Status
 
-- `npm` is not available in the current Codex environment.
-- `npm install`, `npm run dev`, and `npm run build` could not be verified here.
-- Build verification must be completed later in an environment with Node.js/npm, such as a local machine, GitHub Actions, or Vercel.
+- Build verification should be run from `/app` with:
+  - `npm install`
+  - `npm run lint`
+  - `npm run build`
+- There is not currently a dedicated `/app` `test` or `typecheck` script.
 - GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
 
 ## Vercel Deployment Status (Live)
@@ -97,6 +101,11 @@ Child recommendation current rules:
 - Real database or Supabase adapter.
 - Durable deployed usage limits/cache.
 - Automated end-to-end browser tests for production flows.
+- Production Bike Scout cron/search execution.
+- Bike Scout payment integration.
+- Bike Scout account/auth layer.
+- Bike Scout email alerts.
+- Automated Facebook Marketplace monitoring.
 
 ## Legacy Code
 

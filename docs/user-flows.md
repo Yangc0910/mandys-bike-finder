@@ -1,6 +1,6 @@
 # User Flows
 
-Current PRD: `docs/PRD.md` v0.4
+Current PRD: `docs/PRD.md` v0.5
 
 ## Flow 1: Child Profile Recommendation
 
@@ -63,3 +63,22 @@ Fallback behavior:
 1. User chooses message goal/tone and generates seller message.
 2. User can preview/email report.
 3. In fallback mode, email is simulated and report is still generated for review.
+
+## Flow 7: Bike Scout Local Prototype
+
+1. User opens the `Mandy Bike Scout` section.
+2. User sees clear paid positioning:
+   - planned paid feature
+   - about `$2.99/week`
+   - no claim that billing or alerts are live
+3. User can copy the current rider profile into Bike Scout or manually enter child/search preferences.
+4. User saves one local Bike Scout profile in browser storage.
+5. App shows a saved local summary plus a preview of how future normalized search results could reuse current scoring logic.
+
+Important constraints:
+
+- This flow is local-only prototype storage today.
+- No scheduled search runs.
+- No email alerts.
+- No Stripe/payment.
+- Facebook Marketplace remains user-assisted only.

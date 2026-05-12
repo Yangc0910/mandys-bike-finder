@@ -2,6 +2,8 @@
 
 Current implementation reference: `app/lib/analysis.ts`
 
+Bike Scout foundation reference: `app/lib/bike-scout.ts`
+
 ## User-Facing Rule
 
 - The UI shows only qualitative meters: `green`, `yellow`, `red`.
@@ -91,6 +93,21 @@ Outcomes:
 - Listing recency / just-listed weighting.
 - Stale listing filtering.
 - Marketplace-wide ranking engine.
+
+## Bike Scout Reuse Path (Implemented As Foundation, Not Live Search)
+
+The codebase now includes a Bike Scout preview bridge that can:
+
+1. Accept a saved Bike Scout profile.
+2. Accept a normalized listing shape.
+3. Convert that listing into the current app listing model.
+4. Reuse the same fit, price, condition, brand, kid-appeal, and risk evaluation.
+
+Current limits:
+
+- This is a local preview foundation only.
+- It does not claim live automated search or live market-wide pricing.
+- Price/value remains rule-based unless a real provider is added later.
 
 ## Child Bike-Type Recommendation (Implemented)
 
