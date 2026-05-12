@@ -10,15 +10,18 @@ import {
   bikeScoutProfileSummary,
   buildBikeScoutSellerMessageDraft,
   defaultBikeScoutProfile,
+  defaultBikeScoutWaitlistEntry,
   hydrateBikeScoutProfile,
   loadBikeScoutProfiles,
+  loadBikeScoutWaitlist,
   saveBikeScoutProfiles,
+  saveBikeScoutWaitlist,
   scoreBikeScoutListing,
   sourceLabel,
 } from "@/lib/bike-scout";
 import { detectMarketplace } from "@/lib/marketplace";
 import type { MarketplaceId } from "@/lib/marketplace";
-import type { BikeScoutProfile, NormalizedListing } from "@/lib/bike-scout";
+import type { BikeScoutProfile, BikeScoutWaitlistEntry, NormalizedListing } from "@/lib/bike-scout";
 import type { AnalysisResult, ChildProfile, Listing, MeterResult, ProviderModes } from "@/lib/types";
 
 const defaultChild: ChildProfile = {
@@ -106,6 +109,9 @@ export default function Home() {
   const [scoutDraft, setScoutDraft] = useState<BikeScoutProfile>(defaultBikeScoutProfile);
   const [savedScoutProfiles, setSavedScoutProfiles] = useState<BikeScoutProfile[]>([]);
   const [scoutNotice, setScoutNotice] = useState("Bike Scout profiles are stored only in this browser during this prototype.");
+  const [waitlistDraft, setWaitlistDraft] = useState<BikeScoutWaitlistEntry>(defaultBikeScoutWaitlistEntry);
+  const [savedWaitlistEntries, setSavedWaitlistEntries] = useState<BikeScoutWaitlistEntry[]>([]);
+  const [waitlistNotice, setWaitlistNotice] = useState("");
   const [showScoutSetup, setShowScoutSetup] = useState(false);
 
   const normalizedChild = useMemo(() => {
@@ -181,11 +187,13 @@ export default function Home() {
 
   useEffect(() => {
     const storedProfiles = loadBikeScoutProfiles();
+    const storedWaitlist = loadBikeScoutWaitlist();
     setSavedScoutProfiles(storedProfiles);
+    setSavedWaitlistEntries(storedWaitlist);
     if (storedProfiles[0]) {
       setScoutDraft(storedProfiles[0]);
-      setShowScoutSetup(true);
     }
+    if (storedWaitlist[0]) setShowScoutSetup(true);
   }, []);
 
   useEffect(() => {
@@ -308,9 +316,25 @@ export default function Home() {
     setScoutNotice("Saved locally. Alerts and automated searches are not active yet in this prototype.");
   }
 
-  function openScoutSetup() {
+  function saveWaitlistEntry() {
+    const email = waitlistDraft.email.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setWaitlistNotice("Please enter a valid email address to join the Bike Scout waitlist.");
+      return;
+    }
+
+    const nextEntry = {
+      ...waitlistDraft,
+      id: waitlistDraft.id || `waitlist_${Math.random().toString(36).slice(2, 10)}`,
+      email,
+      createdAt: new Date().toISOString(),
+    };
+    const nextEntries = [nextEntry, ...savedWaitlistEntries];
+    setSavedWaitlistEntries(nextEntries);
+    saveBikeScoutWaitlist(nextEntries);
+    setWaitlistDraft(defaultBikeScoutWaitlistEntry());
+    setWaitlistNotice("Thanks — you’re on the Bike Scout early-access list for this browser. Note: this MVP stores your signup locally for now. A real waitlist backend will be added before launch.");
     setShowScoutSetup(true);
-    setScoutNotice("Bike Scout payment is still a placeholder, but you can set up the local profile flow now.");
   }
 
   async function extractPastedText() {
@@ -546,25 +570,25 @@ export default function Home() {
                 Start free bike check
               </a>
               <a
-                href="#bike-scout"
+                href="#bike-scout-waitlist"
                 className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700"
               >
-                See paid Bike Scout
+                Join Bike Scout waitlist
               </a>
             </div>
           </article>
 
           <article
-            id="bike-scout"
+            id="bike-scout-waitlist"
             className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-[linear-gradient(135deg,#0f172a_0%,#1d4ed8_52%,#38bdf8_100%)] p-5 text-white shadow-[0_20px_55px_-28px_rgba(15,23,42,0.75)] md:p-6"
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,0.22),transparent_30%),radial-gradient(circle_at_82%_86%,rgba(251,191,36,0.26),transparent_34%)]" />
             <div className="relative">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center rounded-full border border-white/30 bg-white/12 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white/95">
-                  Paid upgrade
+                  Planned paid feature
                 </span>
-                <span className="text-sm font-semibold text-white/85">About $2.99/week</span>
+                <span className="text-sm font-semibold text-white/85">Planned price: about $2.99/week</span>
               </div>
               <h2 className="mt-4 text-2xl font-bold tracking-[-0.01em]">Mandy Bike Scout</h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-white/82">
@@ -575,7 +599,7 @@ export default function Home() {
                   "Save child profile and search preferences",
                   "Surface best nearby matches",
                   "Reuse fit, value, and safety scoring",
-                  "Bike Scout setup opens after checkout flow later",
+                  "Early access starts with a waitlist-first MVP",
                 ].map((item) => (
                   <div key={item} className="rounded-2xl border border-white/18 bg-white/12 px-3 py-2 text-sm font-semibold text-white/92 backdrop-blur-sm">
                     {item}
@@ -583,21 +607,20 @@ export default function Home() {
                 ))}
               </div>
               <div className="mt-5 rounded-3xl border border-white/16 bg-slate-950/20 p-4 backdrop-blur-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-100/80">Checkout placeholder</p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-100/80">Waitlist-first MVP</p>
+                <div className="mt-3 grid gap-3">
                   <div>
-                    <p className="text-lg font-bold">Unlock Bike Scout</p>
+                    <p className="text-lg font-bold">Join Bike Scout waitlist</p>
                     <p className="mt-1 text-sm text-white/80">
-                      Payment link is not wired yet. This button is a placeholder for the future paid checkout flow.
+                      Bike Scout is planned as a paid feature around $2.99/week. Join the waitlist and we’ll notify you when early access is ready.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={openScoutSetup}
-                    className="inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 text-sm font-bold text-slate-900"
+                  <a
+                    href="#bike-scout-details"
+                    className="inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 text-sm font-bold text-slate-900 sm:w-fit"
                   >
-                    Continue to setup
-                  </button>
+                    Join Bike Scout waitlist
+                  </a>
                 </div>
               </div>
             </div>
@@ -1068,50 +1091,46 @@ export default function Home() {
           </section>
         )}
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-panel">
+        <section id="bike-scout-details" className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-panel">
           <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#e0f2fe_0%,#ffffff_38%,#fef3c7_100%)] px-5 py-6 md:px-6">
             <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Paid feature entry</p>
                 <h2 className="mt-2 text-2xl font-bold text-slate-900">Mandy Bike Scout</h2>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                  Below the free analyzer, Bike Scout becomes the premium workflow: checkout first later, then save a reusable scout profile for nearby search monitoring.
+                  Bike Scout is a planned paid feature for nearby used-bike monitoring. For this MVP, we are validating demand first with an early-access waitlist before building payment and launch infrastructure.
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-[0_16px_30px_-26px_rgba(15,23,42,0.45)]">
-                Planned paid feature: about $2.99/week
+                Planned price: about $2.99/week
               </div>
             </div>
           </div>
 
           <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
             <article className="border-b border-slate-200 bg-slate-950 px-5 py-6 text-white lg:border-b-0 lg:border-r">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-200/80">Step 1</p>
-              <h3 className="mt-2 text-xl font-bold">Payment flow placeholder</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-200/80">Early access</p>
+              <h3 className="mt-2 text-xl font-bold">Waitlist-first validation</h3>
               <p className="mt-2 text-sm leading-6 text-white/78">
-                This is where the future checkout or subscription link will live. For now, it just acts as the gateway into the Bike Scout setup experience.
+                We are not collecting payment yet. Instead, we are collecting early-interest signals from parents before wiring Stripe Checkout and a real Bike Scout backend.
               </p>
               <div className="mt-4 rounded-2xl border border-white/12 bg-white/8 p-4">
-                <p className="text-sm font-semibold text-white">Weekly access</p>
+                <p className="text-sm font-semibold text-white">Planned price</p>
                 <p className="mt-1 text-3xl font-bold">$2.99<span className="text-base font-semibold text-white/75">/week</span></p>
-                <p className="mt-2 text-sm text-white/75">Checkout link coming soon. No charge happens here yet.</p>
-                <button
-                  type="button"
-                  onClick={openScoutSetup}
-                  className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 text-sm font-bold text-slate-950"
-                >
-                  Continue to Bike Scout setup
-                </button>
+                <p className="mt-2 text-sm text-white/75">No payment is collected now. Bike Scout is not fully live yet.</p>
+                <div className="mt-4 rounded-xl border border-emerald-200/20 bg-emerald-400/10 px-3 py-3 text-sm text-emerald-50">
+                  Join the waitlist to help us prioritize early Bike Scout features and launch order.
+                </div>
               </div>
             </article>
 
             <article className="px-5 py-6 md:px-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Step 2</p>
-                  <h3 className="mt-2 text-xl font-bold text-slate-900">Bike Scout profile setup</h3>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Join Bike Scout waitlist</p>
+                  <h3 className="mt-2 text-xl font-bold text-slate-900">Early-access waitlist</h3>
                   <p className="mt-2 text-sm text-slate-600">
-                    Save the child profile and search preferences you want Bike Scout to reuse later.
+                    Tell us what kind of bike you’re looking for. This helps us prioritize early Bike Scout features.
                   </p>
                 </div>
                 <button
@@ -1119,20 +1138,109 @@ export default function Home() {
                   onClick={() => setShowScoutSetup((current) => !current)}
                   className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-brand"
                 >
-                  {showScoutSetup ? "Hide setup" : "Open setup"}
+                  {showScoutSetup ? "Hide local setup preview" : "Preview local setup"}
                 </button>
               </div>
 
+              <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Field label="Email address" required>
+                    <input
+                      className={inputClass}
+                      type="email"
+                      required
+                      placeholder="parent@example.com"
+                      value={waitlistDraft.email}
+                      onChange={(e) => setWaitlistDraft((current) => ({ ...current, email: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="ZIP code" optional>
+                    <input
+                      className={inputClass}
+                      placeholder="Optional"
+                      value={waitlistDraft.zipCode}
+                      onChange={(e) => setWaitlistDraft((current) => ({ ...current, zipCode: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="Child age" optional>
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min="1"
+                      max="18"
+                      placeholder="Optional"
+                      value={waitlistDraft.childAge}
+                      onChange={(e) => setWaitlistDraft((current) => ({ ...current, childAge: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="Desired wheel size" optional>
+                    <select
+                      className={inputClass}
+                      value={waitlistDraft.desiredWheelSize}
+                      onChange={(e) => setWaitlistDraft((current) => ({ ...current, desiredWheelSize: e.target.value }))}
+                    >
+                      <option value="">Optional</option>
+                      {["12 inch", "14 inch", "16 inch", "18 inch", "20 inch", "24 inch", "26 inch"].map((size) => (
+                        <option key={size} value={size}>{size}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Max budget" optional>
+                    <input
+                      className={inputClass}
+                      inputMode="numeric"
+                      placeholder="Optional"
+                      value={waitlistDraft.maxBudget}
+                      onChange={(e) => setWaitlistDraft((current) => ({ ...current, maxBudget: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="Notes" wide optional>
+                    <textarea
+                      className={inputClass}
+                      rows={3}
+                      placeholder="Optional notes about the kind of used bike you want"
+                      value={waitlistDraft.notes}
+                      onChange={(e) => setWaitlistDraft((current) => ({ ...current, notes: e.target.value }))}
+                    />
+                  </Field>
+                </div>
+                <p className="mt-3 text-sm text-slate-600">
+                  Bike Scout is planned as a paid feature around $2.99/week. Join the waitlist and we’ll notify you when early access is ready.
+                </p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Local prototype: this does not submit to a server yet.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={saveWaitlistEntry}
+                    className="min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white"
+                  >
+                    Join Bike Scout waitlist
+                  </button>
+                  {savedWaitlistEntries.length > 0 && (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700">
+                      Waitlist saved locally
+                    </span>
+                  )}
+                </div>
+                {waitlistNotice && (
+                  <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                    {waitlistNotice}
+                  </div>
+                )}
+              </div>
+
               {!showScoutSetup ? (
-                <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-700">
-                  Open Bike Scout setup to configure location, budget, sources, and child fit preferences. The saved profile remains local-only for now.
+                <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-700">
+                  Optional local prototype preview: open this to see the future Bike Scout profile setup flow. It does not submit to a server or turn alerts on.
                 </div>
               ) : (
-                <div className="mt-4 grid gap-5">
+                <div className="mt-5 grid gap-5">
                   <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <h4 className="text-lg font-bold text-slate-900">Set up a local Bike Scout profile</h4>
+                        <h4 className="text-lg font-bold text-slate-900">Local Bike Scout setup preview</h4>
                         <p className="mt-1 text-sm text-slate-600">Prototype storage only. Saved data stays in this browser until a real backend exists.</p>
                       </div>
                       <button
@@ -1358,7 +1466,7 @@ export default function Home() {
                         onClick={saveScoutProfile}
                         className="min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white"
                       >
-                        Save local Bike Scout profile
+                        Save local setup preview
                       </button>
                       <p className="text-sm text-slate-600">{scoutNotice}</p>
                     </div>

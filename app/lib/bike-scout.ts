@@ -40,6 +40,17 @@ export type BikeScoutProfile = {
   updatedAt: string;
 };
 
+export type BikeScoutWaitlistEntry = {
+  id: string;
+  email: string;
+  zipCode: string;
+  childAge: string;
+  desiredWheelSize: string;
+  maxBudget: string;
+  notes: string;
+  createdAt: string;
+};
+
 export type BikeSearchParams = {
   location?: string;
   zipCode?: string;
@@ -98,6 +109,7 @@ export type BikeScoutScorePreview = {
 };
 
 const STORAGE_KEY = "mandy-bike-scout-profiles";
+const WAITLIST_STORAGE_KEY = "mandy-bike-scout-waitlist";
 
 function plannedConnector(
   config: Omit<MarketplaceScoutSource, "search">,
@@ -245,6 +257,19 @@ export function defaultBikeScoutProfile(): BikeScoutProfile {
   };
 }
 
+export function defaultBikeScoutWaitlistEntry(): BikeScoutWaitlistEntry {
+  return {
+    id: createBikeScoutWaitlistId(),
+    email: "",
+    zipCode: "",
+    childAge: "",
+    desiredWheelSize: "",
+    maxBudget: "",
+    notes: "",
+    createdAt: new Date().toISOString(),
+  };
+}
+
 export function hydrateBikeScoutProfile(
   base: BikeScoutProfile,
   input: {
@@ -319,6 +344,28 @@ export function createBikeScoutId() {
   return `scout_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+export function createBikeScoutWaitlistId() {
+  return `waitlist_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function saveBikeScoutWaitlist(entries: BikeScoutWaitlistEntry[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify(entries));
+}
+
+export function loadBikeScoutWaitlist(): BikeScoutWaitlistEntry[] {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(WAITLIST_STORAGE_KEY);
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter(isBikeScoutWaitlistEntry) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function normalizeBikeSearchParams(profile: BikeScoutProfile): BikeSearchParams {
   return {
     location: profile.searchPreferences.location || undefined,
@@ -389,4 +436,10 @@ function isBikeScoutProfile(value: unknown): value is BikeScoutProfile {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<BikeScoutProfile>;
   return Boolean(candidate.id && candidate.name && candidate.childProfile && candidate.searchPreferences);
+}
+
+function isBikeScoutWaitlistEntry(value: unknown): value is BikeScoutWaitlistEntry {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<BikeScoutWaitlistEntry>;
+  return Boolean(candidate.id && candidate.email && candidate.createdAt);
 }

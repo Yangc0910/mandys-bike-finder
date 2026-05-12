@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reworked the Bike Scout paid-feature area into a waitlist-first MVP: removed checkout-style CTAs, added a required-email Bike Scout waitlist form with optional interest fields, added local-only waitlist confirmation messaging, and kept pricing positioned as a planned paid feature rather than a live payment flow.
+- Added local Bike Scout waitlist storage helpers in browser `localStorage` and documented the future Stripe Checkout path as planned, not live.
 - Added `Mandy Bike Scout` paid-feature foundation with single-tier positioning (`about $2.99/week`), a clearly labeled planned-paid UI section, and a local-only Bike Scout profile prototype stored in browser `localStorage`.
 - Added typed Bike Scout foundation under `app/lib/bike-scout.ts`, including `BikeScoutProfile`, `BikeSearchParams`, `NormalizedListing`, marketplace connector interfaces, source classification metadata, seller-message draft helper, pickup checklist helper, and a preview bridge that reuses existing scoring logic without claiming live alerts.
 - Documented Bike Scout product direction and guardrails across PRD/README/architecture/current-status/user-flows/scoring/API-cost docs, including single paid tier only, no Stripe yet, no auth yet, planned scheduled-search architecture, and Facebook Marketplace remaining user-assisted only.

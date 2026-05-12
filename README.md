@@ -13,6 +13,7 @@ Planned paid direction:
 - Single paid product only: `Mandy Bike Scout`
 - Positioning: around `$2.99/week`
 - No Plus / Pro / Premium tier split
+- Waitlist-first before live payment
 
 ## Problem
 
@@ -55,6 +56,7 @@ Phase 1.5 supports provider interfaces for:
 Bike Scout foundation now adds:
 
 - A local-only saved Bike Scout profile prototype in the Next.js app.
+- A local-only Bike Scout waitlist prototype in the Next.js app.
 - Typed Bike Scout saved-search models.
 - Typed marketplace connector interfaces for future server-side monitoring.
 - Honest source classification separating future automated candidates from user-assisted-only marketplaces.
@@ -122,6 +124,8 @@ Bike Scout honesty rules:
 - Do not scrape login-gated pages.
 - Do not bypass anti-bot systems.
 - Do not imply alerts/payment are active unless the backend really exists.
+- Bike Scout waitlist is currently local-only and does not submit to a real server yet.
+- Future payment path should use Stripe Checkout only after waitlist validation.
 
 ## UI Assets
 

@@ -21,6 +21,7 @@ Positioning:
 - Planned paid feature around `$2.99/week` (or generally `$2-3/week` in product copy).
 - No Plus / Pro / Premium tier split.
 - The value is saved time, listing monitoring, filtering weak matches, and surfacing practical fit/value/safety guidance quickly.
+- Before Stripe/payment launch, Bike Scout uses a waitlist-first validation approach.
 
 ## 2. Target User
 
@@ -51,6 +52,7 @@ Not currently implemented:
 - Guaranteed Facebook Marketplace page scraping.
 - User accounts and persistence.
 - Production Bike Scout payments.
+- Live Bike Scout payment collection.
 - Production Bike Scout scheduled alerts/notifications.
 - Real-time market-wide price comparison engine.
 - In-app seller messaging, checkout, or transaction handling.
@@ -75,6 +77,13 @@ Planned Bike Scout flow after backend work:
 4. Existing fit/value/safety scoring is reused.
 5. Top matches above threshold are highlighted.
 6. Future email alerts are sent.
+
+Current waitlist-first MVP flow:
+
+1. Parent sees Bike Scout as a planned paid feature.
+2. Parent joins a waitlist instead of paying now.
+3. Waitlist details are stored locally in the browser for this prototype.
+4. Parent can optionally preview the future Bike Scout setup flow.
 
 ## 6. Child Profile Requirements
 
@@ -265,6 +274,11 @@ Current storage scope:
 - No shared backend database yet.
 - No auth or multi-device sync yet.
 
+Bike Scout waitlist storage:
+
+- Current waitlist entries are also stored in browser `localStorage`.
+- The waitlist does not submit to a real server yet.
+
 ## 11. AI Extraction Behavior
 
 - AI extraction is user-triggered only.
@@ -434,6 +448,9 @@ Bike Scout section requirements:
 - Badge: `Planned paid feature`
 - Pricing copy: `About $2.99/week`
 - Honest language that alerts/payment/automation are not live yet
+- Waitlist-first CTA: `Join Bike Scout waitlist`
+- Waitlist form with required email and optional intent fields
+- Local prototype note that no server submission happens yet
 - Optional local prototype form for ZIP/location, radius, budget, and source preferences
 - Saved local profile summary when prototype storage is used
 
@@ -466,6 +483,7 @@ Mapping behavior:
 - Used-bike mechanical condition still needs human inspection.
 - Rate-limit/caching storage is in-memory prototype behavior, not durable multi-instance storage.
 - Bike Scout local profiles are browser-local only today.
+- Bike Scout waitlist signups are browser-local only today.
 - Bike Scout does not send alerts, run cron jobs, or collect payment yet.
 
 ## 17A. Source Strategy And Compliance
@@ -542,8 +560,12 @@ Not implemented now:
 - production cron
 - durable database
 - real email alerts
-- Stripe billing
+- Stripe Checkout or another payment flow
 - user accounts
+
+Planned payment path:
+
+- Future Stripe Checkout integration after waitlist demand validation.
 
 ## 19. Version / Changelog
 
@@ -560,4 +582,4 @@ Recent updates include:
 
 ## 20. Final Consistency Check
 
-This PRD reflects current implemented MVP behavior and explicitly separates non-implemented items into limitations/roadmap sections. It includes a local-only Bike Scout prototype foundation but does not claim live paid billing, production alerts, Facebook automation, full market search, user accounts, or durable backend infrastructure as currently implemented.
+This PRD reflects current implemented MVP behavior and explicitly separates non-implemented items into limitations/roadmap sections. It includes a local-only Bike Scout prototype foundation plus a local-only waitlist-first MVP, but does not claim live paid billing, production alerts, Facebook automation, full market search, user accounts, or durable backend infrastructure as currently implemented.
