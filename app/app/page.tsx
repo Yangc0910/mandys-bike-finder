@@ -106,6 +106,7 @@ export default function Home() {
   const [scoutDraft, setScoutDraft] = useState<BikeScoutProfile>(defaultBikeScoutProfile);
   const [savedScoutProfiles, setSavedScoutProfiles] = useState<BikeScoutProfile[]>([]);
   const [scoutNotice, setScoutNotice] = useState("Bike Scout profiles are stored only in this browser during this prototype.");
+  const [showScoutSetup, setShowScoutSetup] = useState(false);
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -183,6 +184,7 @@ export default function Home() {
     setSavedScoutProfiles(storedProfiles);
     if (storedProfiles[0]) {
       setScoutDraft(storedProfiles[0]);
+      setShowScoutSetup(true);
     }
   }, []);
 
@@ -304,6 +306,11 @@ export default function Home() {
     setScoutDraft(nextProfile);
     saveBikeScoutProfiles(nextProfiles);
     setScoutNotice("Saved locally. Alerts and automated searches are not active yet in this prototype.");
+  }
+
+  function openScoutSetup() {
+    setShowScoutSetup(true);
+    setScoutNotice("Bike Scout payment is still a placeholder, but you can set up the local profile flow now.");
   }
 
   async function extractPastedText() {
@@ -507,6 +514,111 @@ export default function Home() {
           </div>
         </div>
 
+        <section className="mb-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-panel md:p-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-800">
+                Free now
+              </span>
+              <span className="text-sm font-semibold text-slate-600">One listing at a time</span>
+            </div>
+            <h2 className="mt-4 text-2xl font-bold text-slate-900">Free bike listing analyzer</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              This is the core free workflow: add your rider profile, paste a listing or screenshot, and get practical fit, value, and safety guidance before you message the seller.
+            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {[
+                "Screenshot, link, pasted text, or manual entry",
+                "Bike fit and wheel size guidance",
+                "Value and safety checks",
+                "Seller questions and message help",
+              ].map((item) => (
+                <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href="#free-analyzer"
+                className="inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-bold text-white shadow-panel"
+              >
+                Start free bike check
+              </a>
+              <a
+                href="#bike-scout"
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700"
+              >
+                See paid Bike Scout
+              </a>
+            </div>
+          </article>
+
+          <article
+            id="bike-scout"
+            className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-[linear-gradient(135deg,#0f172a_0%,#1d4ed8_52%,#38bdf8_100%)] p-5 text-white shadow-[0_20px_55px_-28px_rgba(15,23,42,0.75)] md:p-6"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,0.22),transparent_30%),radial-gradient(circle_at_82%_86%,rgba(251,191,36,0.26),transparent_34%)]" />
+            <div className="relative">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center rounded-full border border-white/30 bg-white/12 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white/95">
+                  Paid upgrade
+                </span>
+                <span className="text-sm font-semibold text-white/85">About $2.99/week</span>
+              </div>
+              <h2 className="mt-4 text-2xl font-bold tracking-[-0.01em]">Mandy Bike Scout</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/82">
+                Save your child&apos;s bike profile, watch for strong nearby matches later, and move faster when a good used bike appears.
+              </p>
+              <div className="mt-4 grid gap-2">
+                {[
+                  "Save child profile and search preferences",
+                  "Surface best nearby matches",
+                  "Reuse fit, value, and safety scoring",
+                  "Bike Scout setup opens after checkout flow later",
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/18 bg-white/12 px-3 py-2 text-sm font-semibold text-white/92 backdrop-blur-sm">
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 rounded-3xl border border-white/16 bg-slate-950/20 p-4 backdrop-blur-sm">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-100/80">Checkout placeholder</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                  <div>
+                    <p className="text-lg font-bold">Unlock Bike Scout</p>
+                    <p className="mt-1 text-sm text-white/80">
+                      Payment link is not wired yet. This button is a placeholder for the future paid checkout flow.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={openScoutSetup}
+                    className="inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 text-sm font-bold text-slate-900"
+                  >
+                    Continue to setup
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section id="free-analyzer" className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-panel md:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Free version</p>
+              <h2 className="mt-2 text-2xl font-bold text-slate-900">Analyze a bike listing for free</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                Use the current MVP flow to check one listing at a time. This stays the main free product experience.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              AI extraction still stays behind existing daily limits.
+            </div>
+          </div>
+        </section>
+
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-panel md:p-5">
           <h2 className="text-lg font-bold text-slate-900">How it works</h2>
           <p className="mt-1 text-sm text-slate-600">A simple 4-step flow for busy parents.</p>
@@ -516,351 +628,6 @@ export default function Home() {
             <HowItWorksCard icon="3" title="Step 3 - Confirm details" copy="Review price, wheel size, condition, and description before analysis." />
             <HowItWorksCard icon="4" title="Step 4 - Get recommendation" copy="See fit, value, and practical things to check before pickup." />
           </div>
-        </section>
-
-        <section className="mb-6 overflow-hidden rounded-2xl border border-blue-200/80 bg-gradient-to-br from-sky-50 via-white to-amber-50/70 shadow-panel">
-          <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="border-b border-blue-100/80 p-5 lg:border-b-0 lg:border-r">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center rounded-full border border-blue-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
-                  Planned paid feature
-                </span>
-                <span className="text-sm font-semibold text-slate-700">About $2.99/week</span>
-              </div>
-              <h2 className="mt-4 text-2xl font-bold text-slate-900">Mandy Bike Scout</h2>
-              <p className="mt-2 text-base text-slate-700">Let Mandy help watch nearby listings for the right kids&apos; bike.</p>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                Save your child&apos;s bike fit profile and search preferences. Bike Scout will help monitor supported used-bike sources, score new listings, and highlight the best matches for fit, value, and safety.
-              </p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {[
-                  "Watches nearby used-bike listings",
-                  "Scores fit, value, and safety",
-                  "Highlights the best matches",
-                  "Helps you message sellers faster",
-                ].map((item) => (
-                  <div key={item} className="rounded-xl border border-white/90 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 shadow-[0_10px_25px_-22px_rgba(15,23,42,0.55)]">
-                    {item}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-sm text-slate-700">
-                <p className="font-semibold text-slate-900">Free vs paid positioning</p>
-                <p className="mt-2"><span className="font-semibold">Free:</span> analyze one listing at a time by screenshot, link, pasted text, or manual entry, with AI extraction still subject to daily limits.</p>
-                <p className="mt-2"><span className="font-semibold">Bike Scout:</span> save child profile and search preferences, monitor supported nearby listings later, reuse fit/value/safety scoring, generate seller drafts, and prepare pickup checks.</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-900">This screen is a local prototype only. Payment, alerts, and automated marketplace monitoring are not active yet.</p>
-              </div>
-            </div>
-
-            <div className="p-5">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.45)]">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900">Set up a local Bike Scout profile</h3>
-                    <p className="mt-1 text-sm text-slate-600">Prototype storage only. Saved data stays in this browser until a real backend exists.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={useCurrentChildForScout}
-                    className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-brand"
-                  >
-                    Use current rider profile
-                  </button>
-                </div>
-
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  <Field label="Profile name">
-                    <input
-                      className={inputClass}
-                      value={scoutDraft.name}
-                      onChange={(e) => updateScoutDraft((current) => ({ ...current, name: e.target.value }))}
-                    />
-                  </Field>
-                  <Field label="ZIP code or location" required>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <input
-                        className={inputClass}
-                        placeholder="ZIP code"
-                        value={scoutDraft.searchPreferences.zipCode}
-                        onChange={(e) => updateScoutDraft((current) => ({
-                          ...current,
-                          searchPreferences: { ...current.searchPreferences, zipCode: e.target.value },
-                        }))}
-                      />
-                      <input
-                        className={inputClass}
-                        placeholder="City or area"
-                        value={scoutDraft.searchPreferences.location}
-                        onChange={(e) => updateScoutDraft((current) => ({
-                          ...current,
-                          searchPreferences: { ...current.searchPreferences, location: e.target.value },
-                        }))}
-                      />
-                    </div>
-                  </Field>
-                  <Field label="Child height (cm)">
-                    <input
-                      className={inputClass}
-                      type="number"
-                      min="80"
-                      max="220"
-                      placeholder="Height in cm"
-                      value={scoutDraft.childProfile.height}
-                      onChange={(e) => updateScoutDraft((current) => ({
-                        ...current,
-                        childProfile: { ...current.childProfile, height: e.target.value, heightUnit: "cm" },
-                      }))}
-                    />
-                  </Field>
-                  <Field label="Child age">
-                    <input
-                      className={inputClass}
-                      type="number"
-                      min="1"
-                      max="16"
-                      placeholder="Age"
-                      value={scoutDraft.childProfile.age}
-                      onChange={(e) => updateScoutDraft((current) => ({
-                        ...current,
-                        childProfile: { ...current.childProfile, age: e.target.value },
-                      }))}
-                    />
-                  </Field>
-                  <Field label="Riding experience">
-                    <select
-                      className={inputClass}
-                      value={scoutDraft.childProfile.ridingExperience}
-                      onChange={(e) => updateScoutDraft((current) => ({
-                        ...current,
-                        childProfile: {
-                          ...current.childProfile,
-                          ridingExperience: e.target.value as ChildProfile["experience"],
-                        },
-                      }))}
-                    >
-                      <option value="beginner">Beginner</option>
-                      <option value="comfortable">Comfortable</option>
-                      <option value="confident">Confident</option>
-                      <option value="advanced">Advanced</option>
-                    </select>
-                  </Field>
-                  <Field label="Radius miles">
-                    <input
-                      className={inputClass}
-                      type="number"
-                      min="5"
-                      max="100"
-                      value={scoutDraft.searchPreferences.radiusMiles}
-                      onChange={(e) => updateScoutDraft((current) => ({
-                        ...current,
-                        searchPreferences: { ...current.searchPreferences, radiusMiles: Number(e.target.value || 0) },
-                      }))}
-                    />
-                  </Field>
-                  <Field label="Budget range" required>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <input
-                        className={inputClass}
-                        inputMode="numeric"
-                        placeholder="Min budget (optional)"
-                        value={scoutDraft.searchPreferences.minBudget}
-                        onChange={(e) => updateScoutDraft((current) => ({
-                          ...current,
-                          searchPreferences: { ...current.searchPreferences, minBudget: e.target.value },
-                        }))}
-                      />
-                      <input
-                        className={inputClass}
-                        inputMode="numeric"
-                        placeholder="Max budget"
-                        value={scoutDraft.searchPreferences.maxBudget}
-                        onChange={(e) => updateScoutDraft((current) => ({
-                          ...current,
-                          searchPreferences: { ...current.searchPreferences, maxBudget: e.target.value },
-                        }))}
-                      />
-                    </div>
-                  </Field>
-                </div>
-
-                <div className="mt-4 grid gap-4">
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">Preferred wheel sizes</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {bikeScoutWheelSizeOptions.map((size) => (
-                        <SelectableChip
-                          key={size}
-                          selected={scoutDraft.searchPreferences.preferredWheelSizes.includes(size)}
-                          onClick={() => toggleScoutListValue("preferredWheelSizes", size)}
-                        >
-                          {size}
-                        </SelectableChip>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">Preferred bike types</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {bikeScoutTypeOptions.map((type) => (
-                        <SelectableChip
-                          key={type}
-                          selected={scoutDraft.searchPreferences.preferredBikeTypes.includes(type)}
-                          onClick={() => toggleScoutListValue("preferredBikeTypes", type)}
-                        >
-                          {type}
-                        </SelectableChip>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">Sources</p>
-                    <div className="mt-2 grid gap-2">
-                      {BIKE_SCOUT_SOURCE_OPTIONS.map((source) => (
-                        <label key={source.id} className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-sm text-slate-700">
-                          <div className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              checked={scoutDraft.searchPreferences.marketplaceSources.includes(source.id)}
-                              onChange={() => toggleScoutSource(source.id)}
-                            />
-                            <div>
-                              <p className="font-semibold text-slate-900">{source.label}</p>
-                              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">{renderAutomationLevel(source.automationLevel)}</p>
-                              <p className="mt-1 text-xs leading-5 text-slate-600">{source.notes}</p>
-                            </div>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Field label="Included keywords">
-                      <input
-                        className={inputClass}
-                        placeholder="guardian, woom, lightweight"
-                        value={scoutDraft.searchPreferences.includedKeywords.join(", ")}
-                        onChange={(e) => updateScoutDraft((current) => ({
-                          ...current,
-                          searchPreferences: { ...current.searchPreferences, includedKeywords: splitCommaValues(e.target.value) },
-                        }))}
-                      />
-                    </Field>
-                    <Field label="Excluded keywords">
-                      <input
-                        className={inputClass}
-                        placeholder="repair, rust, too small"
-                        value={scoutDraft.searchPreferences.excludedKeywords.join(", ")}
-                        onChange={(e) => updateScoutDraft((current) => ({
-                          ...current,
-                          searchPreferences: { ...current.searchPreferences, excludedKeywords: splitCommaValues(e.target.value) },
-                        }))}
-                      />
-                    </Field>
-                    <Field label="Alert frequency">
-                      <select
-                        className={inputClass}
-                        value={scoutDraft.searchPreferences.alertFrequency}
-                        onChange={(e) => updateScoutDraft((current) => ({
-                          ...current,
-                          searchPreferences: {
-                            ...current.searchPreferences,
-                            alertFrequency: e.target.value as BikeScoutProfile["searchPreferences"]["alertFrequency"],
-                          },
-                        }))}
-                      >
-                        <option value="daily">Daily (planned)</option>
-                        <option value="twice_daily">Twice daily (planned)</option>
-                        <option value="manual_review">Manual review only</option>
-                      </select>
-                    </Field>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={saveScoutProfile}
-                    className="min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white"
-                  >
-                    Save local Bike Scout profile
-                  </button>
-                  <p className="text-sm text-slate-600">{scoutNotice}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {(savedScoutProfiles[0] || scoutPreview) && (
-            <div className="border-t border-blue-100/80 bg-white/70 p-5">
-              <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-                {savedScoutProfiles[0] && (
-                  <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Saved locally</p>
-                        <h3 className="mt-1 text-lg font-bold text-slate-900">{savedScoutProfiles[0].name}</h3>
-                      </div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${savedScoutProfiles[0].enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
-                        {savedScoutProfiles[0].enabled ? "Prototype enabled" : "Prototype paused"}
-                      </span>
-                    </div>
-                    {(() => {
-                      const summary = bikeScoutProfileSummary(savedScoutProfiles[0]);
-                      return (
-                        <div className="mt-4 grid gap-3 md:grid-cols-2">
-                          <InfoLine label="Location" value={summary.locationLine} />
-                          <InfoLine label="Budget" value={summary.budgetLine} />
-                          <InfoLine label="Wheel sizes" value={summary.wheelSizeLine} />
-                          <InfoLine label="Bike types" value={summary.bikeTypeLine} />
-                          <InfoLine label="Sources" value={summary.sourceLabels.join(", ") || "None selected"} />
-                          <InfoLine label="Alert frequency" value={savedScoutProfiles[0].searchPreferences.alertFrequency.replace("_", " ")} />
-                        </div>
-                      );
-                    })()}
-                    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Bike Scout conveniences planned</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-900">Seller message draft</p>
-                      <p className="mt-1 text-sm text-slate-700">{buildBikeScoutSellerMessageDraft()}</p>
-                      <p className="mt-3 text-sm font-semibold text-slate-900">Pickup inspection checklist</p>
-                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                        {BIKE_SCOUT_PICKUP_CHECKLIST.map((item) => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-                  </article>
-                )}
-
-                {scoutPreview && (
-                  <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Future scoring preview</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-3">
-                      <h3 className="text-lg font-bold text-slate-900">{scoutPreview.listing.title}</h3>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${meterSignal(scoutPreview.overallRecommendation.meter)}`}>
-                        {scoutPreview.overallRecommendation.label}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-600">
-                      This is a local preview showing how future Bike Scout results can reuse today&apos;s fit, value, and safety logic. No background search or alert has actually run.
-                    </p>
-                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                      <InfoLine label="Source" value={sourceLabel(scoutPreview.listing.source as MarketplaceId)} />
-                      <InfoLine label="Wheel size match" value={scoutPreview.wheelSizeMatch} />
-                      <InfoLine label="Price/value" value={scoutPreview.priceValueSignal} />
-                      <InfoLine label="Safety signal" value={scoutPreview.safetySignal} />
-                    </div>
-                    <div className="mt-4 grid gap-3 md:grid-cols-3">
-                      {dimensionCards(scoutPreview.analysis).slice(0, 3).map(([name, item]) => (
-                        <div key={name} className={`rounded-xl border p-3 ${meterSignal(item.meter)}`}>
-                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{name}</p>
-                          <p className="mt-1 text-sm font-semibold text-slate-900">{item.label}</p>
-                          <p className="mt-1 text-xs leading-5 text-slate-700">{item.reasoning}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </article>
-                )}
-              </div>
-            </div>
-          )}
         </section>
 
         <section className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-slate-700 shadow-panel">
@@ -1300,6 +1067,378 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-panel">
+          <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#e0f2fe_0%,#ffffff_38%,#fef3c7_100%)] px-5 py-6 md:px-6">
+            <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Paid feature entry</p>
+                <h2 className="mt-2 text-2xl font-bold text-slate-900">Mandy Bike Scout</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                  Below the free analyzer, Bike Scout becomes the premium workflow: checkout first later, then save a reusable scout profile for nearby search monitoring.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-[0_16px_30px_-26px_rgba(15,23,42,0.45)]">
+                Planned paid feature: about $2.99/week
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
+            <article className="border-b border-slate-200 bg-slate-950 px-5 py-6 text-white lg:border-b-0 lg:border-r">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-200/80">Step 1</p>
+              <h3 className="mt-2 text-xl font-bold">Payment flow placeholder</h3>
+              <p className="mt-2 text-sm leading-6 text-white/78">
+                This is where the future checkout or subscription link will live. For now, it just acts as the gateway into the Bike Scout setup experience.
+              </p>
+              <div className="mt-4 rounded-2xl border border-white/12 bg-white/8 p-4">
+                <p className="text-sm font-semibold text-white">Weekly access</p>
+                <p className="mt-1 text-3xl font-bold">$2.99<span className="text-base font-semibold text-white/75">/week</span></p>
+                <p className="mt-2 text-sm text-white/75">Checkout link coming soon. No charge happens here yet.</p>
+                <button
+                  type="button"
+                  onClick={openScoutSetup}
+                  className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 text-sm font-bold text-slate-950"
+                >
+                  Continue to Bike Scout setup
+                </button>
+              </div>
+            </article>
+
+            <article className="px-5 py-6 md:px-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Step 2</p>
+                  <h3 className="mt-2 text-xl font-bold text-slate-900">Bike Scout profile setup</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Save the child profile and search preferences you want Bike Scout to reuse later.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowScoutSetup((current) => !current)}
+                  className="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-brand"
+                >
+                  {showScoutSetup ? "Hide setup" : "Open setup"}
+                </button>
+              </div>
+
+              {!showScoutSetup ? (
+                <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-700">
+                  Open Bike Scout setup to configure location, budget, sources, and child fit preferences. The saved profile remains local-only for now.
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-5">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-lg font-bold text-slate-900">Set up a local Bike Scout profile</h4>
+                        <p className="mt-1 text-sm text-slate-600">Prototype storage only. Saved data stays in this browser until a real backend exists.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={useCurrentChildForScout}
+                        className="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-brand"
+                      >
+                        Use current rider profile
+                      </button>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <Field label="Profile name">
+                        <input
+                          className={inputClass}
+                          value={scoutDraft.name}
+                          onChange={(e) => updateScoutDraft((current) => ({ ...current, name: e.target.value }))}
+                        />
+                      </Field>
+                      <Field label="ZIP code or location" required>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <input
+                            className={inputClass}
+                            placeholder="ZIP code"
+                            value={scoutDraft.searchPreferences.zipCode}
+                            onChange={(e) => updateScoutDraft((current) => ({
+                              ...current,
+                              searchPreferences: { ...current.searchPreferences, zipCode: e.target.value },
+                            }))}
+                          />
+                          <input
+                            className={inputClass}
+                            placeholder="City or area"
+                            value={scoutDraft.searchPreferences.location}
+                            onChange={(e) => updateScoutDraft((current) => ({
+                              ...current,
+                              searchPreferences: { ...current.searchPreferences, location: e.target.value },
+                            }))}
+                          />
+                        </div>
+                      </Field>
+                      <Field label="Child height (cm)">
+                        <input
+                          className={inputClass}
+                          type="number"
+                          min="80"
+                          max="220"
+                          placeholder="Height in cm"
+                          value={scoutDraft.childProfile.height}
+                          onChange={(e) => updateScoutDraft((current) => ({
+                            ...current,
+                            childProfile: { ...current.childProfile, height: e.target.value, heightUnit: "cm" },
+                          }))}
+                        />
+                      </Field>
+                      <Field label="Child age">
+                        <input
+                          className={inputClass}
+                          type="number"
+                          min="1"
+                          max="16"
+                          placeholder="Age"
+                          value={scoutDraft.childProfile.age}
+                          onChange={(e) => updateScoutDraft((current) => ({
+                            ...current,
+                            childProfile: { ...current.childProfile, age: e.target.value },
+                          }))}
+                        />
+                      </Field>
+                      <Field label="Riding experience">
+                        <select
+                          className={inputClass}
+                          value={scoutDraft.childProfile.ridingExperience}
+                          onChange={(e) => updateScoutDraft((current) => ({
+                            ...current,
+                            childProfile: {
+                              ...current.childProfile,
+                              ridingExperience: e.target.value as ChildProfile["experience"],
+                            },
+                          }))}
+                        >
+                          <option value="beginner">Beginner</option>
+                          <option value="comfortable">Comfortable</option>
+                          <option value="confident">Confident</option>
+                          <option value="advanced">Advanced</option>
+                        </select>
+                      </Field>
+                      <Field label="Radius miles">
+                        <input
+                          className={inputClass}
+                          type="number"
+                          min="5"
+                          max="100"
+                          value={scoutDraft.searchPreferences.radiusMiles}
+                          onChange={(e) => updateScoutDraft((current) => ({
+                            ...current,
+                            searchPreferences: { ...current.searchPreferences, radiusMiles: Number(e.target.value || 0) },
+                          }))}
+                        />
+                      </Field>
+                      <Field label="Budget range" required>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <input
+                            className={inputClass}
+                            inputMode="numeric"
+                            placeholder="Min budget (optional)"
+                            value={scoutDraft.searchPreferences.minBudget}
+                            onChange={(e) => updateScoutDraft((current) => ({
+                              ...current,
+                              searchPreferences: { ...current.searchPreferences, minBudget: e.target.value },
+                            }))}
+                          />
+                          <input
+                            className={inputClass}
+                            inputMode="numeric"
+                            placeholder="Max budget"
+                            value={scoutDraft.searchPreferences.maxBudget}
+                            onChange={(e) => updateScoutDraft((current) => ({
+                              ...current,
+                              searchPreferences: { ...current.searchPreferences, maxBudget: e.target.value },
+                            }))}
+                          />
+                        </div>
+                      </Field>
+                    </div>
+
+                    <div className="mt-4 grid gap-4">
+                      <div>
+                        <p className="text-sm font-bold text-slate-700">Preferred wheel sizes</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {bikeScoutWheelSizeOptions.map((size) => (
+                            <SelectableChip
+                              key={size}
+                              selected={scoutDraft.searchPreferences.preferredWheelSizes.includes(size)}
+                              onClick={() => toggleScoutListValue("preferredWheelSizes", size)}
+                            >
+                              {size}
+                            </SelectableChip>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-700">Preferred bike types</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {bikeScoutTypeOptions.map((type) => (
+                            <SelectableChip
+                              key={type}
+                              selected={scoutDraft.searchPreferences.preferredBikeTypes.includes(type)}
+                              onClick={() => toggleScoutListValue("preferredBikeTypes", type)}
+                            >
+                              {type}
+                            </SelectableChip>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-700">Sources</p>
+                        <div className="mt-2 grid gap-2">
+                          {BIKE_SCOUT_SOURCE_OPTIONS.map((source) => (
+                            <label key={source.id} className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                              <div className="flex items-start gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={scoutDraft.searchPreferences.marketplaceSources.includes(source.id)}
+                                  onChange={() => toggleScoutSource(source.id)}
+                                />
+                                <div>
+                                  <p className="font-semibold text-slate-900">{source.label}</p>
+                                  <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">{renderAutomationLevel(source.automationLevel)}</p>
+                                  <p className="mt-1 text-xs leading-5 text-slate-600">{source.notes}</p>
+                                </div>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <Field label="Included keywords">
+                          <input
+                            className={inputClass}
+                            placeholder="guardian, woom, lightweight"
+                            value={scoutDraft.searchPreferences.includedKeywords.join(", ")}
+                            onChange={(e) => updateScoutDraft((current) => ({
+                              ...current,
+                              searchPreferences: { ...current.searchPreferences, includedKeywords: splitCommaValues(e.target.value) },
+                            }))}
+                          />
+                        </Field>
+                        <Field label="Excluded keywords">
+                          <input
+                            className={inputClass}
+                            placeholder="repair, rust, too small"
+                            value={scoutDraft.searchPreferences.excludedKeywords.join(", ")}
+                            onChange={(e) => updateScoutDraft((current) => ({
+                              ...current,
+                              searchPreferences: { ...current.searchPreferences, excludedKeywords: splitCommaValues(e.target.value) },
+                            }))}
+                          />
+                        </Field>
+                        <Field label="Alert frequency">
+                          <select
+                            className={inputClass}
+                            value={scoutDraft.searchPreferences.alertFrequency}
+                            onChange={(e) => updateScoutDraft((current) => ({
+                              ...current,
+                              searchPreferences: {
+                                ...current.searchPreferences,
+                                alertFrequency: e.target.value as BikeScoutProfile["searchPreferences"]["alertFrequency"],
+                              },
+                            }))}
+                          >
+                            <option value="daily">Daily (planned)</option>
+                            <option value="twice_daily">Twice daily (planned)</option>
+                            <option value="manual_review">Manual review only</option>
+                          </select>
+                        </Field>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={saveScoutProfile}
+                        className="min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white"
+                      >
+                        Save local Bike Scout profile
+                      </button>
+                      <p className="text-sm text-slate-600">{scoutNotice}</p>
+                    </div>
+                  </div>
+
+                  {(savedScoutProfiles[0] || scoutPreview) && (
+                    <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+                      {savedScoutProfiles[0] && (
+                        <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Saved locally</p>
+                              <h3 className="mt-1 text-lg font-bold text-slate-900">{savedScoutProfiles[0].name}</h3>
+                            </div>
+                            <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${savedScoutProfiles[0].enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
+                              {savedScoutProfiles[0].enabled ? "Prototype enabled" : "Prototype paused"}
+                            </span>
+                          </div>
+                          {(() => {
+                            const summary = bikeScoutProfileSummary(savedScoutProfiles[0]);
+                            return (
+                              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                                <InfoLine label="Location" value={summary.locationLine} />
+                                <InfoLine label="Budget" value={summary.budgetLine} />
+                                <InfoLine label="Wheel sizes" value={summary.wheelSizeLine} />
+                                <InfoLine label="Bike types" value={summary.bikeTypeLine} />
+                                <InfoLine label="Sources" value={summary.sourceLabels.join(", ") || "None selected"} />
+                                <InfoLine label="Alert frequency" value={savedScoutProfiles[0].searchPreferences.alertFrequency.replace("_", " ")} />
+                              </div>
+                            );
+                          })()}
+                          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Bike Scout conveniences planned</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-900">Seller message draft</p>
+                            <p className="mt-1 text-sm text-slate-700">{buildBikeScoutSellerMessageDraft()}</p>
+                            <p className="mt-3 text-sm font-semibold text-slate-900">Pickup inspection checklist</p>
+                            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                              {BIKE_SCOUT_PICKUP_CHECKLIST.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                        </article>
+                      )}
+
+                      {scoutPreview && (
+                        <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel">
+                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Future scoring preview</p>
+                          <div className="mt-2 flex flex-wrap items-center gap-3">
+                            <h3 className="text-lg font-bold text-slate-900">{scoutPreview.listing.title}</h3>
+                            <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${meterSignal(scoutPreview.overallRecommendation.meter)}`}>
+                              {scoutPreview.overallRecommendation.label}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-sm text-slate-600">
+                            This is a local preview showing how future Bike Scout results can reuse today&apos;s fit, value, and safety logic. No background search or alert has actually run.
+                          </p>
+                          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                            <InfoLine label="Source" value={sourceLabel(scoutPreview.listing.source as MarketplaceId)} />
+                            <InfoLine label="Wheel size match" value={scoutPreview.wheelSizeMatch} />
+                            <InfoLine label="Price/value" value={scoutPreview.priceValueSignal} />
+                            <InfoLine label="Safety signal" value={scoutPreview.safetySignal} />
+                          </div>
+                          <div className="mt-4 grid gap-3 md:grid-cols-3">
+                            {dimensionCards(scoutPreview.analysis).slice(0, 3).map(([name, item]) => (
+                              <div key={name} className={`rounded-xl border p-3 ${meterSignal(item.meter)}`}>
+                                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{name}</p>
+                                <p className="mt-1 text-sm font-semibold text-slate-900">{item.label}</p>
+                                <p className="mt-1 text-xs leading-5 text-slate-700">{item.reasoning}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </article>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </article>
+          </div>
+        </section>
+
         <details className="mt-6 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-panel">
           <summary className="cursor-pointer font-semibold text-slate-700">Beta status</summary>
           <p className="mt-2">{status}</p>
