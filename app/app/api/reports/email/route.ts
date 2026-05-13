@@ -33,6 +33,9 @@ type ReportEmailPayload = {
   message?: string;
   recipientName?: string;
   note?: string;
+  screenshotDataUrl?: string;
+  recommendedBikeType?: string;
+  recommendedWheelSize?: string;
 };
 
 export async function POST(request: Request) {
@@ -87,6 +90,10 @@ export async function POST(request: Request) {
     analysisResult,
     sellerMessage: sanitizeMultiline(payload.sellerMessage || payload.message || ""),
     reportBody: report,
+    listingUrl: sourceUrl,
+    screenshotUrl: sanitizeImageUrl(payload.screenshotDataUrl || ""),
+    recommendedBikeType: sanitize(payload.recommendedBikeType || ""),
+    recommendedWheelSize: sanitize(payload.recommendedWheelSize || ""),
   });
 
   if (!result.ok) {
@@ -130,4 +137,16 @@ function formatPrice(value: string) {
   const price = sanitize(value);
   if (!price) return "Unknown";
   return price.startsWith("$") ? price : `$${price}`;
+}
+
+function sanitizeImageUrl(value: string) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("data:image/")) return raw.length <= 2_800_000 ? raw : "";
+  try {
+    const url = new URL(raw);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
 }

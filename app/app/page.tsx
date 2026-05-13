@@ -506,6 +506,8 @@ export default function Home() {
     }
 
     const currentAnalysis = analysis || localAnalysis;
+    const recommendedBike = buildChildBikeRecommendation(normalizedChild);
+    const screenshotDataUrl = screenshotFile ? await buildReportScreenshotDataUrl(screenshotFile) : "";
     const report = localReport({
       listing,
       analysis: currentAnalysis,
@@ -538,6 +540,9 @@ export default function Home() {
           sellerMessage,
           recipientName,
           note: reportNote,
+          screenshotDataUrl,
+          recommendedBikeType: recommendedBike.category,
+          recommendedWheelSize: recommendedBike.wheelSize,
         }),
       });
       const result = await response.json().catch(() => null);
@@ -2219,6 +2224,12 @@ function lbToKg(weightLb: string) {
 function toFixed(value: string, decimals: number) {
   const n = Number(value);
   return Number.isFinite(n) ? n.toFixed(decimals).replace(/\.0$/, "") : "";
+}
+
+async function buildReportScreenshotDataUrl(file: File) {
+  if (!file.type.startsWith("image/")) return "";
+  if (file.size > 2 * 1024 * 1024) return "";
+  return fileToDataUrl(file);
 }
 
 function formatReportEmailError(code?: string, error?: string) {

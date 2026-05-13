@@ -22,6 +22,10 @@ export type ReportEmailPayload = {
   analysisResult?: AnalysisResult;
   sellerMessage?: string;
   reportBody?: string;
+  listingUrl?: string;
+  screenshotUrl?: string;
+  recommendedBikeType?: string;
+  recommendedWheelSize?: string;
 };
 
 export type EmailSendResult =
@@ -113,9 +117,11 @@ function buildReportHtml(payload: ReportEmailPayload) {
           <p><strong>${escapeHtml(payload.bikeTitle || "Untitled bike listing")}</strong></p>
           <p>Asking price: ${escapeHtml(payload.askingPrice || "Unknown")}</p>
           <p>Location: ${escapeHtml(formatLocation(payload.location, payload.distanceMiles))}</p>
+          ${payload.listingUrl ? `<p>Listing link: <a href="${escapeAttribute(payload.listingUrl)}">${escapeHtml(payload.listingUrl)}</a></p>` : ""}
           ${payload.listing?.wheelSize ? `<p>Wheel size: ${escapeHtml(payload.listing.wheelSize)}</p>` : ""}
           ${payload.listing?.bikeType ? `<p>Bike type: ${escapeHtml(payload.listing.bikeType)}</p>` : ""}
         `)}
+        ${payload.screenshotUrl ? section("Listing screenshot", `<img src="${escapeAttribute(payload.screenshotUrl)}" alt="Listing screenshot" style="display:block;width:100%;max-height:360px;object-fit:contain;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;" />`) : ""}
 
         ${section("Why this recommendation", `
           <p>${escapeHtml(payload.keyReasoning || payload.reportSummary)}</p>
@@ -127,6 +133,8 @@ function buildReportHtml(payload: ReportEmailPayload) {
           <p>Age: ${escapeHtml(payload.childProfile?.age || "Unknown")}</p>
           <p>Riding experience: ${escapeHtml(payload.childProfile?.experience || "Unknown")}</p>
           <p>Style preference: ${escapeHtml(payload.childProfile?.stylePreference || "No preference")}</p>
+          ${payload.recommendedBikeType ? `<p>Recommended bike type: ${escapeHtml(payload.recommendedBikeType)}</p>` : ""}
+          ${payload.recommendedWheelSize ? `<p>Recommended wheel size: ${escapeHtml(payload.recommendedWheelSize)}</p>` : ""}
         `)}
 
         ${payload.sellerMessage ? section("Suggested seller message", `<p style="white-space:pre-wrap;">${escapeHtml(payload.sellerMessage)}</p>`) : ""}
@@ -157,7 +165,10 @@ function buildReportText(payload: ReportEmailPayload) {
     `Overall deal score: ${payload.score || "Not provided"}`,
     `Recommendation: ${payload.recommendation}`,
     `Key reasoning: ${payload.keyReasoning || payload.reportSummary}`,
+    payload.listingUrl ? `Listing link: ${payload.listingUrl}` : "",
     dimensions ? `Fit: ${dimensions.fit.label} | Price: ${dimensions.price.label} | Condition: ${dimensions.condition.label} | Brand: ${dimensions.brand.label} | Kid Appeal: ${dimensions.color.label} | Risk: ${dimensions.risk.label}` : "",
+    payload.recommendedBikeType ? `Recommended bike type: ${payload.recommendedBikeType}` : "",
+    payload.recommendedWheelSize ? `Recommended wheel size: ${payload.recommendedWheelSize}` : "",
     payload.sellerMessage ? `Suggested seller message: ${payload.sellerMessage}` : "",
     payload.reportUrl ? `Report link: ${payload.reportUrl}` : "",
     "",
