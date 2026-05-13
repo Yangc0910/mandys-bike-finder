@@ -1,23 +1,66 @@
 # Architecture Overview
 
-Current PRD: `docs/PRD.md` v0.5
+Current PRD: `docs/PRD.md` v0.6
 
 ## Current Direction
 
-Mandy's Bike Finder is now a web-first MVP. The initial implementation should be a front-end web app with local/mock analysis logic and service interfaces for future external capabilities.
+Mandy's Bike Finder is a web-first MVP deployed from `/app` (Next.js App Router). The app is designed so local/mock fallback behavior remains available even when external providers are disabled.
 
-## Phase 1 Architecture
+## System Boundaries (Current)
 
-```text
-User input
-  -> child profile form
-  -> listing link / screenshot / manual input
-  -> listing field confirmation
-  -> local analysis engine
-  -> red/yellow/green result
-  -> negotiation message generator
-  -> email report preview
-```
+### Frontend UI (`/app/app/page.tsx`)
+
+- Hero + product mode tabs (`Free Bike Check`, `Bike Scout Waitlist`).
+- Child profile + listing capture flow.
+- Result presentation (fit/value/safety meters + recommendations).
+- Explicit user-triggered actions only for costly operations:
+  - AI extraction
+  - report email sending
+- Bike Scout waitlist and profile prototype state with localStorage helpers.
+
+### Server-side API routes (`/app/app/api/*`)
+
+- `/api/status`: provider mode and feature-flag status.
+- `/api/extract`, `/api/extract-link`: extraction entry points with guarded behavior.
+- `/api/analyze`, `/api/message`, `/api/report`: analysis and report helpers.
+- `/api/reports/email`: transactional report email sending with validation + rate limits.
+
+### AI / LLM analysis layer (`/app/lib/server/providers.ts`, `/app/lib/server/config.ts`)
+
+- Feature-flag controlled (`ENABLE_LLM_ANALYSIS`).
+- Server-side only provider key usage.
+- Daily/session usage limits enforced server-side.
+- Local fallback remains available when disabled or limited.
+
+### Report generation (`/app/lib/server/report.ts`)
+
+- Builds parent-friendly report content from child profile + listing + analysis output.
+- Reused for on-page report preview and transactional email payload creation.
+
+### PDF generation
+
+- Not in current production implementation.
+- Current report delivery format is HTML/plain text email (when enabled).
+- PDF attachment/export remains a roadmap item.
+
+### Transactional email (`/app/lib/email.ts`)
+
+- Provider: Resend.
+- Uses `RESEND_API_KEY`, `REPORT_EMAIL_FROM`, and optional `REPORT_EMAIL_REPLY_TO`.
+- Returns clear configuration errors when env vars are missing/invalid.
+- Keeps API keys server-side only.
+
+### Bike Scout waitlist and storage
+
+- Waitlist and Bike Scout setup data are browser-local prototype storage today (`localStorage`).
+- No durable backend waitlist database yet.
+- No production cron-based listing monitoring yet.
+
+### Future CRM sync boundary
+
+- CRM integration is future work (HubSpot/Salesforce/Mailchimp/Brevo).
+- Transactional email flow and marketing consent should stay separate.
+- CRM must not be treated as app auth.
 
 ## Future Service Boundaries
 
@@ -55,8 +98,9 @@ The existing `src/listing_monitor/` Python package is a legacy local listing mon
 
 - PRD first.
 - Web MVP first.
-- No real external APIs in Phase 1.
+- External APIs are optional/feature-flagged and must fail gracefully.
 - Avoid fake precision in user-facing recommendations.
 - Keep costly services behind limitable interfaces.
 - Minimize child personal data storage.
 - Keep future search connectors server-side and public-web/API only.
+- Production deployment source of truth: GitHub `main` branch + Vercel root directory `app`.

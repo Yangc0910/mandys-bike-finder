@@ -6,6 +6,11 @@ Current PRD: `docs/PRD.md` v0.5
 
 Mandy's Bike Finder should work without unlimited external API calls. Search, OCR, LLM, email, and backend services may cost money, so cost control is a product requirement from the start.
 
+MVP model policy:
+
+- Use the cheapest suitable model for each task during MVP rollout.
+- Keep high-cost model upgrades behind explicit product review.
+
 ## Search Provider Abstraction
 
 Live price reference search should be implemented behind a provider interface. The app should not hard-code one provider into product logic.
@@ -103,6 +108,7 @@ Every real API integration must include:
 - Explicit user-triggered calls for costly screenshot AI extraction (no auto-call on page load or file upload).
 - Controlled link extraction attempts with per-session/per-IP limits, timeout, and short-lived URL caching.
 - Bike Scout scheduled-search caps before any production rollout.
+- Usage count logging/telemetry for LLM/email endpoint calls so limits can be tuned safely.
 
 ## Caching
 
@@ -137,6 +143,11 @@ If Bike Scout automation is unavailable later, the product should still fall bac
 - user-assisted screenshots, pasted text, and manual entry
 
 Fallback mode should never block the full analysis.
+
+Current waitlist fallback:
+
+- Bike Scout waitlist capture remains local-browser storage in MVP.
+- No email-backed or database-backed waitlist pipeline is assumed unless implemented later.
 
 ## User-Facing Messages
 

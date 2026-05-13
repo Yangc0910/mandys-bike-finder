@@ -1,8 +1,8 @@
 # Mandy Bike Finder PRD
 
-Version: v0.5 (Bike Scout foundation)  
+Version: v0.6 (Current MVP alignment)  
 Status: Current MVP source of truth  
-Last updated: 2026-05-12
+Last updated: 2026-05-13
 
 ## 1. Product Overview
 
@@ -42,6 +42,7 @@ Typical use case:
 - Let user confirm/edit important listing fields before analysis.
 - Evaluate listing quality with practical red/yellow/green guidance.
 - Provide parent-friendly "what to look for" and "what to avoid" guidance.
+- Support explicit transactional report email sending when server email configuration is enabled.
 - Keep AI usage controlled, explicit, and server-side.
 
 ## 4. Non-Goals For Current MVP
@@ -70,6 +71,14 @@ Not currently implemented:
 6. App evaluates listing quality and fit.
 7. App shows recommendation, reasoning, and practical checks.
 
+Current report email flow:
+
+1. Parent completes a bike check and sees recommendation output.
+2. Parent enters an email and clicks `Send report to my email`.
+3. Server validates request data and enforces report-email rate limits.
+4. Server sends transactional email through Resend when configured.
+5. Parent gets success/failure feedback in the UI.
+
 Planned Bike Scout flow after backend work:
 
 1. Parent saves a child fit profile and search preferences.
@@ -85,6 +94,11 @@ Current waitlist-first MVP flow:
 2. Parent joins a waitlist instead of paying now.
 3. Waitlist details are stored locally in the browser for this prototype.
 4. Parent can optionally preview the future Bike Scout setup flow.
+
+Current PDF status:
+
+- Report content is generated and can be emailed as HTML/plain text.
+- PDF attachment export is planned and not yet implemented in production flow.
 
 Current homepage information architecture:
 
@@ -124,7 +138,7 @@ Core principles:
 - Riding experience affects confidence and growth-size caution.
 - Final recommendation includes bike type and wheel size.
 
-Current wheel-size guidance from code (`buildChildBikeRecommendation`):
+Current wheel-size guidance from code (`buildChildBikeRecommendation` in `app/app/page.tsx`):
 
 - `<95 cm` -> 12 inch baseline
 - `95-104 cm` -> 14 inch baseline
@@ -428,6 +442,14 @@ After analysis, user sees:
 - Negotiation boost output
 - Email report preview/send flow (feature-flag/fallback aware)
 
+Current transactional email scope:
+
+- Endpoint: `POST /api/reports/email`
+- Provider: Resend
+- Delivery format: HTML + plain-text fallback
+- Trigger: explicit user action only
+- Not a marketing consent or CRM enrollment endpoint
+
 Child-profile recommendation card includes:
 
 - Recommended bike type
@@ -534,6 +556,8 @@ Priority 1 — MVP usability improvements:
 - Better price reference provider integration.
 - Improved structured condition checks.
 - Mobile UX polish and accessibility improvements.
+- Durable waitlist capture backend (replace browser-local prototype storage).
+- Optional PDF attachment export for emailed reports.
 
 Priority 2 — Nice-to-have after MVP:
 
@@ -571,12 +595,20 @@ Not implemented now:
 - production cron
 - durable database
 - real email alerts
+- CRM sync pipeline
 - Stripe Checkout or another payment flow
 - user accounts
 
 Planned payment path:
 
 - Future Stripe Checkout integration after waitlist demand validation.
+
+Future CRM/email strategy:
+
+- Keep report-email delivery transactional-first on Resend.
+- Keep marketing consent separate from transactional reporting.
+- Add optional CRM sync later (HubSpot, Salesforce, Mailchimp, Brevo).
+- Do not use CRM as app authentication; adopt dedicated auth provider when accounts are introduced.
 
 ## 19. Version / Changelog
 

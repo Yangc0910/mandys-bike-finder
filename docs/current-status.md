@@ -28,7 +28,9 @@ The `/app` implementation uses:
 - Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
 - Negotiation Boost UI.
 - Email report UI with Resend-backed delivery when configured.
+- Transactional report email API (`/api/reports/email`) with validation, config checks, and rate limits.
 - Bike Scout planned-paid feature section with local-only profile prototype.
+- Bike Scout waitlist form with local-only browser storage prototype.
 - Typed Bike Scout marketplace/source foundation for future saved-search work.
 - API routes:
   - `/api/status`
@@ -56,6 +58,7 @@ Child recommendation current rules:
   - `npm run build`
 - There is not currently a dedicated `/app` `test` or `typecheck` script.
 - GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
+- Active development happens on GitHub `main` and Vercel should deploy from `main` with root directory `app`.
 
 ## Vercel Deployment Status (Live)
 
@@ -99,8 +102,10 @@ Child recommendation current rules:
 - Real OCR.
 - Real trusted retailer search provider.
 - Real database or Supabase adapter.
+- Durable waitlist backend storage.
 - Durable deployed usage limits/cache.
 - Automated end-to-end browser tests for production flows.
+- PDF attachment export for report emails.
 - Production Bike Scout cron/search execution.
 - Bike Scout payment integration.
 - Bike Scout account/auth layer.

@@ -115,7 +115,6 @@ Not implemented now:
 - Generic multi-marketplace crawling.
 - Live retailer search provider in production mode.
 - Durable backend storage provider.
-- Durable backend storage provider.
 - Stripe/payment flow.
 - User login/auth unless added later on purpose.
 - Automated feed-level ranking rules such as "just listed" filtering, stale listing filtering, distance ranking, or location-based ranking.
@@ -147,6 +146,16 @@ Current image assets are under `app/public/images` and referenced with `/images/
 
 Recommendation panel illustration mapping is keyword-based (`balance`, `training`, `pedal`, `mountain`, `cruiser`/`comfort`, `hybrid`) with placeholder fallback when unmatched.
 
+## User Flow (Current)
+
+1. Parent lands on homepage and starts in `Free Bike Check` mode by default.
+2. Parent enters child profile (height, age, riding experience required).
+3. Parent adds listing via screenshot, link, pasted text, or manual details.
+4. Parent confirms extracted/manual listing fields.
+5. App returns fit/value/safety guidance and recommendation.
+6. Parent can generate seller message and send report by email (when enabled/configured).
+7. Parent can switch to `Bike Scout Waitlist` tab to join early-access waitlist (local prototype storage today).
+
 ## Local Web App
 
 The production-path MVP now lives in `/app` as a Next.js + TypeScript + Tailwind app.
@@ -171,8 +180,32 @@ Current verification note:
   - `npm run build`
 - There is not currently a dedicated `test` or `typecheck` script under `/app`.
 - GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
+- Active development branch is `main` and production auto-deploy should track `main`.
 
 The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search and backend logging currently remain provider-interface placeholders with fallback behavior. Email report sending can use Resend when `ENABLE_EMAIL_REPORT=true` and the Resend environment variables are configured. Never put API keys in frontend code.
+
+### Environment Variables (Current)
+
+Required for real report email sending:
+
+- `RESEND_API_KEY`
+- `REPORT_EMAIL_FROM`
+
+Optional/recommended:
+
+- `REPORT_EMAIL_REPLY_TO`
+- `APP_BASE_URL`
+
+Core feature flags and controls:
+
+- `ENABLE_LIVE_SEARCH`
+- `ENABLE_LLM_ANALYSIS`
+- `ENABLE_EMAIL_REPORT`
+- `ENABLE_BACKEND_LOGGING`
+- `DAILY_LLM_LIMIT`
+- `PER_SESSION_LLM_LIMIT`
+
+If required email variables are missing or invalid, `/api/reports/email` returns a clear configuration error instead of crashing.
 
 The older `web/` folder is legacy prototype only. New production work should happen in `/app`.
 
@@ -413,6 +446,22 @@ Bike Scout-specific future items:
 - Payment integration after product validation.
 
 See [docs/roadmap.md](docs/roadmap.md) for details.
+
+## Current Limitations
+
+- Bike Scout waitlist is local-browser storage only (no durable backend waitlist database yet).
+- Report email is HTML/plain-text delivery (no PDF attachment flow yet).
+- Live multi-source marketplace monitoring is not live yet.
+- No user auth/account system in the current MVP.
+- No Stripe payment flow yet.
+
+## CRM and Email Strategy
+
+- Resend is used for transactional email (for example, sending a requested bike report to the user).
+- Transactional report sending is separate from marketing consent or waitlist growth workflows.
+- CRM/marketing platforms (HubSpot, Salesforce, Mailchimp, Brevo) are future integrations, not required for current MVP operation.
+- HubSpot should not be used as the app's authentication system.
+- Future auth options can include Clerk, Supabase Auth, Firebase Auth, or Auth.js once account features are prioritized.
 
 ## Legacy Prototype Note
 
