@@ -538,7 +538,7 @@ export default function Home() {
       });
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.ok) {
-        setReportEmailNotice(result?.code === "email_configuration_error" ? "Email service is not configured yet." : result?.error || "Email could not be sent.");
+        setReportEmailNotice(formatReportEmailError(result?.code, result?.error));
         return;
       }
       setReportEmailNotice("Report sent - please check your inbox.");
@@ -2200,6 +2200,21 @@ function lbToKg(weightLb: string) {
 function toFixed(value: string, decimals: number) {
   const n = Number(value);
   return Number.isFinite(n) ? n.toFixed(decimals).replace(/\.0$/, "") : "";
+}
+
+function formatReportEmailError(code?: string, error?: string) {
+  const text = String(error || "").toLowerCase();
+  if (code === "email_configuration_error") {
+    return "Email service is not configured yet. Please check RESEND_API_KEY and REPORT_EMAIL_FROM.";
+  }
+  if (
+    text.includes("domain") && text.includes("not verified")
+    || text.includes("associated domain with your api key")
+    || text.includes("verified domain")
+  ) {
+    return "Email sender domain is not verified for the current Resend API key. Verify your domain in Resend and update Vercel env vars, then redeploy.";
+  }
+  return error || "Email could not be sent.";
 }
 
 async function prepareScreenshotForExtraction(file: File): Promise<{ dataUrl: string; mimeType: string; sizeBytes: number }> {
