@@ -66,6 +66,10 @@ Bike Scout foundation now adds:
 Implemented now:
 
 - Warm, parent-friendly hero with bike illustration and concise intro.
+- Homepage now uses two product modes:
+  - `Free Bike Check` (default)
+  - `Bike Scout Waitlist`
+- Bike Scout's full waitlist content is no longer duplicated in the default analyzer view.
 - Lightweight "How it works" onboarding cards plus expectation-setting callout.
 - Child-profile-only recommendation requires:
   - height

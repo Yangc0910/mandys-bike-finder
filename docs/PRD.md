@@ -2,7 +2,7 @@
 
 Version: v0.5 (Bike Scout foundation)  
 Status: Current MVP source of truth  
-Last updated: 2026-05-11
+Last updated: 2026-05-12
 
 ## 1. Product Overview
 
@@ -84,6 +84,15 @@ Current waitlist-first MVP flow:
 2. Parent joins a waitlist instead of paying now.
 3. Waitlist details are stored locally in the browser for this prototype.
 4. Parent can optionally preview the future Bike Scout setup flow.
+
+Current homepage information architecture:
+
+1. Hero introduces the product with two CTAs.
+2. The homepage uses two product modes:
+   - `Free Bike Check`
+   - `Bike Scout Waitlist`
+3. `Free Bike Check` is the default primary workflow.
+4. `Bike Scout Waitlist` contains the full Bike Scout explanation and waitlist form.
 
 ## 6. Child Profile Requirements
 

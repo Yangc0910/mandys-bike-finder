@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Simplified the homepage into two product modes with segmented tabs: `Free Bike Check` remains the default analyzer flow, while `Bike Scout Waitlist` now contains the full planned-paid explanation and waitlist UI without duplicating the full Bike Scout section in the default view.
+- Reduced homepage clutter with clearer hero CTAs, a compact free-mode intro, collapsible expectation-setting copy, a lower-priority listing-details step, and a right-side summary rail for the main analyzer on larger screens.
 - Reworked the Bike Scout paid-feature area into a waitlist-first MVP: removed checkout-style CTAs, added a required-email Bike Scout waitlist form with optional interest fields, added local-only waitlist confirmation messaging, and kept pricing positioned as a planned paid feature rather than a live payment flow.
 - Added local Bike Scout waitlist storage helpers in browser `localStorage` and documented the future Stripe Checkout path as planned, not live.
 - Added `Mandy Bike Scout` paid-feature foundation with single-tier positioning (`about $2.99/week`), a clearly labeled planned-paid UI section, and a local-only Bike Scout profile prototype stored in browser `localStorage`.
