@@ -103,6 +103,8 @@ export default function Home() {
   const [recipientName, setRecipientName] = useState("");
   const [reportNote, setReportNote] = useState("");
   const [reportPreview, setReportPreview] = useState("");
+  const [reportEmailNotice, setReportEmailNotice] = useState("");
+  const [isSendingReportEmail, setIsSendingReportEmail] = useState(false);
   const [showProfileRecommendation, setShowProfileRecommendation] = useState(false);
   const [profileRecommendation, setProfileRecommendation] = useState<ChildBikeRecommendation | null>(null);
   const [profileRecommendationSignature, setProfileRecommendationSignature] = useState("");
@@ -169,6 +171,7 @@ export default function Home() {
   const hasPastedText = Boolean(pastedText.trim());
   const isCraigslistLink = detectedMarketplace.id === "craigslist";
   const isFacebookMarketplaceLink = detectedMarketplace.id === "facebook_marketplace";
+  const hasValidReportEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reportEmail.trim());
   const canRunLinkAction = Boolean(linkValue) && (
     detectedMarketplace.extractionMode !== "fallback_only" || hasPastedText
   );
@@ -334,7 +337,7 @@ export default function Home() {
     setSavedWaitlistEntries(nextEntries);
     saveBikeScoutWaitlist(nextEntries);
     setWaitlistDraft(defaultBikeScoutWaitlistEntry());
-    setWaitlistNotice("Thanks - you're on the Bike Scout early-access list for this browser. Note: this MVP stores your signup locally for now. A real waitlist backend will be added before launch.");
+    setWaitlistNotice("Thanks - you're on the Bike Scout early-access list for this browser. This remains a local backup prototype for now.");
     setShowScoutSetup(true);
   }
 
@@ -487,6 +490,64 @@ export default function Home() {
     }
     setReportPreview(localReport(payload));
     setStatus("Report preview generated locally.");
+  }
+
+  async function sendReportToEmail() {
+    if (!showAnalysisResults) {
+      setReportEmailNotice("Complete a bike check first to email the report.");
+      return;
+    }
+    if (!hasValidReportEmail) {
+      setReportEmailNotice("Please enter a valid email address.");
+      return;
+    }
+
+    const currentAnalysis = analysis || localAnalysis;
+    const report = localReport({
+      listing,
+      analysis: currentAnalysis,
+      message: sellerMessage,
+      note: reportNote,
+    });
+
+    setIsSendingReportEmail(true);
+    setReportEmailNotice("Sending your report...");
+    try {
+      const response = await fetch("/api/reports/email", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email: reportEmail,
+          bikeTitle: listing.title,
+          reportSummary: currentAnalysis.overall.reasoning,
+          recommendation: currentAnalysis.overall.label,
+          score: currentAnalysis.overall.label,
+          askingPrice: listing.askingPrice ? `$${listing.askingPrice}` : "",
+          location: listing.location,
+          childProfile: normalizedChild,
+          listing,
+          analysisResult: currentAnalysis,
+          report,
+          reportTitle: "Your Mandy's Bike Finder report",
+          sourceUrl: listing.listingLink,
+          reportId: listing.listingLink || listing.title,
+          sellerMessage,
+          recipientName,
+          note: reportNote,
+        }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.ok) {
+        setReportEmailNotice(result?.code === "email_configuration_error" ? "Email service is not configured yet." : result?.error || "Email could not be sent.");
+        return;
+      }
+      setReportEmailNotice("Report sent - please check your inbox.");
+      setStatus("Report sent by email.");
+    } catch {
+      setReportEmailNotice("Email could not be sent.");
+    } finally {
+      setIsSendingReportEmail(false);
+    }
   }
 
   function recommendFromChildProfile() {
@@ -1140,11 +1201,25 @@ export default function Home() {
 
             <PanelTitle step="6" title="Email report">
               <div className="mb-3 grid gap-3 md:grid-cols-2">
-                <Field label="Email"><input className={inputClass} type="email" value={reportEmail} onChange={(e) => setReportEmail(e.target.value)} placeholder="parent@example.com" /></Field>
+                <Field label="Email"><input className={inputClass} type="email" value={reportEmail} onChange={(e) => { setReportEmail(e.target.value); setReportEmailNotice(""); }} placeholder="parent@example.com" /></Field>
                 <Field label="Recipient name"><input className={inputClass} value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Optional" /></Field>
                 <Field label="Note" wide><textarea className={inputClass} rows={3} value={reportNote} onChange={(e) => setReportNote(e.target.value)} placeholder="Optional" /></Field>
               </div>
-              <button className="mb-3 min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand" type="button" onClick={previewReport}>Email this report</button>
+              <div className="mb-3 flex flex-wrap items-center gap-3">
+                <button className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand" type="button" onClick={previewReport}>
+                  Preview report
+                </button>
+                <button
+                  className="min-h-11 rounded-md bg-brand px-4 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  onClick={sendReportToEmail}
+                  disabled={!showAnalysisResults || !hasValidReportEmail || isSendingReportEmail}
+                >
+                  {isSendingReportEmail ? "Sending..." : "Send report to my email"}
+                </button>
+              </div>
+              {!showAnalysisResults && <p className="mb-3 text-sm text-slate-600">Complete a bike check first to email the report.</p>}
+              {reportEmailNotice && <p className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">{reportEmailNotice}</p>}
               <pre className="min-h-32 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-slate-50 p-3 text-sm text-slate-700">{reportPreview}</pre>
             </PanelTitle>
           </section>
@@ -1287,7 +1362,7 @@ export default function Home() {
                   Bike Scout is planned as a paid feature around $2.99/week. Join the waitlist and we&apos;ll notify you when early access is ready.
                 </p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Local prototype: this does not submit to a server yet.
+                  Local prototype: this waitlist is still saved only in this browser.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <button

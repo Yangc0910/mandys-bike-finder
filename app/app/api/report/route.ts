@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { loadServerConfig } from "@/lib/server/config";
 import { checkUsageLimits } from "@/lib/server/limits";
-import { logEvent, openAiReportSummary, reportMetadata, sendEmailReport, simulatedEmailReport } from "@/lib/server/providers";
+import { logEvent, openAiReportSummary, reportMetadata, simulatedEmailReport } from "@/lib/server/providers";
 import { buildReport } from "@/lib/server/report";
 import { clientKey, safeError } from "@/lib/server/utils";
 import type { AnalysisResult, ChildProfile, Listing } from "@/lib/types";
@@ -25,38 +25,7 @@ export async function POST(request: Request) {
   const key = clientKey(request);
   const summary = await maybeReportSummary(config, key, payload);
   const report = buildReport({ ...payload, summary });
-  const emailLimit = checkUsageLimits("email", key, config.limits.emailDaily, config.limits.sessionEmail);
-
-  let emailResult;
-  if (
-    !emailLimit.allowed ||
-    !config.featureFlags.emailReport ||
-    !config.providers.emailApiKey ||
-    !config.providers.emailApiUrl ||
-    !config.providers.emailFrom
-  ) {
-    emailResult = simulatedEmailReport(
-      payload.email,
-      report,
-      emailLimit.allowed
-        ? "Email report disabled or missing server-side email configuration."
-        : `${emailLimit.reason === "session" ? "Session" : "Daily"} email limit reached.`,
-    );
-  } else {
-    try {
-      emailResult = await sendEmailReport({
-        apiKey: config.providers.emailApiKey,
-        apiUrl: config.providers.emailApiUrl,
-        from: config.providers.emailFrom,
-        email: payload.email,
-        subject: "Mandy's Bike Finder report",
-        report,
-      });
-    } catch (error) {
-      console.warn("email.send", safeError(error));
-      emailResult = simulatedEmailReport(payload.email, report, "Email sending failed. Report preview was generated instead.");
-    }
-  }
+  const emailResult = simulatedEmailReport(payload.email, report, "Report preview generated. Use /api/reports/email to send it.", "report_preview_only");
 
   try {
     await logEvent(

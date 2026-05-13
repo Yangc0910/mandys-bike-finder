@@ -49,7 +49,7 @@ Suggested provider variables for later implementation:
 
 - `OPENAI_API_KEY` or another server-side LLM provider key.
 - `SEARCH_API_KEY` and `SEARCH_PROVIDER`.
-- `EMAIL_API_KEY`, `EMAIL_PROVIDER`, and sender configuration.
+- `RESEND_API_KEY`, `REPORT_EMAIL_FROM`, `REPORT_EMAIL_REPLY_TO`, and optional `APP_BASE_URL`.
 - `DATABASE_URL` or Supabase-equivalent backend variables.
 
 ## Session Limit
@@ -81,6 +81,12 @@ Bike Scout-specific future controls:
 - Cap number of sources per run.
 - Cap number of listings analyzed per run.
 - Cap optional LLM usage per search/profile if enrichment is later added.
+
+Current email endpoint controls:
+
+- `/api/reports/email` is explicit user-triggered sending only.
+- `/api/reports/email` is capped at 5 sends per IP/day and 3 sends per session.
+- `/api/reports/email` returns a clear configuration error if Resend environment variables are missing or invalid.
 
 ## Required Controls
 

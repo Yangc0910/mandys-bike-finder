@@ -24,9 +24,10 @@ export function loadServerConfig(env = process.env) {
       openAiModel: env.OPENAI_MODEL || "gpt-5.4-mini",
       searchApiKey: env.SEARCH_API_KEY || "",
       searchApiUrl: env.SEARCH_API_URL || "",
-      emailApiKey: env.EMAIL_API_KEY || "",
-      emailApiUrl: env.EMAIL_API_URL || "",
-      emailFrom: env.EMAIL_FROM || "",
+      resendApiKey: env.RESEND_API_KEY || "",
+      reportEmailFrom: env.REPORT_EMAIL_FROM || "",
+      reportEmailReplyTo: env.REPORT_EMAIL_REPLY_TO || "",
+      appBaseUrl: env.APP_BASE_URL || "",
       databaseUrl: env.DATABASE_URL || "",
     },
   };

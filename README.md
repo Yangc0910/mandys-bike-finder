@@ -41,7 +41,7 @@ Phase 1 includes:
 - Red/yellow/green overall result.
 - Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
 - Negotiation Boost UI and local message generation.
-- Email Report UI placeholder and local report preview.
+- Email Report UI with Resend-backed delivery when configured, plus local report preview fallback.
 - Service interfaces for future search, OCR, email, and backend metadata logging.
 
 Phase 1.5 adds a controlled real API beta architecture. Real integrations can be enabled only through server-side feature flags and environment variables. The app must still work without API keys through mock/local fallbacks.
@@ -114,7 +114,8 @@ Not implemented now:
 - Automated Facebook Marketplace monitoring for Bike Scout.
 - Generic multi-marketplace crawling.
 - Live retailer search provider in production mode.
-- Real email provider and durable backend storage provider.
+- Durable backend storage provider.
+- Durable backend storage provider.
 - Stripe/payment flow.
 - User login/auth unless added later on purpose.
 - Automated feed-level ranking rules such as "just listed" filtering, stale listing filtering, distance ranking, or location-based ranking.
@@ -128,7 +129,7 @@ Bike Scout honesty rules:
 - Do not scrape login-gated pages.
 - Do not bypass anti-bot systems.
 - Do not imply alerts/payment are active unless the backend really exists.
-- Bike Scout waitlist is currently local-only and does not submit to a real server yet.
+- Bike Scout waitlist is currently local-only and does not submit to a real backend yet.
 - Future payment path should use Stripe Checkout only after waitlist validation.
 
 ## UI Assets
@@ -171,7 +172,7 @@ Current verification note:
 - There is not currently a dedicated `test` or `typecheck` script under `/app`.
 - GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
 
-The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search, email, and backend logging currently remain provider-interface placeholders with fallback behavior. Never put API keys in frontend code.
+The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search and backend logging currently remain provider-interface placeholders with fallback behavior. Email report sending can use Resend when `ENABLE_EMAIL_REPORT=true` and the Resend environment variables are configured. Never put API keys in frontend code.
 
 The older `web/` folder is legacy prototype only. New production work should happen in `/app`.
 
@@ -260,6 +261,50 @@ PER_SESSION_LLM_LIMIT=10
 ```
 
 Important: API keys must be added only in Vercel Environment Variables. Never commit API keys, OAuth secrets, `.env`, `config.yaml`, credentials, database URLs, or tokens to GitHub.
+
+#### Resend Email Setup
+
+Mandy Bike Finder uses Resend for real transactional email when email sending is enabled.
+The current production sending domain is verified in Resend through GoDaddy DNS.
+
+Preferred production sender:
+
+```text
+Mandy Bike Finder <noreply@updates.mandysbikefinder.com>
+```
+
+Alternative sender if the subdomain is not configured yet:
+
+```text
+Mandy Bike Finder <hello@mandysbikefinder.com>
+```
+
+Setup steps:
+
+1. Create a Resend account.
+2. Add and verify the sending domain, preferably `updates.mandysbikefinder.com`.
+3. Add the SPF/DKIM DNS records provided by Resend.
+4. Create a Resend API key.
+5. Add `RESEND_API_KEY`, `REPORT_EMAIL_FROM`, `REPORT_EMAIL_REPLY_TO`, and `APP_BASE_URL` to Vercel Project Settings -> Environment Variables.
+6. Restart the local dev server after changing local environment variables.
+7. Redeploy after environment variables are added in Vercel.
+
+Example Vercel values:
+
+```text
+ENABLE_EMAIL_REPORT=true
+RESEND_API_KEY=<set in Vercel only>
+REPORT_EMAIL_FROM=Mandy Bike Finder <noreply@updates.mandysbikefinder.com>
+REPORT_EMAIL_REPLY_TO=hello@mandysbikefinder.com
+APP_BASE_URL=https://www.mandysbikefinder.com
+```
+
+Do not commit Resend API keys, `.env` files, or other secrets. If these variables are missing or malformed, `/api/reports/email` returns a clear configuration error instead of crashing.
+
+Current email limitations:
+
+- Report emails are simple HTML/plain-text emails, not PDF attachments.
+- Bike Scout waitlist remains local-only in this step.
 
 ### 4. Confirm Deployment Works
 

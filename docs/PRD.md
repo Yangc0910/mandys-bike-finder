@@ -53,9 +53,10 @@ Not currently implemented:
 - User accounts and persistence.
 - Production Bike Scout payments.
 - Live Bike Scout payment collection.
-- Production Bike Scout scheduled alerts/notifications.
+- Production Bike Scout scheduled listing alerts.
 - Real-time market-wide price comparison engine.
 - In-app seller messaging, checkout, or transaction handling.
+- PDF report attachment generation.
 - Login-gated marketplace automation.
 - Anti-bot bypass or scraping workarounds.
 
@@ -285,8 +286,9 @@ Current storage scope:
 
 Bike Scout waitlist storage:
 
-- Current waitlist entries are also stored in browser `localStorage`.
-- The waitlist does not submit to a real server yet.
+- Current waitlist entries are stored in browser `localStorage`.
+- There is no durable waitlist database yet.
+- Report email is sent as simple HTML/plain text; there is no PDF attachment yet.
 
 ## 11. AI Extraction Behavior
 

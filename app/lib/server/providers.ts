@@ -131,34 +131,11 @@ export async function trustedSearchReference(
   throw new Error(`Live search provider is not implemented yet for ${normalizeListingQuery(listing)}.`);
 }
 
-export async function sendEmailReport({
-  apiKey,
-  apiUrl,
-  from,
-  email,
-  subject,
-  report,
-}: {
-  apiKey: string;
-  apiUrl: string;
-  from: string;
-  email: string;
-  subject: string;
-  report: string;
-}) {
-  void apiKey;
-  void apiUrl;
-  void from;
-  void email;
-  void subject;
-  void report;
-  throw new Error("Live email provider is not implemented yet.");
-}
-
-export function simulatedEmailReport(email: string, report: string, reason: string) {
+export function simulatedEmailReport(email: string, report: string, reason: string, code = "email_unavailable") {
   return {
     sent: false,
     provider: "mock",
+    code,
     fallbackReason: reason,
     message: "Email sending is disabled; report was simulated.",
     preview: report,

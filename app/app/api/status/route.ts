@@ -6,13 +6,18 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const config = loadServerConfig();
+  const emailConfigured = Boolean(
+    config.providers.resendApiKey &&
+      config.providers.resendApiKey.startsWith("re_") &&
+      config.providers.reportEmailFrom,
+  );
   return NextResponse.json({
     ok: true,
     featureFlags: config.featureFlags,
     providers: {
       llm: config.featureFlags.llmAnalysis && config.providers.openAiApiKey ? "openai" : "mock",
       search: "fallback",
-      email: "mock",
+      email: config.featureFlags.emailReport ? (emailConfigured ? "resend" : "configuration_error") : "mock",
       logging: "mock",
     },
     limits: config.limits,

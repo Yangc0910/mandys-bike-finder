@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-05-11
+Last updated: 2026-05-13
 
 ## Production Path
 
@@ -27,7 +27,7 @@ The `/app` implementation uses:
 - Red/yellow/green result meter.
 - Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
 - Negotiation Boost UI.
-- Email report UI and simulated send fallback.
+- Email report UI with Resend-backed delivery when configured.
 - Bike Scout planned-paid feature section with local-only profile prototype.
 - Typed Bike Scout marketplace/source foundation for future saved-search work.
 - API routes:
@@ -37,6 +37,7 @@ The `/app` implementation uses:
   - `/api/analyze`
   - `/api/message`
   - `/api/report`
+  - `/api/reports/email`
 
 All listed API routes are migrated under `/app/app/api`.
 
@@ -97,14 +98,13 @@ Child recommendation current rules:
 
 - Real OCR.
 - Real trusted retailer search provider.
-- Real email provider.
 - Real database or Supabase adapter.
 - Durable deployed usage limits/cache.
 - Automated end-to-end browser tests for production flows.
 - Production Bike Scout cron/search execution.
 - Bike Scout payment integration.
 - Bike Scout account/auth layer.
-- Bike Scout email alerts.
+- Bike Scout scheduled email alerts.
 - Automated Facebook Marketplace monitoring.
 
 ## Legacy Code
