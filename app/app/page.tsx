@@ -104,6 +104,7 @@ export default function Home() {
   const [reportNote, setReportNote] = useState("");
   const [reportPreview, setReportPreview] = useState("");
   const [reportEmailNotice, setReportEmailNotice] = useState("");
+  const [reportEmailNoticeTone, setReportEmailNoticeTone] = useState<"info" | "success" | "error">("info");
   const [isSendingReportEmail, setIsSendingReportEmail] = useState(false);
   const [showProfileRecommendation, setShowProfileRecommendation] = useState(false);
   const [profileRecommendation, setProfileRecommendation] = useState<ChildBikeRecommendation | null>(null);
@@ -484,8 +485,8 @@ export default function Home() {
     };
     const result = await apiPost("/api/report", payload);
     if (result?.report) {
-      setReportPreview(`${result.emailResult?.message || "Report generated."}\n\n${result.report}`);
-      setStatus(result.emailResult?.message || "Report generated.");
+      setReportPreview(result.report);
+      setStatus("Report generated.");
       return;
     }
     setReportPreview(localReport(payload));
@@ -494,10 +495,12 @@ export default function Home() {
 
   async function sendReportToEmail() {
     if (!showAnalysisResults) {
+      setReportEmailNoticeTone("error");
       setReportEmailNotice("Complete a bike check first to email the report.");
       return;
     }
     if (!hasValidReportEmail) {
+      setReportEmailNoticeTone("error");
       setReportEmailNotice("Please enter a valid email address.");
       return;
     }
@@ -511,6 +514,7 @@ export default function Home() {
     });
 
     setIsSendingReportEmail(true);
+    setReportEmailNoticeTone("info");
     setReportEmailNotice("Sending your report...");
     try {
       const response = await fetch("/api/reports/email", {
@@ -538,12 +542,15 @@ export default function Home() {
       });
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.ok) {
+        setReportEmailNoticeTone("error");
         setReportEmailNotice(formatReportEmailError(result?.code, result?.error));
         return;
       }
-      setReportEmailNotice("Report sent - please check your inbox.");
+      setReportEmailNoticeTone("success");
+      setReportEmailNotice("Report sent successfully. Please check your inbox.");
       setStatus("Report sent by email.");
     } catch {
+      setReportEmailNoticeTone("error");
       setReportEmailNotice("Email could not be sent.");
     } finally {
       setIsSendingReportEmail(false);
@@ -1219,7 +1226,19 @@ export default function Home() {
                 </button>
               </div>
               {!showAnalysisResults && <p className="mb-3 text-sm text-slate-600">Complete a bike check first to email the report.</p>}
-              {reportEmailNotice && <p className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">{reportEmailNotice}</p>}
+              {reportEmailNotice && (
+                <p
+                  className={`mb-3 rounded-md border p-3 text-sm font-semibold ${
+                    reportEmailNoticeTone === "success"
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                      : reportEmailNoticeTone === "error"
+                        ? "border-rose-300 bg-rose-50 text-rose-800"
+                        : "border-slate-200 bg-slate-50 text-slate-700"
+                  }`}
+                >
+                  {reportEmailNotice}
+                </p>
+              )}
               <pre className="min-h-32 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-slate-50 p-3 text-sm text-slate-700">{reportPreview}</pre>
             </PanelTitle>
           </section>

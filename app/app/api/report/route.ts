@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { loadServerConfig } from "@/lib/server/config";
 import { checkUsageLimits } from "@/lib/server/limits";
-import { logEvent, openAiReportSummary, reportMetadata, simulatedEmailReport } from "@/lib/server/providers";
+import { logEvent, openAiReportSummary, reportMetadata } from "@/lib/server/providers";
 import { buildReport } from "@/lib/server/report";
 import { clientKey, safeError } from "@/lib/server/utils";
 import type { AnalysisResult, ChildProfile, Listing } from "@/lib/types";
@@ -25,7 +25,6 @@ export async function POST(request: Request) {
   const key = clientKey(request);
   const summary = await maybeReportSummary(config, key, payload);
   const report = buildReport({ ...payload, summary });
-  const emailResult = simulatedEmailReport(payload.email, report, "Report preview generated. Use /api/reports/email to send it.", "report_preview_only");
 
   try {
     await logEvent(
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
     console.warn("logging.report", safeError(error));
   }
 
-  return NextResponse.json({ ok: true, report, emailResult });
+  return NextResponse.json({ ok: true, report });
 }
 
 async function maybeReportSummary(
