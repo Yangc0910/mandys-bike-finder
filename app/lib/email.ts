@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Resend } from "resend";
+import type { AnalysisResult, ChildProfile, Listing } from "@/lib/types";
 
 type EmailFailureCode = "email_configuration_error" | "invalid_email" | "email_send_failed";
 
@@ -16,6 +17,11 @@ export type ReportEmailPayload = {
   distanceMiles?: string;
   reportUrl?: string;
   keyReasoning?: string;
+  childProfile?: ChildProfile;
+  listing?: Listing;
+  analysisResult?: AnalysisResult;
+  sellerMessage?: string;
+  reportBody?: string;
 };
 
 export type EmailSendResult =
@@ -81,29 +87,51 @@ export async function sendBikeReportEmail(payload: ReportEmailPayload): Promise<
 }
 
 function buildReportHtml(payload: ReportEmailPayload) {
+  const brandColor = "#2563eb";
+  const heroImageUrl = buildHeroImageUrl();
+  const overallTone = meterTone(payload.analysisResult?.overall.meter);
   const reportLink = payload.reportUrl ? `<p><a href="${escapeAttribute(payload.reportUrl)}">Open this report in Mandy's Bike Finder</a></p>` : "";
+  const dimensions = payload.analysisResult?.dimensions;
+  const sellerQuestions = payload.analysisResult?.sellerQuestions || [];
 
   return `<!doctype html>
 <html>
   <body style="margin:0;background:#f8fafc;color:#0f172a;font-family:Arial,sans-serif;">
     <main style="max-width:640px;margin:0 auto;padding:24px;">
-      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:24px;">
-        <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#2563eb;">Mandy's Bike Finder</p>
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;">
+        <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:${brandColor};">Mandy's Bike Finder</p>
+        ${heroImageUrl ? `<img src="${escapeAttribute(heroImageUrl)}" alt="Mandy Bike Finder" style="display:block;width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin:6px 0 18px;" />` : ""}
         <h1 style="margin:0 0 12px;font-size:24px;">${escapeHtml(payload.reportTitle || "Your bike report")}</h1>
         <p style="margin:0 0 20px;font-size:15px;line-height:1.6;">${escapeHtml(payload.reportSummary)}</p>
+        <div style="margin:0 0 20px;padding:14px;border-radius:10px;border:1px solid ${overallTone.border};background:${overallTone.bg};">
+          <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${overallTone.text};">Overall Recommendation</p>
+          <p style="margin:0;font-size:20px;font-weight:700;color:${overallTone.text};">${escapeHtml(payload.recommendation)}</p>
+          <p style="margin:6px 0 0;font-size:14px;color:${overallTone.text};">Deal score: ${escapeHtml(payload.score || "Not provided")}</p>
+        </div>
 
         ${section("Bike", `
           <p><strong>${escapeHtml(payload.bikeTitle || "Untitled bike listing")}</strong></p>
           <p>Asking price: ${escapeHtml(payload.askingPrice || "Unknown")}</p>
           <p>Location: ${escapeHtml(formatLocation(payload.location, payload.distanceMiles))}</p>
+          ${payload.listing?.wheelSize ? `<p>Wheel size: ${escapeHtml(payload.listing.wheelSize)}</p>` : ""}
+          ${payload.listing?.bikeType ? `<p>Bike type: ${escapeHtml(payload.listing.bikeType)}</p>` : ""}
         `)}
 
-        ${section("Recommendation", `
-          <p><strong>${escapeHtml(payload.recommendation)}</strong></p>
-          <p>Overall deal score: ${escapeHtml(payload.score || "Not provided")}</p>
+        ${section("Why this recommendation", `
           <p>${escapeHtml(payload.keyReasoning || payload.reportSummary)}</p>
+          ${dimensions ? renderDimensionGrid(dimensions) : ""}
         `)}
 
+        ${section("Rider profile", `
+          <p>Height: ${escapeHtml(payload.childProfile?.heightCm ? `${payload.childProfile.heightCm} cm` : "Unknown")}</p>
+          <p>Age: ${escapeHtml(payload.childProfile?.age || "Unknown")}</p>
+          <p>Riding experience: ${escapeHtml(payload.childProfile?.experience || "Unknown")}</p>
+          <p>Style preference: ${escapeHtml(payload.childProfile?.stylePreference || "No preference")}</p>
+        `)}
+
+        ${payload.sellerMessage ? section("Suggested seller message", `<p style="white-space:pre-wrap;">${escapeHtml(payload.sellerMessage)}</p>`) : ""}
+        ${sellerQuestions.length ? section("Seller questions to ask", `<ul style="margin:0;padding-left:18px;">${sellerQuestions.map((q) => `<li style="margin:0 0 6px;">${escapeHtml(q)}</li>`).join("")}</ul>`) : ""}
+        ${payload.reportBody ? section("Full report notes", `<p style="white-space:pre-wrap;">${escapeHtml(payload.reportBody).slice(0, 2200)}</p>`) : ""}
         ${reportLink}
 
         <p style="margin-top:20px;font-size:13px;line-height:1.6;color:#475569;">
@@ -116,6 +144,7 @@ function buildReportHtml(payload: ReportEmailPayload) {
 }
 
 function buildReportText(payload: ReportEmailPayload) {
+  const dimensions = payload.analysisResult?.dimensions;
   return [
     "Mandy's Bike Finder",
     payload.reportTitle || "Your bike report",
@@ -128,6 +157,8 @@ function buildReportText(payload: ReportEmailPayload) {
     `Overall deal score: ${payload.score || "Not provided"}`,
     `Recommendation: ${payload.recommendation}`,
     `Key reasoning: ${payload.keyReasoning || payload.reportSummary}`,
+    dimensions ? `Fit: ${dimensions.fit.label} | Price: ${dimensions.price.label} | Condition: ${dimensions.condition.label} | Brand: ${dimensions.brand.label} | Kid Appeal: ${dimensions.color.label} | Risk: ${dimensions.risk.label}` : "",
+    payload.sellerMessage ? `Suggested seller message: ${payload.sellerMessage}` : "",
     payload.reportUrl ? `Report link: ${payload.reportUrl}` : "",
     "",
     "Used bikes still need an in-person fit and safety check before purchase.",
@@ -141,6 +172,41 @@ function section(title: string, content: string) {
 function formatLocation(location?: string, distanceMiles?: string) {
   const safeLocation = location || "Unknown";
   return distanceMiles ? `${safeLocation} (${distanceMiles} mi)` : safeLocation;
+}
+
+function renderDimensionGrid(dimensions: AnalysisResult["dimensions"]) {
+  const items: Array<[string, AnalysisResult["dimensions"][keyof AnalysisResult["dimensions"]]]> = [
+    ["Fit", dimensions.fit],
+    ["Price", dimensions.price],
+    ["Condition", dimensions.condition],
+    ["Brand", dimensions.brand],
+    ["Kid Appeal", dimensions.color],
+    ["Risk", dimensions.risk],
+  ];
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin-top:12px;">
+      <tr>
+        ${items
+          .map(([name, value]) => {
+            const tone = meterTone(value.meter);
+            return `<td style="width:50%;padding:6px;vertical-align:top;"><div style="border:1px solid ${tone.border};background:${tone.bg};padding:10px;border-radius:8px;"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:${tone.text};">${escapeHtml(name)}</p><p style="margin:0;font-size:13px;color:${tone.text};">${escapeHtml(value.label)}</p></div></td>`;
+          })
+          .join("")}
+      </tr>
+    </table>
+  `;
+}
+
+function meterTone(meter?: AnalysisResult["overall"]["meter"]) {
+  if (meter === "green") return { bg: "#ecfdf5", border: "#6ee7b7", text: "#065f46" };
+  if (meter === "red") return { bg: "#fef2f2", border: "#fca5a5", text: "#991b1b" };
+  return { bg: "#fffbeb", border: "#fcd34d", text: "#92400e" };
+}
+
+function buildHeroImageUrl() {
+  const base = String(process.env.APP_BASE_URL || "").trim().replace(/\/$/, "");
+  if (!base) return "";
+  return `${base}/images/mandy-bike-hero.jpg`;
 }
 
 function senderLooksValid(value: string) {

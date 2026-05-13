@@ -82,6 +82,11 @@ export async function POST(request: Request) {
     distanceMiles: sanitize(payload.distanceMiles || payload.distance || ""),
     reportUrl: sourceUrl || buildReportUrl(payload.reportId),
     keyReasoning: sanitizeMultiline(payload.message || payload.sellerMessage || analysisResult.dimensions.fit.reasoning),
+    childProfile,
+    listing,
+    analysisResult,
+    sellerMessage: sanitizeMultiline(payload.sellerMessage || payload.message || ""),
+    reportBody: report,
   });
 
   if (!result.ok) {
