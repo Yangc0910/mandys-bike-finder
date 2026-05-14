@@ -852,7 +852,7 @@ export default function Home() {
               </div>
             </section>
 
-            <form onSubmit={analyze} className="mb-6 grid gap-5">
+            <form onSubmit={analyze} className={`${activeFreeStep === "result" ? "hidden" : "mb-6 grid gap-5"}`}>
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="grid gap-5">
             <section className={`${activeFreeStep === "rider" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
@@ -1344,16 +1344,14 @@ export default function Home() {
         </form>
 
         {activeFreeStep === "result" && showAnalysisResults ? (
-          <section className="grid gap-4">
-            <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
-              <div className="grid gap-5 lg:grid-cols-[1fr_320px] lg:items-start">
-                <div className="flex items-start gap-4">
-                  <div className={`mt-1 h-16 w-16 shrink-0 rounded-full border-8 ${meterSignal(visibleAnalysis.overall.meter)}`} />
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Bike verdict</p>
-                    <h2 className="mt-1 text-3xl font-bold text-slate-900 md:text-4xl">{visibleAnalysis.overall.label}</h2>
-                    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{visibleAnalysis.overall.reasoning}</p>
-                  </div>
+            <section className="grid gap-4">
+              <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Bike verdict</p>
+                  <h2 className="mt-1 text-3xl font-bold text-slate-900 md:text-4xl">{visibleAnalysis.overall.label}</h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{visibleAnalysis.overall.reasoning}</p>
+                  <OverallRecommendationMeter meter={visibleAnalysis.overall.meter} />
                 </div>
                 <div className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
                   <InfoLine label="Recommended size" value={profileRecommendation?.wheelSize || recommendWheelSize(normalizedChild.heightCm, normalizedChild.experience).recommended} />
@@ -2387,6 +2385,33 @@ function CompactDimensionCard({ name, item }: { name: string; item: MeterResult 
       <p className="mt-2 text-sm font-semibold text-slate-800">{item.label}</p>
       <p className="mt-2 text-sm leading-5 text-slate-700">{item.reasoning}</p>
     </article>
+  );
+}
+
+function OverallRecommendationMeter({ meter }: { meter: MeterResult["meter"] }) {
+  const pointer = meter === "green" ? "84%" : meter === "yellow" ? "50%" : "16%";
+  return (
+    <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="relative pt-6">
+        <div
+          className="absolute top-0 h-0 w-0 -translate-x-1/2 border-l-[8px] border-r-[8px] border-t-[12px] border-l-transparent border-r-transparent border-t-slate-900"
+          style={{ left: pointer }}
+          aria-hidden
+        />
+        <div className="grid h-4 overflow-hidden rounded-full border border-white shadow-inner sm:h-5" aria-label={`Overall recommendation meter: ${meter}`}>
+          <div className="grid grid-cols-3">
+            <span className="bg-red-400" />
+            <span className="bg-amber-300" />
+            <span className="bg-emerald-400" />
+          </div>
+        </div>
+        <div className="mt-2 grid grid-cols-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+          <span>Skip</span>
+          <span className="text-center">Caution</span>
+          <span className="text-right">Good</span>
+        </div>
+      </div>
+    </div>
   );
 }
 

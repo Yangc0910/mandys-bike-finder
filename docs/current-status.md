@@ -22,6 +22,7 @@ The `/app` implementation uses:
 - Browser-local rider profile reuse for returning parents, including recommended bike type and wheel size.
 - Extraction-to-review transition so successful listing extraction opens the field confirmation step immediately.
 - Result view with compact verdict/score breakdown plus parallel seller-message and email-report action panels.
+- Result view collapses the input workflow after evaluation and shows a three-zone overall meter with a pointer.
 - Child profile form.
 - Child-profile-only bike recommendation panel (local rule-based).
 - Listing input by screenshot, link, and manual fields.

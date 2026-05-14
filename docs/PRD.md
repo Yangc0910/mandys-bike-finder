@@ -490,6 +490,7 @@ Child-profile recommendation card includes:
 - Completed steps can show compact status/summary cues so the parent understands where they are without seeing every field at once.
 - Successful screenshot/text/link extraction should advance directly into the Review step so extracted fields are visible immediately.
 - Result view should prioritize a clear verdict, compact score breakdown, and parallel next actions: seller message/questions and email report.
+- Result view should collapse the input workflow and use an overall meter with a pointer across skip/caution/good zones.
 
 Bike Scout section requirements:
 
