@@ -97,6 +97,8 @@ function buildReportHtml(payload: ReportEmailPayload) {
   const dimensions = payload.analysisResult?.dimensions;
   const sellerQuestions = (payload.analysisResult?.sellerQuestions || []).slice(0, 4);
   const keyTakeaways = buildKeyTakeaways(payload);
+  const sourceRows = buildSourceRows(payload);
+  const bikeRows = buildBikeDetailRows(payload);
 
   return `<!doctype html>
 <html>
@@ -112,14 +114,14 @@ function buildReportHtml(payload: ReportEmailPayload) {
           <p style="margin:6px 0 0;font-size:14px;line-height:1.5;color:${overallTone.text};">${escapeHtml(payload.reportSummary)}</p>
         </div>
 
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 16px;">
+        ${section("Listing source", sourceRows.length
+          ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">${sourceRows.map(([label, value]) => detailRow(label, value)).join("")}</table>`
+          : `<p style="margin:0;color:#475569;">No link or screenshot was included with this report.</p>`
+        )}
+
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:16px 0;">
           <tr>
-            <td style="width:50%;padding:0 6px 0 0;vertical-align:top;">${infoCard("Listing", [
-              ["Bike", payload.bikeTitle || "Untitled bike listing"],
-              ["Price", payload.askingPrice || "Unknown"],
-              ["Location", formatLocation(payload.location, payload.distanceMiles)],
-              ["Wheel", payload.listing?.wheelSize || "Unknown"],
-            ], payload.listingUrl)}</td>
+            <td style="width:50%;padding:0 6px 0 0;vertical-align:top;">${infoCard("Extracted bike details", bikeRows, payload.listingUrl)}</td>
             <td style="width:50%;padding:0 0 0 6px;vertical-align:top;">${infoCard("Rider fit", [
               ["Height", payload.childProfile?.heightCm ? `${payload.childProfile.heightCm} cm` : "Unknown"],
               ["Age", payload.childProfile?.age || "Unknown"],
@@ -172,6 +174,10 @@ function buildReportText(payload: ReportEmailPayload) {
     `Asking price: ${payload.askingPrice || "Unknown"}`,
     `Location: ${formatLocation(payload.location, payload.distanceMiles)}`,
     payload.listingUrl ? `Listing link: ${payload.listingUrl}` : "",
+    payload.screenshotUrl ? "Listing screenshot: included in HTML email" : "",
+    "",
+    "Extracted bike details:",
+    ...buildBikeDetailRows(payload).map(([label, value]) => `- ${label}: ${value}`),
     payload.recommendedBikeType ? `Recommended bike type: ${payload.recommendedBikeType}` : "",
     payload.recommendedWheelSize ? `Recommended wheel size: ${payload.recommendedWheelSize}` : "",
     "",
@@ -197,6 +203,44 @@ function infoCard(title: string, rows: Array<[string, string]>, link?: string) {
     ${rows.map(([label, value]) => `<p style="margin:0 0 8px;font-size:14px;line-height:1.4;"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`).join("")}
     ${link ? `<p style="margin:10px 0 0;font-size:14px;"><a href="${escapeAttribute(link)}">View listing</a></p>` : ""}
   </div>`;
+}
+
+function detailRow(label: string, value: string) {
+  return `<tr>
+    <td style="width:130px;padding:6px 10px 6px 0;vertical-align:top;font-size:13px;font-weight:700;color:#475569;">${escapeHtml(label)}</td>
+    <td style="padding:6px 0;vertical-align:top;font-size:14px;line-height:1.5;color:#0f172a;">${value.startsWith("http") ? `<a href="${escapeAttribute(value)}">${escapeHtml(value)}</a>` : escapeHtml(value)}</td>
+  </tr>`;
+}
+
+function buildSourceRows(payload: ReportEmailPayload): Array<[string, string]> {
+  return [
+    payload.listingUrl ? ["Shared link", payload.listingUrl] : null,
+    payload.screenshotUrl ? ["Screenshot", "Included below"] : null,
+    payload.listing?.platform ? ["Marketplace", payload.listing.platform] : null,
+  ].filter(Boolean) as Array<[string, string]>;
+}
+
+function buildBikeDetailRows(payload: ReportEmailPayload): Array<[string, string]> {
+  const listing = payload.listing;
+  const rows: Array<[string, string]> = [
+    ["Title", payload.bikeTitle || listing?.title || "Untitled bike listing"],
+    ["Asking price", payload.askingPrice || "Unknown"],
+    ["Location", formatLocation(payload.location || listing?.location, payload.distanceMiles)],
+    ["Brand", listing?.brand || "Unknown"],
+    ["Model", listing?.model || "Unknown"],
+    ["Wheel size", listing?.wheelSize || "Unknown"],
+    ["Bike type", listing?.bikeType || "Unknown"],
+    ["Color/style", listing?.colorStyle || "Unknown"],
+  ];
+  const condition = listing?.condition || summarizeDescription(listing?.description || "");
+  if (condition) rows.push(["Condition notes", condition]);
+  return rows;
+}
+
+function summarizeDescription(description: string) {
+  const text = description.replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  return text.length > 180 ? `${text.slice(0, 177)}...` : text;
 }
 
 function formatRecommendation(payload: ReportEmailPayload) {

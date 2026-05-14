@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Expanded report email structure to always surface user-provided listing links/screenshots and extracted bike details such as brand, model, wheel size, bike type, color/style, and condition notes.
 - Cleaned up the Result view so the input form/sidebar collapse after evaluation, and added a three-zone overall recommendation meter with a pointer for clearer skip/caution/good context.
 - Rebalanced report email content so parent-facing emails include a concise verdict, listing/rider cards, key takeaways, pickup checks, seller questions, and suggested message without dumping the full report text.
 - Refined the progressive Free Bike Check flow: made bike-fit CTA prominent, added browser-local rider profile reuse, renamed the main analysis CTA to `Evaluate this bike`, moved successful extraction directly into Review, and simplified the Result view into compact verdict/score/action panels.
