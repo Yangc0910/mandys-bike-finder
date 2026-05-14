@@ -56,13 +56,13 @@ type SavedRiderProfile = {
 };
 
 const colorPreferenceOptions = [
-  "No preference / all colors are fine",
   "pink / purple",
   "blue / green",
   "red / orange",
   "black / white / neutral",
   "bright colors",
   "mature / simple style",
+  "No preference / all colors are fine",
 ] as const;
 
 const bikeScoutWheelSizeOptions = ["12 inch", "14 inch", "16 inch", "18 inch", "20 inch", "24 inch", "26 inch"] as const;
@@ -886,7 +886,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2">
               <Field label="Height" required>
                 <div className="grid grid-cols-[110px_1fr] gap-2">
                   <select className={inputClass} value={heightUnit} onChange={(e) => setHeightUnit(e.target.value as "cm" | "ft-in")}>
@@ -930,20 +930,20 @@ export default function Home() {
                   <option value="girl-style">Girl-style</option>
                 </select>
               </Field>
-              <Field label="Color preference" optional>
-                <div className="grid min-h-[102px] gap-2 rounded-md border border-slate-300 bg-slate-50 p-2">
-                  {colorPreferenceOptions.map((option) => (
-                    <label key={option} className="flex items-center gap-2 text-sm font-normal text-slate-700">
-                      <input
-                        type="checkbox"
-                        checked={child.colorPreferences.includes(option)}
-                        onChange={() => toggleColorPreference(option)}
+              <div className="md:col-span-2">
+                <Field label="Color preference" optional>
+                  <div className="grid gap-2 rounded-md border border-slate-300 bg-slate-50 p-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {colorPreferenceOptions.map((option) => (
+                      <ColorPreferenceChip
+                        key={option}
+                        option={option}
+                        selected={child.colorPreferences.includes(option)}
+                        onClick={() => toggleColorPreference(option)}
                       />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-              </Field>
+                    ))}
+                  </div>
+                </Field>
+              </div>
               </div>
               <div className="mt-5 grid gap-2">
                 <button
@@ -1989,6 +1989,47 @@ function FlowStepButton({
       </span>
     </button>
   );
+}
+
+function ColorPreferenceChip({
+  option,
+  selected,
+  onClick,
+}: {
+  option: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  const swatches = colorSwatches(option);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex min-h-12 items-center gap-3 rounded-md border px-3 py-2 text-left text-sm font-semibold transition ${
+        selected ? "border-brand bg-white text-slate-950 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:border-blue-200"
+      }`}
+    >
+      <span className="flex shrink-0 -space-x-1">
+        {swatches.map((color) => (
+          <span key={color} className="h-5 w-5 rounded-full border border-white shadow-sm" style={{ background: color }} />
+        ))}
+      </span>
+      <span className="min-w-0 flex-1">{option}</span>
+      <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold ${selected ? "border-brand bg-brand text-white" : "border-slate-300 bg-white text-transparent"}`}>
+        OK
+      </span>
+    </button>
+  );
+}
+
+function colorSwatches(option: string) {
+  if (option.includes("pink")) return ["#f9a8d4", "#a855f7"];
+  if (option.includes("blue")) return ["#60a5fa", "#34d399"];
+  if (option.includes("red")) return ["#ef4444", "#fb923c"];
+  if (option.includes("black")) return ["#111827", "#f8fafc", "#94a3b8"];
+  if (option.includes("bright")) return ["#facc15", "#22c55e", "#38bdf8"];
+  if (option.includes("mature")) return ["#64748b", "#e2e8f0"];
+  return ["#cbd5e1", "#f8fafc"];
 }
 
 function SelectableChip({
