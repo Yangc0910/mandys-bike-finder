@@ -19,6 +19,9 @@ The `/app` implementation uses:
 
 - Landing/intro content.
 - Free Bike Check progressive step flow (`Rider`, `Listing`, `Review`, `Result`) so the analyzer does not expose every form section at once.
+- Browser-local rider profile reuse for returning parents, including recommended bike type and wheel size.
+- Extraction-to-review transition so successful listing extraction opens the field confirmation step immediately.
+- Result view with compact verdict/score breakdown plus parallel seller-message and email-report action panels.
 - Child profile form.
 - Child-profile-only bike recommendation panel (local rule-based).
 - Listing input by screenshot, link, and manual fields.

@@ -47,6 +47,14 @@ const defaultListing: Listing = {
   description: "",
 };
 
+const RIDER_PROFILE_STORAGE_KEY = "mandy-free-bike-check-rider-profile";
+
+type SavedRiderProfile = {
+  child: ChildProfile;
+  recommendation: ChildBikeRecommendation;
+  savedAt: string;
+};
+
 const colorPreferenceOptions = [
   "No preference / all colors are fine",
   "pink / purple",
@@ -109,6 +117,7 @@ export default function Home() {
   const [showProfileRecommendation, setShowProfileRecommendation] = useState(false);
   const [profileRecommendation, setProfileRecommendation] = useState<ChildBikeRecommendation | null>(null);
   const [profileRecommendationSignature, setProfileRecommendationSignature] = useState("");
+  const [savedRiderProfile, setSavedRiderProfile] = useState<SavedRiderProfile | null>(null);
   const [scoutDraft, setScoutDraft] = useState<BikeScoutProfile>(defaultBikeScoutProfile);
   const [savedScoutProfiles, setSavedScoutProfiles] = useState<BikeScoutProfile[]>([]);
   const [scoutNotice, setScoutNotice] = useState("Bike Scout profiles are stored only in this browser during this prototype.");
@@ -153,15 +162,8 @@ export default function Home() {
   const needsRerun = hasAnalyzed && analyzedSignature !== inputSignature;
   const showAnalysisResults = hasAnalyzed && !needsRerun;
   const profileSignature = useMemo(
-    () => JSON.stringify({
-      heightCm: normalizedChild.heightCm,
-      age: normalizedChild.age,
-      weight: normalizedChild.weight,
-      experience: normalizedChild.experience,
-      stylePreference: normalizedChild.stylePreference,
-      colorPreferences: normalizedChild.colorPreferences,
-    }),
-    [normalizedChild.heightCm, normalizedChild.age, normalizedChild.weight, normalizedChild.experience, normalizedChild.stylePreference, normalizedChild.colorPreferences],
+    () => childProfileSignature(normalizedChild),
+    [normalizedChild],
   );
   const needsProfileRecommendationRerun = showProfileRecommendation && profileRecommendationSignature !== profileSignature;
   const profileRecommendationImage = profileRecommendation ? resolveBikeTypeImage(profileRecommendation.category, profileRecommendation.illustrationHint) : "";
@@ -196,8 +198,10 @@ export default function Home() {
   useEffect(() => {
     const storedProfiles = loadBikeScoutProfiles();
     const storedWaitlist = loadBikeScoutWaitlist();
+    const storedRiderProfile = loadSavedRiderProfile();
     setSavedScoutProfiles(storedProfiles);
     setSavedWaitlistEntries(storedWaitlist);
+    setSavedRiderProfile(storedRiderProfile);
     if (storedProfiles[0]) {
       setScoutDraft(storedProfiles[0]);
     }
@@ -353,6 +357,7 @@ export default function Home() {
     setListingSource("pasted text AI extraction");
     setScreenshotNotice("");
     setStatus(result?.statusMessage || providerStatusText(result?.apiStatus || providerModes) || "Listing fields extracted.");
+    setActiveFreeStep("review");
   }
 
   function handleInputModeChange(mode: string) {
@@ -438,6 +443,7 @@ export default function Home() {
         setScreenshotNotice(
           `AI extraction complete${result?.result?.confidence ? ` (${result.result.confidence} confidence)` : ""}. Please confirm and edit any unclear fields.`,
         );
+        setActiveFreeStep("review");
       } else {
         setScreenshotNotice(
           result?.statusMessage || "AI extraction could not read enough listing details. Please enter the details manually.",
@@ -463,6 +469,7 @@ export default function Home() {
         setListingSource(`${marketplace.label} link extraction`);
         setLinkNotice(`${marketplace.label} listing details were extracted. Please confirm and edit any missing fields.`);
         setStatus(result?.cached ? `${marketplace.label} details loaded from cache.` : `${marketplace.label} extraction complete.`);
+        setActiveFreeStep("review");
       } else {
         const message = result?.statusMessage || "We could not read this listing automatically. Please paste the listing text or upload a screenshot.";
         setLinkNotice(message);
@@ -581,9 +588,54 @@ export default function Home() {
 
   function recommendFromChildProfile() {
     if (!hasHeight || !hasAgeForRecommendation || !hasExperience) return;
-    setProfileRecommendation(buildChildBikeRecommendation(normalizedChild));
+    const nextRecommendation = buildChildBikeRecommendation(normalizedChild);
+    setProfileRecommendation(nextRecommendation);
     setProfileRecommendationSignature(profileSignature);
     setShowProfileRecommendation(true);
+    saveRiderProfileSnapshot(normalizedChild, nextRecommendation);
+  }
+
+  function saveRiderProfileSnapshot(childProfile: ChildProfile, recommendation: ChildBikeRecommendation) {
+    const snapshot = {
+      child: childProfile,
+      recommendation,
+      savedAt: new Date().toISOString(),
+    };
+    setSavedRiderProfile(snapshot);
+    saveSavedRiderProfile(snapshot);
+  }
+
+  function useSavedRiderForCheck() {
+    if (!savedRiderProfile) return;
+    const savedChild = savedRiderProfile.child;
+    setHeightUnit("cm");
+    setHeightCmInput(savedChild.heightCm || "");
+    setHeightFeet("");
+    setHeightInches("");
+    setWeightUnit("kg");
+    setWeightInput(savedChild.weight || "");
+    setChild({
+      ...defaultChild,
+      ...savedChild,
+      colorPreferences: savedChild.colorPreferences?.length ? savedChild.colorPreferences : defaultChild.colorPreferences,
+    });
+    setProfileRecommendation(savedRiderProfile.recommendation);
+    setProfileRecommendationSignature(childProfileSignature(savedChild));
+    setShowProfileRecommendation(true);
+    setActiveFreeStep("listing");
+  }
+
+  function startNewRiderProfile() {
+    setChild(defaultChild);
+    setHeightUnit("cm");
+    setHeightCmInput("");
+    setHeightFeet("");
+    setHeightInches("");
+    setWeightUnit("lb");
+    setWeightInput("");
+    setProfileRecommendation(null);
+    setProfileRecommendationSignature("");
+    setShowProfileRecommendation(false);
   }
 
   function switchMode(nextMode: "free" | "scout", anchorId: string) {
@@ -791,7 +843,7 @@ export default function Home() {
                 <FlowStepButton
                   step="4"
                   title="Result"
-                  status={showAnalysisResults ? visibleAnalysis.overall.label : "Analyze"}
+                  status={showAnalysisResults ? visibleAnalysis.overall.label : "Evaluate"}
                   active={activeFreeStep === "result"}
                   complete={showAnalysisResults}
                   disabled={!showAnalysisResults && !canAnalyze}
@@ -806,6 +858,34 @@ export default function Home() {
             <section className={`${activeFreeStep === "rider" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
               <SectionTitle step="1" title="Tell us about your rider" />
               <p className="mb-4 text-sm text-slate-600">Height, age, and riding confidence help us estimate the right wheel size and bike style.</p>
+              {savedRiderProfile && (
+                <div className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">Saved rider profile on this browser</p>
+                      <p className="mt-1 text-sm font-semibold text-emerald-950">
+                        {savedRiderProfile.child.heightCm || "Unknown"} cm rider, age {savedRiderProfile.child.age || "unknown"} - {savedRiderProfile.recommendation.category}, {savedRiderProfile.recommendation.wheelSize}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={useSavedRiderForCheck}
+                        className="min-h-10 rounded-md bg-emerald-700 px-4 text-sm font-bold text-white"
+                      >
+                        Use saved profile
+                      </button>
+                      <button
+                        type="button"
+                        onClick={startNewRiderProfile}
+                        className="min-h-10 rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-800"
+                      >
+                        Enter new rider
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="grid gap-3 md:grid-cols-2">
               <Field label="Height" required>
                 <div className="grid grid-cols-[110px_1fr] gap-2">
@@ -870,7 +950,7 @@ export default function Home() {
                   type="button"
                   onClick={recommendFromChildProfile}
                   disabled={!hasHeight || !hasAgeForRecommendation || !hasExperience}
-                  className="min-h-11 rounded-md bg-blue-50 px-4 text-left font-bold text-brand disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-14 rounded-md bg-brand px-5 text-left text-base font-bold text-white shadow-panel transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Find the best bike fit
                 </button>
@@ -947,7 +1027,7 @@ export default function Home() {
                   disabled={!canContinueFromRider}
                   className="min-h-11 rounded-md bg-brand px-4 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Continue to listing
+                  Use this fit to evaluate a listing
                 </button>
                 {!canContinueFromRider && (
                   <p className="text-sm text-slate-600">Height, age, and riding experience unlock the next step.</p>
@@ -1251,7 +1331,7 @@ export default function Home() {
               type="submit"
               disabled={!canAnalyze}
             >
-              Check this bike
+              Evaluate this bike
             </button>
             {!canAnalyze && <p className="text-sm text-slate-600">{analyzeDisabledReason}</p>}
             {canAnalyze && (
@@ -1265,72 +1345,88 @@ export default function Home() {
 
         {activeFreeStep === "result" && showAnalysisResults ? (
           <section className="grid gap-4">
-            <BikeSizeRecommendation child={normalizedChild} />
-            <div className="grid min-h-40 grid-cols-[72px_1fr] items-center gap-5 rounded-lg border border-line bg-white p-6 shadow-panel">
-              <div className={`h-16 w-16 rounded-full border-8 ${meterSignal(visibleAnalysis.overall.meter)}`} />
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase text-muted">Step 5 - Is this bike a good match?</p>
-                <h2 className="text-3xl font-bold md:text-4xl">{visibleAnalysis.overall.label}</h2>
-                <p className="mt-2 text-muted">{visibleAnalysis.overall.reasoning}</p>
+            <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
+              <div className="grid gap-5 lg:grid-cols-[1fr_320px] lg:items-start">
+                <div className="flex items-start gap-4">
+                  <div className={`mt-1 h-16 w-16 shrink-0 rounded-full border-8 ${meterSignal(visibleAnalysis.overall.meter)}`} />
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Bike verdict</p>
+                    <h2 className="mt-1 text-3xl font-bold text-slate-900 md:text-4xl">{visibleAnalysis.overall.label}</h2>
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{visibleAnalysis.overall.reasoning}</p>
+                  </div>
+                </div>
+                <div className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <InfoLine label="Recommended size" value={profileRecommendation?.wheelSize || recommendWheelSize(normalizedChild.heightCm, normalizedChild.experience).recommended} />
+                  <InfoLine label="Recommended type" value={profileRecommendation?.category || buildChildBikeRecommendation(normalizedChild).category} />
+                  <InfoLine label="Listing" value={listing.title || "Untitled bike"} />
+                  <InfoLine label="Asking price" value={listing.askingPrice ? `$${listing.askingPrice}` : "Unknown"} />
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div className="grid gap-3 md:grid-cols-2">
-              {dimensionCards(visibleAnalysis).map(([name, item]) => <DimensionCard key={name} name={name} item={item} />)}
-            </div>
-
-            <PanelTitle step="4" title="Seller questions">
-              <ul className="list-disc space-y-2 pl-5 text-slate-700">
-                {visibleAnalysis.sellerQuestions.map((question) => <li key={question}>{question}</li>)}
-              </ul>
-            </PanelTitle>
-
-            <PanelTitle step="5" title="Negotiation Boost">
-              <div className="mb-3 grid gap-3 md:grid-cols-2">
-                <Field label="Goal"><select className={inputClass} value={messageGoal} onChange={(e) => setMessageGoal(e.target.value)}><option value="askAvailability">Ask if still available</option><option value="askQuestions">Ask key questions</option><option value="lowerOffer">Make a lower offer</option><option value="confirmPickup">Confirm pickup time</option><option value="walkAway">Walk away politely</option></select></Field>
-                <Field label="Tone"><select className={inputClass} value={messageTone} onChange={(e) => setMessageTone(e.target.value)}><option>friendly</option><option>concise</option><option>very polite</option><option>firm but respectful</option></select></Field>
-                <Field label="Target offer"><input className={inputClass} type="number" value={targetOffer} onChange={(e) => setTargetOffer(e.target.value)} /></Field>
-                <Field label="Pickup timing"><input className={inputClass} value={pickupTiming} onChange={(e) => setPickupTiming(e.target.value)} /></Field>
+            <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Score breakdown</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {dimensionCards(visibleAnalysis).map(([name, item]) => <CompactDimensionCard key={name} name={name} item={item} />)}
               </div>
-              <button className="mb-3 min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand" type="button" onClick={async () => setSellerMessage(await generateMessage())}>Need a negotiation boost?</button>
-              <textarea className={inputClass} rows={4} value={sellerMessage} onChange={(e) => setSellerMessage(e.target.value)} />
-            </PanelTitle>
+            </section>
 
-            <PanelTitle step="6" title="Email report">
-              <div className="mb-3 grid gap-3 md:grid-cols-2">
-                <Field label="Email"><input className={inputClass} type="email" value={reportEmail} onChange={(e) => { setReportEmail(e.target.value); setReportEmailNotice(""); }} placeholder="parent@example.com" /></Field>
-                <Field label="Recipient name"><input className={inputClass} value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Optional" /></Field>
-                <Field label="Note" wide><textarea className={inputClass} rows={3} value={reportNote} onChange={(e) => setReportNote(e.target.value)} placeholder="Optional" /></Field>
+            <section className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-lg border border-line bg-white p-5 shadow-panel">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Seller action</p>
+                <h3 className="mt-2 text-xl font-bold text-slate-900">Questions and message draft</h3>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
+                  {visibleAnalysis.sellerQuestions.map((question) => <li key={question}>{question}</li>)}
+                </ul>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <Field label="Goal"><select className={inputClass} value={messageGoal} onChange={(e) => setMessageGoal(e.target.value)}><option value="askAvailability">Ask if still available</option><option value="askQuestions">Ask key questions</option><option value="lowerOffer">Make a lower offer</option><option value="confirmPickup">Confirm pickup time</option><option value="walkAway">Walk away politely</option></select></Field>
+                  <Field label="Tone"><select className={inputClass} value={messageTone} onChange={(e) => setMessageTone(e.target.value)}><option>friendly</option><option>concise</option><option>very polite</option><option>firm but respectful</option></select></Field>
+                  <Field label="Target offer"><input className={inputClass} type="number" value={targetOffer} onChange={(e) => setTargetOffer(e.target.value)} /></Field>
+                  <Field label="Pickup timing"><input className={inputClass} value={pickupTiming} onChange={(e) => setPickupTiming(e.target.value)} /></Field>
+                </div>
+                <button className="mt-3 min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand" type="button" onClick={async () => setSellerMessage(await generateMessage())}>Generate seller message</button>
+                <textarea className={`${inputClass} mt-3`} rows={4} value={sellerMessage} onChange={(e) => setSellerMessage(e.target.value)} />
               </div>
-              <div className="mb-3 flex flex-wrap items-center gap-3">
-                <button className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand" type="button" onClick={previewReport}>
-                  Preview report
-                </button>
-                <button
-                  className="min-h-11 rounded-md bg-brand px-4 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                  type="button"
-                  onClick={sendReportToEmail}
-                  disabled={!showAnalysisResults || !hasValidReportEmail || isSendingReportEmail}
-                >
-                  {isSendingReportEmail ? "Sending..." : "Send report to my email"}
-                </button>
+
+              <div className="rounded-lg border border-line bg-white p-5 shadow-panel">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Share or save</p>
+                <h3 className="mt-2 text-xl font-bold text-slate-900">Email report</h3>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <Field label="Email"><input className={inputClass} type="email" value={reportEmail} onChange={(e) => { setReportEmail(e.target.value); setReportEmailNotice(""); }} placeholder="parent@example.com" /></Field>
+                  <Field label="Recipient name"><input className={inputClass} value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Optional" /></Field>
+                  <Field label="Note" wide><textarea className={inputClass} rows={3} value={reportNote} onChange={(e) => setReportNote(e.target.value)} placeholder="Optional" /></Field>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <button className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand" type="button" onClick={previewReport}>
+                    Preview report
+                  </button>
+                  <button
+                    className="min-h-11 rounded-md bg-brand px-4 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    type="button"
+                    onClick={sendReportToEmail}
+                    disabled={!showAnalysisResults || !hasValidReportEmail || isSendingReportEmail}
+                  >
+                    {isSendingReportEmail ? "Sending..." : "Send report to my email"}
+                  </button>
+                </div>
+                {reportEmailNotice && (
+                  <p
+                    className={`mt-3 rounded-md border p-3 text-sm font-semibold ${
+                      reportEmailNoticeTone === "success"
+                        ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                        : reportEmailNoticeTone === "error"
+                          ? "border-rose-300 bg-rose-50 text-rose-800"
+                          : "border-slate-200 bg-slate-50 text-slate-700"
+                    }`}
+                  >
+                    {reportEmailNotice}
+                  </p>
+                )}
+                {reportPreview && (
+                  <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-slate-50 p-3 text-sm text-slate-700">{reportPreview}</pre>
+                )}
               </div>
-              {!showAnalysisResults && <p className="mb-3 text-sm text-slate-600">Complete a bike check first to email the report.</p>}
-              {reportEmailNotice && (
-                <p
-                  className={`mb-3 rounded-md border p-3 text-sm font-semibold ${
-                    reportEmailNoticeTone === "success"
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                      : reportEmailNoticeTone === "error"
-                        ? "border-rose-300 bg-rose-50 text-rose-800"
-                        : "border-slate-200 bg-slate-50 text-slate-700"
-                  }`}
-                >
-                  {reportEmailNotice}
-                </p>
-              )}
-              <pre className="min-h-32 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-slate-50 p-3 text-sm text-slate-700">{reportPreview}</pre>
-            </PanelTitle>
+            </section>
           </section>
         ) : activeFreeStep === "result" && needsRerun ? (
           <section className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-slate-700 shadow-panel">
@@ -2235,6 +2331,24 @@ function DimensionCard({ name, item }: { name: string; item: MeterResult }) {
   );
 }
 
+function CompactDimensionCard({ name, item }: { name: string; item: MeterResult }) {
+  const cardTone = item.meter === "green"
+    ? "border-green-200 bg-green-50"
+    : item.meter === "red"
+      ? "border-red-200 bg-red-50"
+      : "border-amber-200 bg-amber-50";
+  return (
+    <article className={`rounded-md border p-4 ${cardTone}`}>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-sm font-bold text-slate-900">{name}</h3>
+        <span className="rounded-full bg-white/80 px-2 py-1 text-xs font-bold uppercase text-slate-600">{item.meter}</span>
+      </div>
+      <p className="mt-2 text-sm font-semibold text-slate-800">{item.label}</p>
+      <p className="mt-2 text-sm leading-5 text-slate-700">{item.reasoning}</p>
+    </article>
+  );
+}
+
 function dimensionCards(analysis: AnalysisResult): Array<[string, MeterResult]> {
   return [["Fit", analysis.dimensions.fit], ["Price", analysis.dimensions.price], ["Condition", analysis.dimensions.condition], ["Brand", analysis.dimensions.brand], ["Kid Appeal", analysis.dimensions.color], ["Risk", analysis.dimensions.risk]];
 }
@@ -2331,6 +2445,32 @@ function compactFields(fields: Partial<Listing>) {
 
 function localReport(payload: { listing: Listing; analysis: AnalysisResult; message: string; note?: string }) {
   return `Report preview generated locally.\n\nListing: ${payload.listing.title}\nOverall: ${payload.analysis.overall.label}\n${payload.analysis.overall.reasoning}\n\nSuggested message:\n${payload.message || "Generate a seller message before sending."}\n\nNote:\n${payload.note || "None"}\n\n${payload.analysis.disclaimer}`;
+}
+
+function childProfileSignature(child: ChildProfile) {
+  return JSON.stringify({
+    heightCm: child.heightCm,
+    age: child.age,
+    weight: child.weight,
+    experience: child.experience,
+    stylePreference: child.stylePreference,
+    colorPreferences: child.colorPreferences,
+  });
+}
+
+function loadSavedRiderProfile(): SavedRiderProfile | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(RIDER_PROFILE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) as SavedRiderProfile : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSavedRiderProfile(profile: SavedRiderProfile) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(RIDER_PROFILE_STORAGE_KEY, JSON.stringify(profile));
 }
 
 function feetInchesToCm(feet: string, inches: string) {

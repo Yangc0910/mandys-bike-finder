@@ -114,6 +114,12 @@ Current homepage information architecture:
    - Result
 5. `Bike Scout Waitlist` contains the full Bike Scout explanation and waitlist form.
 
+Returning-parent behavior:
+
+- The most recent rider profile and generated bike fit recommendation can be saved in browser `localStorage`.
+- Parent can reuse the saved rider profile and jump into listing evaluation on the same device/browser.
+- Parent can still enter a new rider profile at any time.
+
 ## 6. Child Profile Requirements
 
 Required for child-profile recommendation:
@@ -482,6 +488,8 @@ Child-profile recommendation card includes:
 - Free Bike Check should feel like an interactive tool, not one long exposed form.
 - The default view should open on the rider step only; listing, review, and result sections reveal as the parent progresses.
 - Completed steps can show compact status/summary cues so the parent understands where they are without seeing every field at once.
+- Successful screenshot/text/link extraction should advance directly into the Review step so extracted fields are visible immediately.
+- Result view should prioritize a clear verdict, compact score breakdown, and parallel next actions: seller message/questions and email report.
 
 Bike Scout section requirements:
 
