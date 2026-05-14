@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Rebuilt the report email into a more professional decision report and now sends uploaded listing screenshots as real Resend attachments instead of relying on blocked inline data images.
 - Expanded report email structure to always surface user-provided listing links/screenshots and extracted bike details such as brand, model, wheel size, bike type, color/style, and condition notes.
 - Cleaned up the Result view so the input form/sidebar collapse after evaluation, and added a three-zone overall recommendation meter with a pointer for clearer skip/caution/good context.
 - Rebalanced report email content so parent-facing emails include a concise verdict, listing/rider cards, key takeaways, pickup checks, seller questions, and suggested message without dumping the full report text.
