@@ -1904,11 +1904,6 @@ export default function Home() {
           </div>
           </section>
         )}
-
-        <details className="mt-6 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-panel">
-          <summary className="cursor-pointer font-semibold text-slate-700">Beta status</summary>
-          <p className="mt-2">{status}</p>
-        </details>
       </section>
     </main>
   );
