@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reworked the Free Bike Check analyzer into a progressive four-step tool flow (`Rider`, `Listing`, `Review`, `Result`) so Step 3/4 content no longer appears on the initial page load and parents advance through the check intentionally.
 - Documentation alignment pass for current `main` workflow and MVP behavior: refreshed README/PRD/architecture/current-status/api-cost-control/.env example to clearly separate implemented features from roadmap items, confirm transactional Resend report-email scope, and document Bike Scout waitlist as local-only prototype storage.
 - Added Resend-backed transactional report email delivery behind `ENABLE_EMAIL_REPORT`, with explicit validation for `RESEND_API_KEY` and `REPORT_EMAIL_FROM`, plus support for optional `REPORT_EMAIL_REPLY_TO` and `APP_BASE_URL`.
 - Simplified the homepage into two product modes with segmented tabs: `Free Bike Check` remains the default analyzer flow, while `Bike Scout Waitlist` now contains the full planned-paid explanation and waitlist UI without duplicating the full Bike Scout section in the default view.

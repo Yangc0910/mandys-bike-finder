@@ -107,7 +107,12 @@ Current homepage information architecture:
    - `Free Bike Check`
    - `Bike Scout Waitlist`
 3. `Free Bike Check` is the default primary workflow.
-4. `Bike Scout Waitlist` contains the full Bike Scout explanation and waitlist form.
+4. `Free Bike Check` uses a progressive four-step tool flow:
+   - Rider
+   - Listing
+   - Review
+   - Result
+5. `Bike Scout Waitlist` contains the full Bike Scout explanation and waitlist form.
 
 ## 6. Child Profile Requirements
 
@@ -474,6 +479,9 @@ Child-profile recommendation card includes:
 - Screenshot preview preserves aspect ratio and avoids cropping.
 - Facebook limitations are clearly explained in link flow.
 - UI supports desktop and mobile usage patterns.
+- Free Bike Check should feel like an interactive tool, not one long exposed form.
+- The default view should open on the rider step only; listing, review, and result sections reveal as the parent progresses.
+- Completed steps can show compact status/summary cues so the parent understands where they are without seeing every field at once.
 
 Bike Scout section requirements:
 

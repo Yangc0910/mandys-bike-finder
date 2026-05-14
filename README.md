@@ -149,12 +149,13 @@ Recommendation panel illustration mapping is keyword-based (`balance`, `training
 ## User Flow (Current)
 
 1. Parent lands on homepage and starts in `Free Bike Check` mode by default.
-2. Parent enters child profile (height, age, riding experience required).
-3. Parent adds listing via screenshot, link, pasted text, or manual details.
-4. Parent confirms extracted/manual listing fields.
-5. App returns fit/value/safety guidance and recommendation.
-6. Parent can generate seller message and send report by email (when enabled/configured).
-7. Parent can switch to `Bike Scout Waitlist` tab to join early-access waitlist (local prototype storage today).
+2. Parent moves through a guided four-step flow: Rider, Listing, Review, Result.
+3. Parent enters child profile first (height, age, riding experience required).
+4. Parent adds listing via screenshot, link, pasted text, or manual details.
+5. Parent confirms extracted/manual listing fields.
+6. App returns fit/value/safety guidance and recommendation.
+7. Parent can generate seller message and send report by email (when enabled/configured).
+8. Parent can switch to `Bike Scout Waitlist` tab to join early-access waitlist (local prototype storage today).
 
 ## Local Web App
 

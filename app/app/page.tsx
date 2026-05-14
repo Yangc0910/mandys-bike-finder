@@ -117,6 +117,7 @@ export default function Home() {
   const [waitlistNotice, setWaitlistNotice] = useState("");
   const [showScoutSetup, setShowScoutSetup] = useState(false);
   const [activeMode, setActiveMode] = useState<"free" | "scout">("free");
+  const [activeFreeStep, setActiveFreeStep] = useState<"rider" | "listing" | "review" | "result">("rider");
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -147,6 +148,8 @@ export default function Home() {
   );
   const hasScreenshotManualListing = Boolean(screenshotName && hasAnyListingField);
   const canAnalyze = hasHeight && hasExperience && (hasCoreListing || hasScreenshotManualListing);
+  const canContinueFromRider = hasHeight && hasAgeForRecommendation && hasExperience;
+  const canContinueFromListing = Boolean(hasCoreListing || hasScreenshotManualListing || hasAnyListingField);
   const needsRerun = hasAnalyzed && analyzedSignature !== inputSignature;
   const showAnalysisResults = hasAnalyzed && !needsRerun;
   const profileSignature = useMemo(
@@ -394,6 +397,20 @@ export default function Home() {
     setAnalyzedSignature(inputSignature);
     setStatus(result?.priceReference?.message || providerStatusText(result?.apiStatus || providerModes) || "Analysis complete.");
     setSellerMessage(await generateMessage("lowerOffer", "friendly", listing, false));
+    setActiveFreeStep("result");
+  }
+
+  function continueToListing() {
+    if (!canContinueFromRider) return;
+    if (!showProfileRecommendation || needsProfileRecommendationRerun) {
+      recommendFromChildProfile();
+    }
+    setActiveFreeStep("listing");
+  }
+
+  function continueToReview() {
+    if (!canContinueFromListing) return;
+    setActiveFreeStep("review");
   }
 
   async function extractScreenshotDetails() {
@@ -743,10 +760,50 @@ export default function Home() {
               </p>
             </details>
 
+            <section className="mb-5 rounded-lg border border-slate-200 bg-white p-3 shadow-panel md:p-4">
+              <div className="grid gap-2 md:grid-cols-4">
+                <FlowStepButton
+                  step="1"
+                  title="Rider"
+                  status={canContinueFromRider ? "Ready" : "Start here"}
+                  active={activeFreeStep === "rider"}
+                  complete={canContinueFromRider}
+                  onClick={() => setActiveFreeStep("rider")}
+                />
+                <FlowStepButton
+                  step="2"
+                  title="Listing"
+                  status={canContinueFromListing ? "Details added" : "Add a bike"}
+                  active={activeFreeStep === "listing"}
+                  complete={canContinueFromListing}
+                  disabled={!canContinueFromRider}
+                  onClick={() => setActiveFreeStep("listing")}
+                />
+                <FlowStepButton
+                  step="3"
+                  title="Review"
+                  status={canContinueFromListing ? "Check fields" : "Waiting"}
+                  active={activeFreeStep === "review"}
+                  complete={canContinueFromListing && hasAnyListingField}
+                  disabled={!canContinueFromListing}
+                  onClick={() => setActiveFreeStep("review")}
+                />
+                <FlowStepButton
+                  step="4"
+                  title="Result"
+                  status={showAnalysisResults ? visibleAnalysis.overall.label : "Analyze"}
+                  active={activeFreeStep === "result"}
+                  complete={showAnalysisResults}
+                  disabled={!showAnalysisResults && !canAnalyze}
+                  onClick={() => setActiveFreeStep("result")}
+                />
+              </div>
+            </section>
+
             <form onSubmit={analyze} className="mb-6 grid gap-5">
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="grid gap-5">
-            <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
+            <section className={`${activeFreeStep === "rider" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
               <SectionTitle step="1" title="Tell us about your rider" />
               <p className="mb-4 text-sm text-slate-600">Height, age, and riding confidence help us estimate the right wheel size and bike style.</p>
               <div className="grid gap-3 md:grid-cols-2">
@@ -883,9 +940,22 @@ export default function Home() {
                   </div>
                 </article>
               )}
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={continueToListing}
+                  disabled={!canContinueFromRider}
+                  className="min-h-11 rounded-md bg-brand px-4 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Continue to listing
+                </button>
+                {!canContinueFromRider && (
+                  <p className="text-sm text-slate-600">Height, age, and riding experience unlock the next step.</p>
+                )}
+              </div>
             </section>
 
-            <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
+            <section className={`${activeFreeStep === "listing" || activeFreeStep === "review" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
             <SectionTitle step="3" title="Add the bike you found" />
             <p className="mb-4 text-sm text-slate-600">Marketplace pages can be tricky. Screenshots and pasted listing text often give the best results.</p>
             <div className="mb-4 grid grid-cols-3 gap-2">
@@ -1054,8 +1124,23 @@ export default function Home() {
                 <span className="text-xs text-muted">Marketplace: {detectedMarketplace.label}</span>
               )}
             </div>
+            {activeFreeStep === "listing" && (
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={continueToReview}
+                  disabled={!canContinueFromListing}
+                  className="min-h-11 rounded-md bg-brand px-4 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Continue to details review
+                </button>
+                {!canContinueFromListing && (
+                  <p className="text-sm text-slate-600">Add a screenshot, pasted listing text, or a few listing fields first.</p>
+                )}
+              </div>
+            )}
 
-            <details className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4" open={hasAnyListingField}>
+            <details className={`${activeFreeStep === "review" || (activeFreeStep === "listing" && inputMode === "manual") ? "block" : "hidden"} rounded-2xl border border-slate-200 bg-slate-50/70 p-4`} open>
               <summary className="cursor-pointer list-none">
                 <SectionTitle step="4" title="Double-check the listing details" />
                 <p className="mt-2 text-sm text-slate-600">AI can miss details, especially from screenshots, so please adjust anything that looks wrong.</p>
@@ -1099,8 +1184,8 @@ export default function Home() {
           </div>
           <aside className="grid gap-4 xl:sticky xl:top-6 xl:self-start">
             <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Step 4 summary</p>
-              <h3 className="mt-2 text-lg font-bold text-slate-900">What result should you expect?</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Session snapshot</p>
+              <h3 className="mt-2 text-lg font-bold text-slate-900">Your bike check so far</h3>
               <p className="mt-2 text-sm text-slate-600">
                 Mandy checks rider fit, wheel size, value, condition, and seller follow-up questions from the details you provide.
               </p>
@@ -1160,7 +1245,7 @@ export default function Home() {
               </button>
             </section>
           </aside>
-          <div className="grid gap-2">
+          <div className={`${activeFreeStep === "review" || activeFreeStep === "result" ? "grid" : "hidden"} gap-2`}>
             <button
               className="min-h-12 w-full rounded-md bg-brand px-4 font-bold text-white shadow-panel disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-64"
               type="submit"
@@ -1178,7 +1263,7 @@ export default function Home() {
               </div>
         </form>
 
-        {showAnalysisResults ? (
+        {activeFreeStep === "result" && showAnalysisResults ? (
           <section className="grid gap-4">
             <BikeSizeRecommendation child={normalizedChild} />
             <div className="grid min-h-40 grid-cols-[72px_1fr] items-center gap-5 rounded-lg border border-line bg-white p-6 shadow-panel">
@@ -1247,14 +1332,14 @@ export default function Home() {
               <pre className="min-h-32 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-slate-50 p-3 text-sm text-slate-700">{reportPreview}</pre>
             </PanelTitle>
           </section>
-        ) : needsRerun ? (
+        ) : activeFreeStep === "result" && needsRerun ? (
           <section className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-slate-700 shadow-panel">
             <p className="font-semibold">Update inputs and re-run analysis</p>
             <p className="mt-1">
               Your child or listing details changed after the last result. Run Analyze again to refresh the recommendation.
             </p>
           </section>
-        ) : (
+        ) : activeFreeStep === "result" ? (
           <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-panel">
             <div className="flex items-start gap-3">
               <div className="grid h-9 w-9 place-items-center rounded-full bg-blue-50 text-lg text-brand">i</div>
@@ -1266,7 +1351,7 @@ export default function Home() {
               </div>
             </div>
           </section>
-            )}
+            ) : null}
           </>
         ) : (
           <section id="bike-scout-details" className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-panel">
@@ -1767,6 +1852,46 @@ function HowItWorksCard({ icon, title, copy }: { icon: string; title: string; co
       <h3 className="mt-1 text-sm font-bold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-600">{copy}</p>
     </article>
+  );
+}
+
+function FlowStepButton({
+  step,
+  title,
+  status,
+  active,
+  complete,
+  disabled,
+  onClick,
+}: {
+  step: string;
+  title: string;
+  status: string;
+  active: boolean;
+  complete: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  const tone = active
+    ? "border-brand bg-blue-50 text-slate-950 shadow-sm"
+    : complete
+      ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+      : "border-slate-200 bg-slate-50 text-slate-600";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex min-h-20 items-center gap-3 rounded-md border p-3 text-left transition disabled:cursor-not-allowed disabled:opacity-55 ${tone}`}
+    >
+      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${active ? "bg-brand text-white" : complete ? "bg-emerald-600 text-white" : "bg-white text-slate-500"}`}>
+        {complete ? "OK" : step}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-bold">{title}</span>
+        <span className="mt-0.5 block truncate text-xs font-semibold opacity-75">{status}</span>
+      </span>
+    </button>
   );
 }
 

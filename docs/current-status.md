@@ -18,6 +18,7 @@ The `/app` implementation uses:
 ## Implemented In /app
 
 - Landing/intro content.
+- Free Bike Check progressive step flow (`Rider`, `Listing`, `Review`, `Result`) so the analyzer does not expose every form section at once.
 - Child profile form.
 - Child-profile-only bike recommendation panel (local rule-based).
 - Listing input by screenshot, link, and manual fields.
