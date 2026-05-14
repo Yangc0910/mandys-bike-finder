@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Rebalanced report email content so parent-facing emails include a concise verdict, listing/rider cards, key takeaways, pickup checks, seller questions, and suggested message without dumping the full report text.
 - Refined the progressive Free Bike Check flow: made bike-fit CTA prominent, added browser-local rider profile reuse, renamed the main analysis CTA to `Evaluate this bike`, moved successful extraction directly into Review, and simplified the Result view into compact verdict/score/action panels.
 - Reworked the Free Bike Check analyzer into a progressive four-step tool flow (`Rider`, `Listing`, `Review`, `Result`) so Step 3/4 content no longer appears on the initial page load and parents advance through the check intentionally.
 - Documentation alignment pass for current `main` workflow and MVP behavior: refreshed README/PRD/architecture/current-status/api-cost-control/.env example to clearly separate implemented features from roadmap items, confirm transactional Resend report-email scope, and document Bike Scout waitlist as local-only prototype storage.
