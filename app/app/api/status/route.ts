@@ -18,6 +18,7 @@ export async function GET() {
       llm: config.featureFlags.llmAnalysis && config.providers.openAiApiKey ? "openai" : "mock",
       search: "fallback",
       email: config.featureFlags.emailReport ? (emailConfigured ? "resend" : "configuration_error") : "mock",
+      crm: config.featureFlags.crmSync ? config.providers.crmProvider : "disabled",
       logging: "mock",
     },
     limits: config.limits,

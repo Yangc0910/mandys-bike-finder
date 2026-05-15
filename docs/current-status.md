@@ -34,6 +34,7 @@ The `/app` implementation uses:
 - Negotiation Boost UI.
 - Email report UI with Resend-backed delivery when configured.
 - Transactional report email API (`/api/reports/email`) with validation, config checks, and rate limits.
+- Optional Salesforce CRM sync for explicitly opted-in bike-deal/product-update leads.
 - Bike Scout planned-paid feature section with local-only profile prototype.
 - Bike Scout waitlist form with local-only browser storage prototype.
 - Typed Bike Scout marketplace/source foundation for future saved-search work.
@@ -78,14 +79,16 @@ Child recommendation current rules:
   - `ENABLE_LIVE_SEARCH=false`
   - `ENABLE_EMAIL_REPORT=false`
   - `ENABLE_BACKEND_LOGGING=false`
+  - `ENABLE_CRM_SYNC=false`
   - `OPENAI_MODEL=gpt-5.4-mini`
   - LLM extraction default limit baseline: `DAILY_LLM_LIMIT=10` and `PER_SESSION_LLM_LIMIT=10` (unless overridden in deployment environment variables)
 - `/api/status` confirms:
   - `liveSearch=false`
   - `llmAnalysis=false`
   - `emailReport=false`
+  - `crmSync=false`
   - `backendLogging=false`
-  - providers are `mock/fallback`
+  - providers are `mock/fallback/disabled`
 - Vercel preview/free-domain deployment is verified end-to-end before any custom-domain connection.
 - Deployed MVP flow is now manually verified at:
   - `https://mandys-bike-finder.vercel.app/`

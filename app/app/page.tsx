@@ -114,6 +114,7 @@ export default function Home() {
   const [reportEmailNotice, setReportEmailNotice] = useState("");
   const [reportEmailNoticeTone, setReportEmailNoticeTone] = useState<"info" | "success" | "error">("info");
   const [isSendingReportEmail, setIsSendingReportEmail] = useState(false);
+  const [wantsBikeDealUpdates, setWantsBikeDealUpdates] = useState(false);
   const [showProfileRecommendation, setShowProfileRecommendation] = useState(false);
   const [profileRecommendation, setProfileRecommendation] = useState<ChildBikeRecommendation | null>(null);
   const [profileRecommendationSignature, setProfileRecommendationSignature] = useState("");
@@ -567,6 +568,7 @@ export default function Home() {
           screenshotDataUrl,
           recommendedBikeType: recommendedBike.category,
           recommendedWheelSize: recommendedBike.wheelSize,
+          marketingConsent: wantsBikeDealUpdates,
         }),
       });
       const result = await response.json().catch(() => null);
@@ -576,7 +578,7 @@ export default function Home() {
         return;
       }
       setReportEmailNoticeTone("success");
-      setReportEmailNotice("Report sent successfully. Please check your inbox.");
+      setReportEmailNotice(result.message || "Report sent successfully. Please check your inbox.");
       setStatus("Report sent by email.");
     } catch {
       setReportEmailNoticeTone("error");
@@ -1394,6 +1396,20 @@ export default function Home() {
                   <Field label="Recipient name"><input className={inputClass} value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Optional" /></Field>
                   <Field label="Note" wide><textarea className={inputClass} rows={3} value={reportNote} onChange={(e) => setReportNote(e.target.value)} placeholder="Optional" /></Field>
                 </div>
+                <label className="mt-3 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                  <input
+                    className="mt-1 h-4 w-4 rounded border-slate-300 text-brand"
+                    type="checkbox"
+                    checked={wantsBikeDealUpdates}
+                    onChange={(e) => setWantsBikeDealUpdates(e.target.checked)}
+                  />
+                  <span>
+                    <span className="block font-semibold text-slate-900">Send me future bike deal alerts and product updates.</span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-600">
+                      Your report email is transactional. Updates are optional and only saved if you check this box.
+                    </span>
+                  </span>
+                </label>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <button className="min-h-11 rounded-md bg-blue-50 px-4 font-bold text-brand" type="button" onClick={previewReport}>
                     Preview report

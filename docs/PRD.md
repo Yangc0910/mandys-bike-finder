@@ -313,7 +313,7 @@ Bike Scout waitlist storage:
 
 - Current waitlist entries are stored in browser `localStorage`.
 - There is no durable waitlist database yet.
-- Report email is sent as simple HTML/plain text; there is no PDF attachment yet.
+- Report email is sent as HTML/plain text through Resend; uploaded listing screenshots can be included as attachments.
 
 ## 11. AI Extraction Behavior
 
@@ -459,7 +459,8 @@ Current transactional email scope:
 - Provider: Resend
 - Delivery format: HTML + plain-text fallback
 - Trigger: explicit user action only
-- Not a marketing consent or CRM enrollment endpoint
+- Transactional report delivery is separate from marketing consent
+- Optional CRM sync only runs when the user explicitly opts into future bike deal alerts/product updates
 
 Child-profile recommendation card includes:
 
@@ -607,14 +608,23 @@ Possible future infrastructure:
 - Supabase / Neon / Firebase / Vercel Postgres
 - Resend / SendGrid / Postmark
 
+Implemented CRM boundary:
+
+- Optional CRM abstraction: `syncLeadToCrm(lead)`.
+- Current provider: Salesforce Lead creation via server-side REST API when `ENABLE_CRM_SYNC=true`.
+- Consent: only sync when the report-email form checkbox is explicitly selected.
+- Failure handling: CRM failure does not block transactional Resend email delivery.
+- Metadata: app/report details are written to Salesforce `Description` for MVP instead of requiring custom fields.
+
 Not implemented now:
 
 - production cron
 - durable database
 - real email alerts
-- CRM sync pipeline
 - Stripe Checkout or another payment flow
 - user accounts
+- Salesforce duplicate/upsert handling
+- Salesforce custom field mapping
 
 Planned payment path:
 
@@ -624,7 +634,8 @@ Future CRM/email strategy:
 
 - Keep report-email delivery transactional-first on Resend.
 - Keep marketing consent separate from transactional reporting.
-- Add optional CRM sync later (HubSpot, Salesforce, Mailchimp, Brevo).
+- Keep Salesforce optional and feature-flagged for opted-in Bike Scout/product-update leads.
+- Add HubSpot, Mailchimp, or Brevo later only if product/marketing workflow needs them.
 - Do not use CRM as app authentication; adopt dedicated auth provider when accounts are introduced.
 
 ## 19. Version / Changelog

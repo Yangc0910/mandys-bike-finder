@@ -184,7 +184,7 @@ Current verification note:
 - GitHub Actions workflow `.github/workflows/app-build.yml` is used to verify the `/app` build on `push` and `pull_request`.
 - Active development branch is `main` and production auto-deploy should track `main`.
 
-The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search and backend logging currently remain provider-interface placeholders with fallback behavior. Email report sending can use Resend when `ENABLE_EMAIL_REPORT=true` and the Resend environment variables are configured. Never put API keys in frontend code.
+The default configuration uses mock/local fallbacks. To test the controlled LLM integration, copy `.env.example` to `.env.local` inside `/app`, set `ENABLE_LLM_ANALYSIS=true`, and provide server-side provider credentials. Search and backend logging currently remain provider-interface placeholders with fallback behavior. Email report sending can use Resend when `ENABLE_EMAIL_REPORT=true` and the Resend environment variables are configured. Optional CRM sync can use Salesforce only after explicit marketing/update consent. Never put API keys in frontend code.
 
 ### Environment Variables (Current)
 
@@ -204,10 +204,24 @@ Core feature flags and controls:
 - `ENABLE_LLM_ANALYSIS`
 - `ENABLE_EMAIL_REPORT`
 - `ENABLE_BACKEND_LOGGING`
+- `ENABLE_CRM_SYNC`
+- `CRM_PROVIDER`
 - `DAILY_LLM_LIMIT`
 - `PER_SESSION_LLM_LIMIT`
 
 If required email variables are missing or invalid, `/api/reports/email` returns a clear configuration error instead of crashing.
+
+Optional Salesforce CRM sync variables:
+
+- `SALESFORCE_CLIENT_ID`
+- `SALESFORCE_CLIENT_SECRET`
+- `SALESFORCE_USERNAME`
+- `SALESFORCE_PASSWORD`
+- `SALESFORCE_SECURITY_TOKEN`
+- `SALESFORCE_LOGIN_URL`
+- `SALESFORCE_API_VERSION`
+
+CRM sync is feature-flagged and consent-gated. The app and transactional report email flow continue to work when Salesforce is disabled, missing, or temporarily failing.
 
 The older `web/` folder is legacy prototype only. New production work should happen in `/app`.
 
@@ -283,6 +297,8 @@ ENABLE_LLM_ANALYSIS=false
 ENABLE_LIVE_SEARCH=false
 ENABLE_EMAIL_REPORT=false
 ENABLE_BACKEND_LOGGING=false
+ENABLE_CRM_SYNC=false
+CRM_PROVIDER=salesforce
 OPENAI_MODEL=gpt-5.4-mini
 DAILY_LLM_LIMIT
 PER_SESSION_LLM_LIMIT
@@ -338,8 +354,52 @@ Do not commit Resend API keys, `.env` files, or other secrets. If these variable
 
 Current email limitations:
 
-- Report emails are simple HTML/plain-text emails, not PDF attachments.
+- Report emails are HTML/plain-text transactional emails. Uploaded listing screenshots are sent as email attachments when available.
 - Bike Scout waitlist remains local-only in this step.
+
+#### Salesforce CRM Setup (Optional)
+
+Salesforce is not required for the core app. It is only used for opted-in lead/update capture when a parent explicitly checks:
+
+```text
+Send me future bike deal alerts and product updates.
+```
+
+Resend remains responsible for transactional report delivery. Salesforce must not be used as the app's auth system, and marketing/update consent must stay separate from sending a requested report.
+
+Setup steps:
+
+1. In Salesforce, create or reuse a Connected App that allows OAuth access for server-side integration.
+2. Obtain the connected app `Client ID` and `Client Secret`.
+3. Create or choose a Salesforce user for demo-level lead creation.
+4. Generate that user's security token if the org requires password+token authentication.
+5. Add these Vercel environment variables:
+
+```text
+ENABLE_CRM_SYNC=true
+CRM_PROVIDER=salesforce
+SALESFORCE_CLIENT_ID=<set in Vercel only>
+SALESFORCE_CLIENT_SECRET=<set in Vercel only>
+SALESFORCE_USERNAME=<set in Vercel only>
+SALESFORCE_PASSWORD=<set in Vercel only>
+SALESFORCE_SECURITY_TOKEN=<set in Vercel only>
+SALESFORCE_LOGIN_URL=https://login.salesforce.com
+SALESFORCE_API_VERSION=60.0
+```
+
+Safe testing:
+
+1. Keep `ENABLE_CRM_SYNC=false` and confirm report email still works without CRM.
+2. Enable CRM only in a preview/local environment first.
+3. Send a report without checking the updates box; Salesforce should not receive a lead.
+4. Send a report with the updates box checked; Salesforce should create a Lead.
+
+Current CRM limitations:
+
+- MVP creates a Salesforce Lead using standard fields (`FirstName`, `LastName`, `Company`, `Email`, `LeadSource`, `Description`).
+- App/report metadata is stored in `Description` instead of custom Salesforce fields.
+- Duplicate handling/upsert is not implemented yet.
+- Salesforce sync failure does not block transactional report email delivery.
 
 ### 4. Confirm Deployment Works
 
@@ -461,7 +521,8 @@ See [docs/roadmap.md](docs/roadmap.md) for details.
 
 - Resend is used for transactional email (for example, sending a requested bike report to the user).
 - Transactional report sending is separate from marketing consent or waitlist growth workflows.
-- CRM/marketing platforms (HubSpot, Salesforce, Mailchimp, Brevo) are future integrations, not required for current MVP operation.
+- Salesforce CRM sync is an optional, feature-flagged integration for explicitly opted-in Bike Scout/product-update leads.
+- CRM/marketing platforms beyond Salesforce (HubSpot, Mailchimp, Brevo) remain future integrations.
 - HubSpot should not be used as the app's authentication system.
 - Future auth options can include Clerk, Supabase Auth, Firebase Auth, or Auth.js once account features are prioritized.
 

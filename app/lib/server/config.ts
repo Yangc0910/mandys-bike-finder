@@ -9,6 +9,7 @@ export function loadServerConfig(env = process.env) {
       llmAnalysis: booleanFromEnv(env.ENABLE_LLM_ANALYSIS),
       emailReport: booleanFromEnv(env.ENABLE_EMAIL_REPORT),
       backendLogging: booleanFromEnv(env.ENABLE_BACKEND_LOGGING),
+      crmSync: booleanFromEnv(env.ENABLE_CRM_SYNC),
     },
     limits: {
       searchDaily: numberFromEnv(env.DAILY_SEARCH_LIMIT, 25),
@@ -29,6 +30,11 @@ export function loadServerConfig(env = process.env) {
       reportEmailReplyTo: env.REPORT_EMAIL_REPLY_TO || "",
       appBaseUrl: env.APP_BASE_URL || "",
       databaseUrl: env.DATABASE_URL || "",
+      crmProvider: env.CRM_PROVIDER || "salesforce",
+      salesforceClientId: env.SALESFORCE_CLIENT_ID || "",
+      salesforceUsername: env.SALESFORCE_USERNAME || "",
+      salesforceLoginUrl: env.SALESFORCE_LOGIN_URL || "https://login.salesforce.com",
+      salesforceApiVersion: env.SALESFORCE_API_VERSION || "60.0",
     },
   };
 }

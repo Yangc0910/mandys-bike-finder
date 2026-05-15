@@ -40,6 +40,8 @@ Feature flags:
 - `ENABLE_LLM_ANALYSIS`.
 - `ENABLE_EMAIL_REPORT`.
 - `ENABLE_BACKEND_LOGGING`.
+- `ENABLE_CRM_SYNC`.
+- `CRM_PROVIDER`.
 
 Usage limits:
 
@@ -55,6 +57,7 @@ Suggested provider variables for later implementation:
 - `OPENAI_API_KEY` or another server-side LLM provider key.
 - `SEARCH_API_KEY` and `SEARCH_PROVIDER`.
 - `RESEND_API_KEY`, `REPORT_EMAIL_FROM`, `REPORT_EMAIL_REPLY_TO`, and optional `APP_BASE_URL`.
+- Optional Salesforce CRM variables: `SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET`, `SALESFORCE_USERNAME`, `SALESFORCE_PASSWORD`, `SALESFORCE_SECURITY_TOKEN`, `SALESFORCE_LOGIN_URL`, and `SALESFORCE_API_VERSION`.
 - `DATABASE_URL` or Supabase-equivalent backend variables.
 
 ## Session Limit
@@ -92,6 +95,7 @@ Current email endpoint controls:
 - `/api/reports/email` is explicit user-triggered sending only.
 - `/api/reports/email` is capped at 5 sends per IP/day and 3 sends per session.
 - `/api/reports/email` returns a clear configuration error if Resend environment variables are missing or invalid.
+- Salesforce CRM sync, when enabled, only runs after explicit marketing/update consent and never blocks transactional report email delivery.
 
 ## Required Controls
 

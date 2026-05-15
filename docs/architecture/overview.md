@@ -56,10 +56,15 @@ Mandy's Bike Finder is a web-first MVP deployed from `/app` (Next.js App Router)
 - No durable backend waitlist database yet.
 - No production cron-based listing monitoring yet.
 
-### Future CRM sync boundary
+### Optional CRM sync (`/app/lib/crm.ts`)
 
-- CRM integration is future work (HubSpot/Salesforce/Mailchimp/Brevo).
-- Transactional email flow and marketing consent should stay separate.
+- CRM sync is optional, feature-flagged, and server-side only.
+- Current provider: Salesforce Lead creation through `/app/lib/crm/salesforce.ts`.
+- `syncLeadToCrm(lead)` no-ops unless `ENABLE_CRM_SYNC=true` and marketing consent is explicit.
+- Transactional Resend email flow and marketing consent stay separate.
+- Salesforce sync failure does not block report-email delivery.
+- MVP uses standard Lead fields and places app/report metadata in `Description`.
+- Duplicate/upsert handling and custom Salesforce field mapping are future improvements.
 - CRM must not be treated as app auth.
 
 ## Future Service Boundaries

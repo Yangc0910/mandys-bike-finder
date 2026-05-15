@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a lightweight, feature-flagged Salesforce CRM sync layer for explicitly opted-in report-email leads while keeping Resend transactional email separate and non-blocking.
 - Rebuilt the report email into a more professional decision report and now sends uploaded listing screenshots as real Resend attachments instead of relying on blocked inline data images.
 - Expanded report email structure to always surface user-provided listing links/screenshots and extracted bike details such as brand, model, wheel size, bike type, color/style, and condition notes.
 - Cleaned up the Result view so the input form/sidebar collapse after evaluation, and added a three-zone overall recommendation meter with a pointer for clearer skip/caution/good context.

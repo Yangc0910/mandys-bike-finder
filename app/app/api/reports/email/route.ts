@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { syncLeadToCrm } from "@/lib/crm";
+import type { CrmSyncResult } from "@/lib/crm/types";
 import { reportEmailConfigurationError, sendBikeReportEmail, validateEmailAddress } from "@/lib/email";
 import { checkUsageLimits } from "@/lib/server/limits";
 import { buildReport } from "@/lib/server/report";
@@ -36,6 +38,7 @@ type ReportEmailPayload = {
   screenshotDataUrl?: string;
   recommendedBikeType?: string;
   recommendedWheelSize?: string;
+  marketingConsent?: boolean;
 };
 
 export async function POST(request: Request) {
@@ -100,7 +103,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: result.message, code: result.code }, { status: result.code === "email_configuration_error" ? 503 : 502 });
   }
 
-  return NextResponse.json({ ok: true, message: "Report sent - please check your inbox.", provider: result.provider, id: result.id });
+  const crmResult = await syncLeadToCrm({
+    email,
+    recipientName: sanitize(payload.recipientName || ""),
+    leadSource: "Mandy's Bike Finder",
+    productInterest: "Bike Scout",
+    marketingConsent: Boolean(payload.marketingConsent),
+    childAge: sanitize(childProfile.age || ""),
+    childHeight: childProfile.heightCm ? `${sanitize(childProfile.heightCm)} cm` : "",
+    bikeType: sanitize(payload.recommendedBikeType || listing.bikeType || ""),
+    askingPrice: sanitize(payload.askingPrice || payload.price || formatPrice(listing.askingPrice || "")),
+    location: sanitize(payload.location || listing.location || ""),
+    distance: sanitize(payload.distanceMiles || payload.distance || ""),
+    dealScore: sanitize(payload.score || analysisResult.overall.label),
+    recommendation: sanitize(payload.recommendation || analysisResult.overall.label),
+    reportId: sanitize(payload.reportId || sourceUrl || listing.title || ""),
+    reportCreatedAt: new Date().toISOString(),
+    appBaseUrl: sanitizeUrl(process.env.APP_BASE_URL || ""),
+  });
+
+  return NextResponse.json({
+    ok: true,
+    message: buildSuccessMessage(crmResult, Boolean(payload.marketingConsent)),
+    provider: result.provider,
+    id: result.id,
+    crm: publicCrmResult(crmResult),
+  });
 }
 
 function errorResponse(error: string, status: number, code = "request_error") {
@@ -149,4 +177,23 @@ function sanitizeImageUrl(value: string) {
   } catch {
     return "";
   }
+}
+
+function buildSuccessMessage(crmResult: CrmSyncResult, requestedUpdates: boolean) {
+  if (!requestedUpdates) return "Report sent - please check your inbox.";
+  if (crmResult.status === "synced") {
+    return "Report sent - please check your inbox. You're also on the updates list.";
+  }
+  if (crmResult.status === "failed") {
+    return "Report sent - please check your inbox. We could not save your optional updates signup yet.";
+  }
+  return "Report sent - please check your inbox. Optional updates signup is not active yet.";
+}
+
+function publicCrmResult(result: CrmSyncResult) {
+  return {
+    status: result.status,
+    provider: result.provider,
+    ok: result.ok,
+  };
 }
