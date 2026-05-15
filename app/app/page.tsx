@@ -648,169 +648,120 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50/70 px-4 py-5 md:px-6 md:py-7">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_8%_5%,#e7f1ff_0%,#f5f9ff_40%,#f8fbff_100%)] px-4 py-5 md:px-6 md:py-7">
       <section className="mx-auto max-w-[1320px]">
-        <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/90 bg-gradient-to-br from-white via-amber-50/35 to-blue-50/30 shadow-[0_18px_45px_-22px_rgba(15,23,42,0.35)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(59,130,246,0.12),transparent_42%),radial-gradient(circle_at_36%_72%,rgba(251,191,36,0.10),transparent_46%)]" />
-          <div className="relative grid items-stretch md:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative z-10 p-6 md:p-9">
-              <span className="inline-flex items-center rounded-full border border-blue-200/80 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand backdrop-blur-sm">
+        <div className="relative mb-7 overflow-hidden rounded-3xl border border-blue-100/90 bg-gradient-to-br from-white via-blue-50/70 to-emerald-50/40 shadow-[0_22px_52px_-26px_rgba(30,64,175,0.32)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(59,130,246,0.16),transparent_40%),radial-gradient(circle_at_88%_24%,rgba(20,184,166,0.12),transparent_35%),radial-gradient(circle_at_72%_88%,rgba(251,191,36,0.10),transparent_40%)]" />
+          <div className="relative grid gap-4 p-6 md:grid-cols-[1.1fr_0.9fr] md:p-8">
+            <div>
+              <span className="inline-flex items-center rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-700">
                 Mandy&apos;s Bike Finder
               </span>
-              <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.08] tracking-[-0.01em] text-slate-900 md:text-[2.8rem]">
-                Find the{" "}
-                <span className="bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
-                  right kids&apos; bike
-                </span>{" "}
-                with confidence
+              <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-[1.07] tracking-tight text-slate-900 md:text-[3rem]">
+                Is this used kids&apos; bike worth it?
               </h1>
-              <p className="mt-4 max-w-lg text-base leading-7 text-slate-600">
-                Enter your child&apos;s profile, add a used-bike listing, and get a practical fit, value, and safety check before messaging the seller.
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+                Upload a marketplace screenshot or paste the listing. Get a quick AI price, fit, and safety check before messaging the seller.
               </p>
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                {["Fit for your child", "Deal quality", "Seller message help"].map((item) => (
-                  <span
-                    key={item}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-blue-100/90 bg-white/85 px-3.5 py-1.5 text-sm font-semibold text-blue-700 shadow-[0_6px_18px_-14px_rgba(59,130,246,0.55)] backdrop-blur-sm"
-                  >
-                    <span className="text-[11px]">+</span>
-                    {item}
-                  </span>
-                ))}
-              </div>
+              <p className="mt-4 text-sm font-semibold text-slate-500">
+                Free to try · No account needed · One listing at a time
+              </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={() => switchMode("free", "free-analyzer")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-bold text-white shadow-panel"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-[0_16px_28px_-20px_rgba(29,78,216,0.8)] transition hover:bg-blue-700"
                 >
-                  Start free bike check
+                  Check a bike now
                 </button>
                 <button
                   type="button"
                   onClick={() => switchMode("scout", "bike-scout-details")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white/90 px-5 text-sm font-bold text-slate-700"
                 >
-                  Join Bike Scout waitlist
+                  Join waitlist
                 </button>
               </div>
             </div>
-            <div className="relative min-h-[220px] md:min-h-[280px]">
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: "url('/images/mandy-bike-hero.jpg')" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-white/94 via-white/64 via-34% to-white/8 md:bg-gradient-to-r md:from-white/88 md:via-white/26 md:to-transparent" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_76%_45%,transparent_44%,rgba(15,23,42,0.1)_100%)]" />
+            <div className="grid gap-3 self-center">
+              <div className="rounded-2xl border border-blue-100 bg-white/90 p-4 shadow-[0_14px_24px_-18px_rgba(15,23,42,0.45)]">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Listing snapshot</p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">24&quot; Trek kids bike · $75</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">Good Deal</span>
+                  <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">Fair: $65–$95</span>
+                  <span className="rounded-full bg-teal-100 px-2.5 py-1 text-xs font-bold text-teal-700">Likely fit: 7–9 yrs</span>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white/85 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">AI check output</p>
+                <p className="mt-2 text-sm text-slate-700">Deal verdict · Fit guidance · Suggested offer · Seller questions</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <section className="mb-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-panel md:p-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Choose a mode</p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900">Start with the free bike check, or join Bike Scout early access</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                The free analyzer stays front and center. Bike Scout remains a waitlist-first planned paid feature until payment and monitoring are fully built.
-              </p>
-            </div>
-            <div className="inline-flex w-full rounded-2xl border border-slate-200 bg-slate-100 p-1 md:w-auto">
-              <button
-                type="button"
-                onClick={() => setActiveMode("free")}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition md:min-w-[190px] ${
-                  activeMode === "free" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-                }`}
-              >
-                Free Bike Check
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveMode("scout")}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition md:min-w-[190px] ${
-                  activeMode === "scout" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-                }`}
-              >
-                Bike Scout Waitlist
-              </button>
-            </div>
+        <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/90 p-3.5 shadow-panel">
+          <p className="text-sm font-semibold text-slate-600">Choose your mode</p>
+          <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <button
+              type="button"
+              onClick={() => setActiveMode("free")}
+              className={`rounded-lg px-4 py-2.5 text-sm font-bold transition ${activeMode === "free" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"}`}
+            >
+              Free Bike Check
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMode("scout")}
+              className={`rounded-lg px-4 py-2.5 text-sm font-bold transition ${activeMode === "scout" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"}`}
+            >
+              Bike Scout Waitlist
+            </button>
           </div>
         </section>
 
         {activeMode === "free" ? (
           <>
-            <section id="free-analyzer" className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-panel md:p-6">
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <section id="free-analyzer" className="mb-6 rounded-3xl border border-slate-200 bg-white/95 p-5 shadow-panel md:p-6">
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
                 <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-800">
-                      Free now
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700">
+                      Quick AI check
                     </span>
-                    <span className="text-sm font-semibold text-slate-600">Analyze one listing at a time</span>
+                    <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-blue-700">
+                      One listing at a time
+                    </span>
                   </div>
-                  <h2 className="mt-4 text-2xl font-bold text-slate-900">Free Bike Check</h2>
+                  <h2 className="mt-4 text-2xl font-bold text-slate-900">Tell us about the bike, then check it with AI</h2>
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                    Use the current MVP flow to check one used-bike listing at a time with fit, value, and safety guidance before you message the seller.
+                    The workflow is designed for busy parents: add a listing, add basic rider info, and get a decisive recommendation with offer guidance and seller questions.
                   </p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {[
-                      "Screenshot, link, pasted text, or manual entry",
-                      "Bike fit and wheel size guidance",
-                      "Value and safety checks",
-                      "Seller questions and message help",
-                    ].map((item) => (
-                      <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
-                        {item}
-                      </div>
-                    ))}
-                  </div>
                 </div>
-                <aside className="rounded-3xl border border-blue-100 bg-[linear-gradient(180deg,#eff6ff_0%,#ffffff_100%)] p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Coming next</p>
-                  <h3 className="mt-2 text-xl font-bold text-slate-900">Mandy Bike Scout</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Planned paid feature: about $2.99/week. Join the waitlist for early access before payment or alerts go live.
+                <aside className="rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Secondary feature</p>
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">Want help watching for better bikes?</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Join the Bike Scout waitlist and get notified when better matches appear.
                   </p>
                   <button
                     type="button"
                     onClick={() => switchMode("scout", "bike-scout-details")}
-                    className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-bold text-white"
+                    className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-brand px-4 text-sm font-bold text-white"
                   >
-                    Join Bike Scout waitlist
+                    Join waitlist
                   </button>
-                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    No payment is collected now.
-                  </p>
                 </aside>
               </div>
             </section>
 
-            <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-panel md:p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">How it works</h2>
-                  <p className="mt-1 text-sm text-slate-600">A simple 4-step flow for busy parents.</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                  AI extraction still stays behind existing daily limits.
-                </div>
-              </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <HowItWorksCard icon="1" title="Tell us about your rider" copy="Add height, age, and riding experience so we can estimate the right size and style." />
-                <HowItWorksCard icon="2" title="Add the bike you found" copy="Upload a screenshot, paste a listing link, or enter details manually." />
-                <HowItWorksCard icon="3" title="Double-check details" copy="Review price, wheel size, condition, and description before analysis." />
-                <HowItWorksCard icon="4" title="Get a recommendation" copy="See fit, value, and practical things to check before pickup." />
-              </div>
-            </section>
-
-            <details className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-slate-700 shadow-panel">
+            <details className="mb-6 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-700 shadow-panel">
               <summary className="cursor-pointer list-none font-semibold text-slate-900">
-                What this tool can and cannot do
+                What this AI check can and cannot do
               </summary>
               <p className="mt-3">
-                This tool gives a practical parent-friendly recommendation from available listing details. Used bikes still need a real-world check:
-                fit, brakes, tires, rust, and how comfortable your child feels during a test ride. AI extraction can miss details, and some marketplace pages are not directly readable. Manual edits are expected and welcome.
+                AI can help screen listings, but always check fit, brakes, tires, rust, and condition in person.
               </p>
             </details>
 
@@ -858,7 +809,7 @@ export default function Home() {
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="grid gap-5">
             <section className={`${activeFreeStep === "rider" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
-              <SectionTitle step="1" title="Tell us about your rider" />
+              <SectionTitle step="1" title="Add your child info" />
               <p className="mb-4 text-sm text-slate-600">Height, age, and riding confidence help us estimate the right wheel size and bike style.</p>
               {savedRiderProfile && (
                 <div className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
@@ -954,7 +905,7 @@ export default function Home() {
                   disabled={!hasHeight || !hasAgeForRecommendation || !hasExperience}
                   className="min-h-14 rounded-md bg-brand px-5 text-left text-base font-bold text-white shadow-panel transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Find the best bike fit
+                  Update fit guidance
                 </button>
                 {(!hasHeight || !hasAgeForRecommendation || !hasExperience) && (
                   <p className="text-sm text-slate-600">Enter height, age, and riding experience to get a bike recommendation.</p>
@@ -1038,7 +989,7 @@ export default function Home() {
             </section>
 
             <section className={`${activeFreeStep === "listing" || activeFreeStep === "review" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
-            <SectionTitle step="3" title="Add the bike you found" />
+            <SectionTitle step="3" title="Add the bike listing" />
             <p className="mb-4 text-sm text-slate-600">Marketplace pages can be tricky. Screenshots and pasted listing text often give the best results.</p>
             <div className="mb-4 grid grid-cols-3 gap-2">
               {["screenshot", "link", "manual"].map((mode) => (
@@ -1224,7 +1175,7 @@ export default function Home() {
 
             <details className={`${activeFreeStep === "review" || (activeFreeStep === "listing" && inputMode === "manual") ? "block" : "hidden"} rounded-2xl border border-slate-200 bg-slate-50/70 p-4`} open>
               <summary className="cursor-pointer list-none">
-                <SectionTitle step="4" title="Double-check the listing details" />
+                <SectionTitle step="4" title="Review listing details" />
                 <p className="mt-2 text-sm text-slate-600">AI can miss details, especially from screenshots, so please adjust anything that looks wrong.</p>
               </summary>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -1267,7 +1218,7 @@ export default function Home() {
           <aside className="grid gap-4 xl:sticky xl:top-6 xl:self-start">
             <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Session snapshot</p>
-              <h3 className="mt-2 text-lg font-bold text-slate-900">Your bike check so far</h3>
+              <h3 className="mt-2 text-lg font-bold text-slate-900">Your AI bike check so far</h3>
               <p className="mt-2 text-sm text-slate-600">
                 Mandy checks rider fit, wheel size, value, condition, and seller follow-up questions from the details you provide.
               </p>
@@ -1289,7 +1240,7 @@ export default function Home() {
               ) : needsProfileRecommendationRerun ? (
                 <p className="mt-2 text-sm text-amber-700">Your rider details changed. Re-run bike fit to refresh this summary.</p>
               ) : (
-                <p className="mt-2 text-sm text-slate-600">Step 1 stays open by default. Enter height, age, and riding experience, then use “Find the best bike fit.”</p>
+                <p className="mt-2 text-sm text-slate-600">Step 1 stays open by default. Enter child info, then refresh fit guidance before checking the listing.</p>
               )}
             </section>
 
@@ -1316,7 +1267,7 @@ export default function Home() {
 
             <section className="rounded-lg border border-blue-100 bg-blue-50/70 p-5 shadow-panel">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Planned paid feature</p>
-              <h3 className="mt-2 text-lg font-bold text-slate-900">Mandy Bike Scout</h3>
+              <h3 className="mt-2 text-lg font-bold text-slate-900">Want help watching for better bikes?</h3>
               <p className="mt-2 text-sm text-slate-600">Waitlist-first MVP. Planned price: about $2.99/week. No payment is collected now.</p>
               <button
                 type="button"
@@ -1333,7 +1284,7 @@ export default function Home() {
               type="submit"
               disabled={!canAnalyze}
             >
-              Evaluate this bike
+              Check this bike
             </button>
             {!canAnalyze && <p className="text-sm text-slate-600">{analyzeDisabledReason}</p>}
             {canAnalyze && (

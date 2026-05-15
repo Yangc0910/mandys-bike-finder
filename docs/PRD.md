@@ -1,8 +1,8 @@
 # Mandy Bike Finder PRD
 
-Version: v0.6 (Current MVP alignment)  
+Version: v0.7 (Current MVP alignment)  
 Status: Current MVP source of truth  
-Last updated: 2026-05-13
+Last updated: 2026-05-15
 
 ## 1. Product Overview
 
@@ -102,17 +102,21 @@ Current PDF status:
 
 Current homepage information architecture:
 
-1. Hero introduces the product with two CTAs.
+1. Hero is simplified to an action-first message:
+   - "Is this used kids' bike worth it?"
+   - Primary CTA: "Check a bike now"
+   - Secondary CTA: "Paste listing text"
 2. The homepage uses two product modes:
    - `Free Bike Check`
    - `Bike Scout Waitlist`
 3. `Free Bike Check` is the default primary workflow.
-4. `Free Bike Check` uses a progressive four-step tool flow:
+4. Above the fold prioritizes the free bike-check workspace and result preview; Bike Scout is visually secondary.
+5. `Free Bike Check` uses a progressive four-step tool flow:
    - Rider
    - Listing
    - Review
    - Result
-5. `Bike Scout Waitlist` contains the full Bike Scout explanation and waitlist form.
+6. `Bike Scout Waitlist` contains the full Bike Scout explanation and waitlist form.
 
 Returning-parent behavior:
 
