@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-05-13
+Last updated: 2026-05-15
 
 ## Production Path
 
@@ -74,22 +74,17 @@ Child recommendation current rules:
 - Vercel root directory is `app`.
 - Vercel build command is `npm run build`.
 - `/api/status` returns `200 OK`.
-- Deployment is running in safe fallback mode with real API features disabled:
-  - `ENABLE_LLM_ANALYSIS=false`
-  - `ENABLE_LIVE_SEARCH=false`
-  - `ENABLE_EMAIL_REPORT=false`
-  - `ENABLE_BACKEND_LOGGING=false`
-  - `ENABLE_CRM_SYNC=false`
-  - `SALESFORCE_AUTH_MODE=web_to_lead` unless overridden
-  - `OPENAI_MODEL=gpt-5.4-mini`
-  - LLM extraction default limit baseline: `DAILY_LLM_LIMIT=10` and `PER_SESSION_LLM_LIMIT=10` (unless overridden in deployment environment variables)
-- `/api/status` confirms:
-  - `liveSearch=false`
-  - `llmAnalysis=false`
-  - `emailReport=false`
-  - `crmSync=false`
-  - `backendLogging=false`
-  - providers are `mock/fallback/disabled`
+- Production status is now configuration-driven and should be verified via `/api/status` for the currently deployed environment.
+- Current production checks confirm:
+  - `crmSyncEnabled=true`
+  - `crmProvider=salesforce`
+  - `salesforceAuthMode=web_to_lead`
+  - `salesforceWebToLeadOidConfigured=true`
+  - `salesforceWebToLeadUrlConfigured=true`
+  - `emailReportEnabled=true`
+  - `resendConfigured=true`
+  - `appBaseUrlConfigured=true`
+- Salesforce Web-to-Lead lead submission has been validated in production through consented `/api/reports/email` requests.
 - Vercel preview/free-domain deployment is verified end-to-end before any custom-domain connection.
 - Deployed MVP flow is now manually verified at:
   - `https://mandys-bike-finder.vercel.app/`

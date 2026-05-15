@@ -240,13 +240,17 @@ Current live deployment:
 - `https://mandys-bike-finder.vercel.app/`
 - `https://www.mandysbikefinder.com/`
 - `/api/status` returns `200 OK`
-- Safe fallback mode is active:
-  - `liveSearch=false`
-  - `llmAnalysis=false`
-  - `emailReport=false`
-  - `backendLogging=false`
-  - providers are `mock/fallback`
-  - `DAILY_LLM_LIMIT` and `PER_SESSION_LLM_LIMIT` are configured server-side
+- Production feature/provider state is environment-driven and should be checked via `/api/status`.
+- Latest production verification confirms:
+  - `crmSyncEnabled=true`
+  - `crmProvider=salesforce`
+  - `salesforceAuthMode=web_to_lead`
+  - `salesforceWebToLeadOidConfigured=true`
+  - `salesforceWebToLeadUrlConfigured=true`
+  - `emailReportEnabled=true`
+  - `resendConfigured=true`
+  - `appBaseUrlConfigured=true`
+- Consented `/api/reports/email` tests now confirm Salesforce Web-to-Lead submissions are working end-to-end in production.
 - DNS + Vercel binding is working.
 - Latest UX fixes are visible on the custom domain.
 
