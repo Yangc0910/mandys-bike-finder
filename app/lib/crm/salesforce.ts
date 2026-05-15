@@ -78,15 +78,36 @@ async function syncSalesforceWebToLead(lead: CrmLeadInput, env = process.env): P
   }
 
   const endpoint = String(env.SALESFORCE_WEB_TO_LEAD_URL || "https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8").trim();
+  const endpointUrl = safeParseUrl(endpoint);
+  console.info("crm.salesforce.web_to_lead_request", {
+    mode: "web_to_lead",
+    endpointHost: endpointUrl?.host || "invalid",
+    endpointPath: endpointUrl?.pathname || "invalid",
+  });
+
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: buildSalesforceWebToLeadPayload(lead, env),
     signal: AbortSignal.timeout(10_000),
   });
+  const responseBody = truncateSafeResponseText(await response.text().catch(() => ""));
+  const finalUrl = safeParseUrl(response.url || "");
+  console.info("crm.salesforce.web_to_lead_response", {
+    status: response.status,
+    redirected: response.redirected,
+    finalUrlHost: finalUrl?.host || "",
+    finalUrlPath: finalUrl?.pathname || "",
+    responseSnippet: responseBody,
+  });
 
   if (!response.ok) {
-    console.error("crm.salesforce.web_to_lead_failed", { status: response.status });
+    console.error("crm.salesforce.web_to_lead_failed", {
+      status: response.status,
+      redirected: response.redirected,
+      finalUrlHost: finalUrl?.host || "",
+      finalUrlPath: finalUrl?.pathname || "",
+    });
     return {
       ok: false,
       status: "failed",
@@ -171,6 +192,7 @@ async function getSalesforceAccessToken(env: NodeJS.ProcessEnv): Promise<Salesfo
 function buildSalesforceWebToLeadPayload(lead: CrmLeadInput, env: NodeJS.ProcessEnv) {
   const name = splitName(lead.recipientName, "Mandy Bike Finder User");
   const body = new URLSearchParams({
+    encoding: "UTF-8",
     oid: String(env.SALESFORCE_WEB_TO_LEAD_OID || "").trim(),
     first_name: name.firstName,
     last_name: name.lastName,
@@ -243,4 +265,20 @@ function emailLocalPartName(email: string) {
 
 function salesforceAuthMode(env: NodeJS.ProcessEnv) {
   return String(env.SALESFORCE_AUTH_MODE || "web_to_lead").toLowerCase() === "rest" ? "rest" : "web_to_lead";
+}
+
+function safeParseUrl(value: string) {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+function truncateSafeResponseText(value: string) {
+  if (!value) return "";
+  return value
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]")
+    .slice(0, 300);
 }

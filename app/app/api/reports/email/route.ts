@@ -107,15 +107,19 @@ export async function POST(request: Request) {
   const serverConfig = loadServerConfig();
   const marketingConsent = Boolean(payload.marketingConsent);
   const crmSyncEnabled = serverConfig.featureFlags.crmSync;
+  const crmProvider = String(serverConfig.providers.crmProvider || "none").toLowerCase();
   const salesforceAuthMode = String(serverConfig.providers.salesforceAuthMode || "web_to_lead").toLowerCase();
   const webToLeadModeSelected = salesforceAuthMode !== "rest";
   const webToLeadOidConfigured = Boolean(String(process.env.SALESFORCE_WEB_TO_LEAD_OID || "").trim());
+  const webToLeadUrlConfigured = Boolean(String(process.env.SALESFORCE_WEB_TO_LEAD_URL || "").trim());
   console.info("crm.sync.request", {
     marketingConsent,
     crmSyncEnabled,
+    crmProvider,
     salesforceAuthMode,
     webToLeadModeSelected,
     webToLeadOidConfigured,
+    webToLeadUrlConfigured,
   });
 
   const crmResult = await syncLeadToCrm({
@@ -142,6 +146,9 @@ export async function POST(request: Request) {
     ok: crmResult.ok,
     message: crmResult.message,
   });
+  if (crmResult.status === "skipped") {
+    console.info("crm.sync.skipped", { reason: crmResult.message || "unspecified" });
+  }
 
   return NextResponse.json({
     ok: true,
