@@ -95,7 +95,7 @@ async function syncSalesforceWebToLead(lead: CrmLeadInput, env = process.env): P
     };
   }
 
-  console.info("crm.salesforce.web_to_lead_submitted", { email: lead.email });
+  console.info("crm.salesforce.web_to_lead_submitted", { email: lead.email, status: response.status });
   return {
     ok: true,
     status: "synced",

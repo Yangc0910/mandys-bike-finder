@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { syncLeadToCrm } from "@/lib/crm";
 import type { CrmSyncResult } from "@/lib/crm/types";
 import { reportEmailConfigurationError, sendBikeReportEmail, validateEmailAddress } from "@/lib/email";
+import { loadServerConfig } from "@/lib/server/config";
 import { checkUsageLimits } from "@/lib/server/limits";
 import { buildReport } from "@/lib/server/report";
 import { clientKey } from "@/lib/server/utils";
@@ -103,12 +104,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: result.message, code: result.code }, { status: result.code === "email_configuration_error" ? 503 : 502 });
   }
 
+  const serverConfig = loadServerConfig();
+  const marketingConsent = Boolean(payload.marketingConsent);
+  const crmSyncEnabled = serverConfig.featureFlags.crmSync;
+  const salesforceAuthMode = String(serverConfig.providers.salesforceAuthMode || "web_to_lead").toLowerCase();
+  const webToLeadModeSelected = salesforceAuthMode !== "rest";
+  const webToLeadOidConfigured = Boolean(String(process.env.SALESFORCE_WEB_TO_LEAD_OID || "").trim());
+  console.info("crm.sync.request", {
+    marketingConsent,
+    crmSyncEnabled,
+    salesforceAuthMode,
+    webToLeadModeSelected,
+    webToLeadOidConfigured,
+  });
+
   const crmResult = await syncLeadToCrm({
     email,
     recipientName: sanitize(payload.recipientName || ""),
     leadSource: "Mandy's Bike Finder",
     productInterest: "Bike Scout",
-    marketingConsent: Boolean(payload.marketingConsent),
+    marketingConsent,
     childAge: sanitize(childProfile.age || ""),
     childHeight: childProfile.heightCm ? `${sanitize(childProfile.heightCm)} cm` : "",
     bikeType: sanitize(payload.recommendedBikeType || listing.bikeType || ""),
@@ -121,10 +136,16 @@ export async function POST(request: Request) {
     reportCreatedAt: new Date().toISOString(),
     appBaseUrl: sanitizeUrl(process.env.APP_BASE_URL || ""),
   });
+  console.info("crm.sync.result", {
+    status: crmResult.status,
+    provider: crmResult.provider,
+    ok: crmResult.ok,
+    message: crmResult.message,
+  });
 
   return NextResponse.json({
     ok: true,
-    message: buildSuccessMessage(crmResult, Boolean(payload.marketingConsent)),
+    message: buildSuccessMessage(crmResult, marketingConsent),
     provider: result.provider,
     id: result.id,
     crm: publicCrmResult(crmResult),
