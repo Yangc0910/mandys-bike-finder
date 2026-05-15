@@ -206,6 +206,7 @@ Core feature flags and controls:
 - `ENABLE_BACKEND_LOGGING`
 - `ENABLE_CRM_SYNC`
 - `CRM_PROVIDER`
+- `SALESFORCE_AUTH_MODE`
 - `DAILY_LLM_LIMIT`
 - `PER_SESSION_LLM_LIMIT`
 
@@ -213,6 +214,7 @@ If required email variables are missing or invalid, `/api/reports/email` returns
 
 Optional Salesforce CRM sync variables:
 
+- `SALESFORCE_AUTH_MODE`
 - `SALESFORCE_CLIENT_ID`
 - `SALESFORCE_CLIENT_SECRET`
 - `SALESFORCE_USERNAME`
@@ -220,6 +222,8 @@ Optional Salesforce CRM sync variables:
 - `SALESFORCE_SECURITY_TOKEN`
 - `SALESFORCE_LOGIN_URL`
 - `SALESFORCE_API_VERSION`
+- `SALESFORCE_WEB_TO_LEAD_OID`
+- `SALESFORCE_WEB_TO_LEAD_URL`
 
 CRM sync is feature-flagged and consent-gated. The app and transactional report email flow continue to work when Salesforce is disabled, missing, or temporarily failing.
 
@@ -299,6 +303,7 @@ ENABLE_EMAIL_REPORT=false
 ENABLE_BACKEND_LOGGING=false
 ENABLE_CRM_SYNC=false
 CRM_PROVIDER=salesforce
+SALESFORCE_AUTH_MODE=web_to_lead
 OPENAI_MODEL=gpt-5.4-mini
 DAILY_LLM_LIMIT
 PER_SESSION_LLM_LIMIT
@@ -367,7 +372,28 @@ Send me future bike deal alerts and product updates.
 
 Resend remains responsible for transactional report delivery. Salesforce must not be used as the app's auth system, and marketing/update consent must stay separate from sending a requested report.
 
-Setup steps:
+Two Salesforce modes are supported:
+
+- `SALESFORCE_AUTH_MODE=web_to_lead`: recommended MVP mode. It submits a server-side Web-to-Lead form post and is simpler for Free/Starter-style setup when Connected App setup is not convenient.
+- `SALESFORCE_AUTH_MODE=rest`: optional advanced mode. It uses a Salesforce Connected App and REST API, which is better for Developer Edition or orgs where Connected Apps are available.
+
+Web-to-Lead setup steps:
+
+1. In Salesforce, enable or open Web-to-Lead setup.
+2. Generate a Web-to-Lead form and copy the org ID (`oid`).
+3. Add these Vercel environment variables:
+
+```text
+ENABLE_CRM_SYNC=true
+CRM_PROVIDER=salesforce
+SALESFORCE_AUTH_MODE=web_to_lead
+SALESFORCE_WEB_TO_LEAD_OID=<set in Vercel only>
+SALESFORCE_WEB_TO_LEAD_URL=https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8
+```
+
+Web-to-Lead mode sends standard Lead fields from the server side only: `oid`, `first_name`, `last_name`, `email`, `company`, `lead_source`, and `description`. Bike/report metadata is included in `description`.
+
+REST API advanced setup:
 
 1. In Salesforce, create or reuse a Connected App that allows OAuth access for server-side integration.
 2. Obtain the connected app `Client ID` and `Client Secret`.
@@ -378,6 +404,7 @@ Setup steps:
 ```text
 ENABLE_CRM_SYNC=true
 CRM_PROVIDER=salesforce
+SALESFORCE_AUTH_MODE=rest
 SALESFORCE_CLIENT_ID=<set in Vercel only>
 SALESFORCE_CLIENT_SECRET=<set in Vercel only>
 SALESFORCE_USERNAME=<set in Vercel only>
@@ -399,6 +426,7 @@ Current CRM limitations:
 - MVP creates a Salesforce Lead using standard fields (`FirstName`, `LastName`, `Company`, `Email`, `LeadSource`, `Description`).
 - App/report metadata is stored in `Description` instead of custom Salesforce fields.
 - Duplicate handling/upsert is not implemented yet.
+- Web-to-Lead does not return a Salesforce Lead ID to the app.
 - Salesforce sync failure does not block transactional report email delivery.
 
 ### 4. Confirm Deployment Works

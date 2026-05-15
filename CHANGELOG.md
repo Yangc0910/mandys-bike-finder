@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a Salesforce Web-to-Lead auth mode for the optional CRM sync path so Free/Starter-style Salesforce setups can capture opted-in leads without Connected App credentials.
 - Added a lightweight, feature-flagged Salesforce CRM sync layer for explicitly opted-in report-email leads while keeping Resend transactional email separate and non-blocking.
 - Rebuilt the report email into a more professional decision report and now sends uploaded listing screenshots as real Resend attachments instead of relying on blocked inline data images.
 - Expanded report email structure to always surface user-provided listing links/screenshots and extracted bike details such as brand, model, wheel size, bike type, color/style, and condition notes.

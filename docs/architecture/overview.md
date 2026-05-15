@@ -60,10 +60,12 @@ Mandy's Bike Finder is a web-first MVP deployed from `/app` (Next.js App Router)
 
 - CRM sync is optional, feature-flagged, and server-side only.
 - Current provider: Salesforce Lead creation through `/app/lib/crm/salesforce.ts`.
+- Salesforce supports two server-side modes: `SALESFORCE_AUTH_MODE=web_to_lead` as the recommended MVP path and `SALESFORCE_AUTH_MODE=rest` as the optional Connected App / REST API path.
 - `syncLeadToCrm(lead)` no-ops unless `ENABLE_CRM_SYNC=true` and marketing consent is explicit.
 - Transactional Resend email flow and marketing consent stay separate.
 - Salesforce sync failure does not block report-email delivery.
 - MVP uses standard Lead fields and places app/report metadata in `Description`.
+- REST mode can return a Lead ID; Web-to-Lead mode does not.
 - Duplicate/upsert handling and custom Salesforce field mapping are future improvements.
 - CRM must not be treated as app auth.
 

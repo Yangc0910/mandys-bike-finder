@@ -16,6 +16,12 @@ type SalesforceCreateResponse = {
 };
 
 export async function syncSalesforceLead(lead: CrmLeadInput, env = process.env): Promise<CrmSyncResult> {
+  const authMode = salesforceAuthMode(env);
+  if (authMode === "web_to_lead") return syncSalesforceWebToLead(lead, env);
+  return syncSalesforceRestLead(lead, env);
+}
+
+async function syncSalesforceRestLead(lead: CrmLeadInput, env = process.env): Promise<CrmSyncResult> {
   const configError = salesforceConfigurationError(env);
   if (configError) {
     return { ok: false, status: "failed", provider: "salesforce", message: configError };
@@ -64,6 +70,40 @@ export async function syncSalesforceLead(lead: CrmLeadInput, env = process.env):
   };
 }
 
+async function syncSalesforceWebToLead(lead: CrmLeadInput, env = process.env): Promise<CrmSyncResult> {
+  const configError = salesforceWebToLeadConfigurationError(env);
+  if (configError) {
+    console.warn("crm.salesforce.web_to_lead_skipped", { message: configError });
+    return { ok: true, status: "skipped", provider: "salesforce", message: configError };
+  }
+
+  const endpoint = String(env.SALESFORCE_WEB_TO_LEAD_URL || "https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8").trim();
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: buildSalesforceWebToLeadPayload(lead, env),
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!response.ok) {
+    console.error("crm.salesforce.web_to_lead_failed", { status: response.status });
+    return {
+      ok: false,
+      status: "failed",
+      provider: "salesforce",
+      message: "Salesforce Web-to-Lead submission failed.",
+    };
+  }
+
+  console.info("crm.salesforce.web_to_lead_submitted", { email: lead.email });
+  return {
+    ok: true,
+    status: "synced",
+    provider: "salesforce",
+    message: "Lead submitted to Salesforce Web-to-Lead.",
+  };
+}
+
 function salesforceConfigurationError(env: NodeJS.ProcessEnv) {
   const required = [
     "SALESFORCE_CLIENT_ID",
@@ -81,6 +121,24 @@ function salesforceConfigurationError(env: NodeJS.ProcessEnv) {
     if (url.protocol !== "https:" && url.protocol !== "http:") return "Salesforce login URL must be http or https.";
   } catch {
     return "Salesforce login URL is invalid.";
+  }
+
+  return "";
+}
+
+function salesforceWebToLeadConfigurationError(env: NodeJS.ProcessEnv) {
+  if (!String(env.SALESFORCE_WEB_TO_LEAD_OID || "").trim()) {
+    return "Salesforce Web-to-Lead is not configured: missing SALESFORCE_WEB_TO_LEAD_OID.";
+  }
+
+  const webToLeadUrl = String(env.SALESFORCE_WEB_TO_LEAD_URL || "https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8").trim();
+  try {
+    const url = new URL(webToLeadUrl);
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return "Salesforce Web-to-Lead URL must be http or https.";
+    }
+  } catch {
+    return "Salesforce Web-to-Lead URL is invalid.";
   }
 
   return "";
@@ -110,8 +168,22 @@ async function getSalesforceAccessToken(env: NodeJS.ProcessEnv): Promise<Salesfo
   return data || { error: "salesforce_auth_failed" };
 }
 
+function buildSalesforceWebToLeadPayload(lead: CrmLeadInput, env: NodeJS.ProcessEnv) {
+  const name = splitName(lead.recipientName, "Mandy Bike Finder User");
+  const body = new URLSearchParams({
+    oid: String(env.SALESFORCE_WEB_TO_LEAD_OID || "").trim(),
+    first_name: name.firstName,
+    last_name: name.lastName,
+    email: lead.email,
+    company: "Mandy's Bike Finder",
+    lead_source: lead.leadSource || "Mandy's Bike Finder",
+    description: buildLeadDescription(lead, env),
+  });
+  return body;
+}
+
 function buildSalesforceLeadPayload(lead: CrmLeadInput, env: NodeJS.ProcessEnv) {
-  const name = splitName(lead.recipientName, lead.email);
+  const name = splitName(lead.recipientName, emailLocalPartName(lead.email));
   return {
     FirstName: name.firstName,
     LastName: name.lastName,
@@ -122,7 +194,7 @@ function buildSalesforceLeadPayload(lead: CrmLeadInput, env: NodeJS.ProcessEnv) 
   };
 }
 
-function splitName(recipientName: string | undefined, email: string) {
+function splitName(recipientName: string | undefined, fallbackLastName: string) {
   const cleanName = String(recipientName || "").replace(/\s+/g, " ").trim();
   if (cleanName) {
     const parts = cleanName.split(" ");
@@ -132,25 +204,26 @@ function splitName(recipientName: string | undefined, email: string) {
     };
   }
 
-  const fallback = email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Bike Finder Lead";
-  return { firstName: "", lastName: fallback || "Bike Finder Lead" };
+  return { firstName: "", lastName: fallbackLastName || "Mandy Bike Finder User" };
 }
 
 function buildLeadDescription(lead: CrmLeadInput, env: NodeJS.ProcessEnv) {
   const rows = [
-    ["Product interest", lead.productInterest || "Bike Scout"],
-    ["Marketing consent", lead.marketingConsent ? "Yes" : "No"],
-    ["Child age", lead.childAge],
-    ["Child height", lead.childHeight],
-    ["Bike type", lead.bikeType],
-    ["Asking price", lead.askingPrice],
+    ["Product Interest", lead.productInterest || "Bike Scout"],
+    ["Marketing Consent", lead.marketingConsent ? "true" : "false"],
+    ["Email", lead.email],
+    ["Recipient Name", lead.recipientName],
+    ["Child Age", lead.childAge],
+    ["Child Height", lead.childHeight],
+    ["Bike Type", lead.bikeType],
+    ["Asking Price", lead.askingPrice],
     ["Location", lead.location],
     ["Distance", lead.distance],
-    ["Deal score", lead.dealScore],
+    ["Deal Score", lead.dealScore],
     ["Recommendation", lead.recommendation],
     ["Report ID", lead.reportId],
-    ["Report created at", lead.reportCreatedAt],
-    ["App URL", lead.appBaseUrl || env.APP_BASE_URL],
+    ["Report Created At", lead.reportCreatedAt],
+    ["App Base URL", lead.appBaseUrl || env.APP_BASE_URL],
   ];
 
   return rows
@@ -162,4 +235,12 @@ function buildLeadDescription(lead: CrmLeadInput, env: NodeJS.ProcessEnv) {
 
 function sanitizeApiVersion(value: string) {
   return /^\d{2,3}\.\d$/.test(value) ? value : "60.0";
+}
+
+function emailLocalPartName(email: string) {
+  return email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Bike Finder Lead";
+}
+
+function salesforceAuthMode(env: NodeJS.ProcessEnv) {
+  return String(env.SALESFORCE_AUTH_MODE || "web_to_lead").toLowerCase() === "rest" ? "rest" : "web_to_lead";
 }

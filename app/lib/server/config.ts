@@ -31,10 +31,12 @@ export function loadServerConfig(env = process.env) {
       appBaseUrl: env.APP_BASE_URL || "",
       databaseUrl: env.DATABASE_URL || "",
       crmProvider: env.CRM_PROVIDER || "salesforce",
+      salesforceAuthMode: env.SALESFORCE_AUTH_MODE || "web_to_lead",
       salesforceClientId: env.SALESFORCE_CLIENT_ID || "",
       salesforceUsername: env.SALESFORCE_USERNAME || "",
       salesforceLoginUrl: env.SALESFORCE_LOGIN_URL || "https://login.salesforce.com",
       salesforceApiVersion: env.SALESFORCE_API_VERSION || "60.0",
+      salesforceWebToLeadUrl: env.SALESFORCE_WEB_TO_LEAD_URL || "https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8",
     },
   };
 }

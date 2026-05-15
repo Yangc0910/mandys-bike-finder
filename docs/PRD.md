@@ -611,10 +611,12 @@ Possible future infrastructure:
 Implemented CRM boundary:
 
 - Optional CRM abstraction: `syncLeadToCrm(lead)`.
-- Current provider: Salesforce Lead creation via server-side REST API when `ENABLE_CRM_SYNC=true`.
+- Current provider: Salesforce Lead creation when `ENABLE_CRM_SYNC=true`.
+- Salesforce Web-to-Lead mode (`SALESFORCE_AUTH_MODE=web_to_lead`) is the recommended MVP mode for simpler Free/Starter setup.
+- Salesforce REST mode (`SALESFORCE_AUTH_MODE=rest`) is optional advanced mode using Connected App credentials and the REST API.
 - Consent: only sync when the report-email form checkbox is explicitly selected.
 - Failure handling: CRM failure does not block transactional Resend email delivery.
-- Metadata: app/report details are written to Salesforce `Description` for MVP instead of requiring custom fields.
+- Metadata: app/report details are written to Salesforce `Description` / `description` for MVP instead of requiring custom fields.
 
 Not implemented now:
 
@@ -625,6 +627,7 @@ Not implemented now:
 - user accounts
 - Salesforce duplicate/upsert handling
 - Salesforce custom field mapping
+- Web-to-Lead returned Lead ID tracking
 
 Planned payment path:
 

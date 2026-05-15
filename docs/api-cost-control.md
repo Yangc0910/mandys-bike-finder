@@ -42,6 +42,7 @@ Feature flags:
 - `ENABLE_BACKEND_LOGGING`.
 - `ENABLE_CRM_SYNC`.
 - `CRM_PROVIDER`.
+- `SALESFORCE_AUTH_MODE`.
 
 Usage limits:
 
@@ -57,7 +58,8 @@ Suggested provider variables for later implementation:
 - `OPENAI_API_KEY` or another server-side LLM provider key.
 - `SEARCH_API_KEY` and `SEARCH_PROVIDER`.
 - `RESEND_API_KEY`, `REPORT_EMAIL_FROM`, `REPORT_EMAIL_REPLY_TO`, and optional `APP_BASE_URL`.
-- Optional Salesforce CRM variables: `SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET`, `SALESFORCE_USERNAME`, `SALESFORCE_PASSWORD`, `SALESFORCE_SECURITY_TOKEN`, `SALESFORCE_LOGIN_URL`, and `SALESFORCE_API_VERSION`.
+- Optional Salesforce REST variables: `SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET`, `SALESFORCE_USERNAME`, `SALESFORCE_PASSWORD`, `SALESFORCE_SECURITY_TOKEN`, `SALESFORCE_LOGIN_URL`, and `SALESFORCE_API_VERSION`.
+- Optional Salesforce Web-to-Lead variables: `SALESFORCE_WEB_TO_LEAD_OID` and `SALESFORCE_WEB_TO_LEAD_URL`.
 - `DATABASE_URL` or Supabase-equivalent backend variables.
 
 ## Session Limit
