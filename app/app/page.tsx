@@ -712,42 +712,73 @@ export default function Home() {
         </div>
 
         <>
-            <section id="free-analyzer" className="mb-5 rounded-lg border border-slate-200 bg-white p-3 shadow-panel md:p-4">
-              <div className="grid gap-2 md:grid-cols-4">
-                <FlowStepButton
-                  step="1"
-                  title="Listing"
-                  status={canContinueFromListing ? "Details added" : "Start here"}
-                  active={activeFreeStep === "listing"}
-                  complete={canContinueFromListing}
-                  onClick={() => setActiveFreeStep("listing")}
-                />
-                <FlowStepButton
-                  step="2"
-                  title="Child info"
-                  status={canContinueFromRider ? "Fit ready" : "Add height"}
-                  active={activeFreeStep === "rider"}
-                  complete={canContinueFromRider}
-                  onClick={() => setActiveFreeStep("rider")}
-                />
-                <FlowStepButton
-                  step="3"
-                  title="Review"
-                  status={canContinueFromListing ? "Check fields" : "Waiting"}
-                  active={activeFreeStep === "review"}
-                  complete={canContinueFromListing && hasAnyListingField}
-                  disabled={!canContinueFromListing}
-                  onClick={() => setActiveFreeStep("review")}
-                />
-                <FlowStepButton
-                  step="4"
-                  title="Result"
-                  status={showAnalysisResults ? visibleAnalysis.overall.label : "Evaluate"}
-                  active={activeFreeStep === "result"}
-                  complete={showAnalysisResults}
-                  disabled={!showAnalysisResults && !canAnalyze}
-                  onClick={() => setActiveFreeStep("result")}
-                />
+            <section id="free-analyzer" className="mb-5 overflow-hidden rounded-section border border-[#ead8b1] bg-white shadow-panel">
+              <div className="grid gap-0 lg:grid-cols-[360px_minmax(0,1fr)]">
+                <div className="bg-[#fff4d8] p-5 md:p-6">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Start here</p>
+                  <h2 className="mt-2 text-2xl font-bold leading-tight text-ink">Add the bike listing you found.</h2>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">
+                    Upload a screenshot or paste the seller text first. Mandy will help turn it into a fit, price, and safety check.
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInputMode("screenshot");
+                        setActiveFreeStep("listing");
+                      }}
+                      className="min-h-11 rounded-button bg-brand px-4 text-sm font-bold text-white shadow-soft transition hover:bg-brand-hover"
+                    >
+                      Upload screenshot
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInputMode("link");
+                        setActiveFreeStep("listing");
+                      }}
+                      className="min-h-11 rounded-button border border-line bg-white px-4 text-sm font-bold text-ink transition hover:shadow-panel"
+                    >
+                      Paste listing
+                    </button>
+                  </div>
+                </div>
+                <div className="grid gap-2 p-4 md:grid-cols-4 md:p-5">
+                  <FlowStepButton
+                    step="1"
+                    title="Listing"
+                    status={canContinueFromListing ? "Details added" : "Start here"}
+                    active={activeFreeStep === "listing"}
+                    complete={canContinueFromListing}
+                    onClick={() => setActiveFreeStep("listing")}
+                  />
+                  <FlowStepButton
+                    step="2"
+                    title="Child info"
+                    status={canContinueFromRider ? "Fit ready" : "Add height"}
+                    active={activeFreeStep === "rider"}
+                    complete={canContinueFromRider}
+                    onClick={() => setActiveFreeStep("rider")}
+                  />
+                  <FlowStepButton
+                    step="3"
+                    title="Review"
+                    status={canContinueFromListing ? "Check fields" : "Waiting"}
+                    active={activeFreeStep === "review"}
+                    complete={canContinueFromListing && hasAnyListingField}
+                    disabled={!canContinueFromListing}
+                    onClick={() => setActiveFreeStep("review")}
+                  />
+                  <FlowStepButton
+                    step="4"
+                    title="Result"
+                    status={showAnalysisResults ? visibleAnalysis.overall.label : "Evaluate"}
+                    active={activeFreeStep === "result"}
+                    complete={showAnalysisResults}
+                    disabled={!showAnalysisResults && !canAnalyze}
+                    onClick={() => setActiveFreeStep("result")}
+                  />
+                </div>
               </div>
             </section>
 
@@ -1883,9 +1914,9 @@ function FlowStepButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex min-h-20 items-center gap-3 rounded-card border p-3 text-left transition hover:shadow-panel disabled:cursor-not-allowed disabled:opacity-55 ${tone}`}
+      className={`flex min-h-16 items-center gap-3 rounded-card border p-3 text-left transition hover:shadow-panel disabled:cursor-not-allowed disabled:opacity-55 md:min-h-24 ${tone}`}
     >
-      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${active ? "bg-brand text-white" : complete ? "bg-good text-white" : "bg-slate-100 text-muted"}`}>
+      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold md:h-10 md:w-10 ${active ? "bg-brand text-white" : complete ? "bg-good text-white" : "bg-slate-100 text-muted"}`}>
         {complete ? "OK" : step}
       </span>
       <span className="min-w-0">
