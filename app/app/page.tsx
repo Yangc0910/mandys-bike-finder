@@ -646,21 +646,31 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#eef6ff_0%,#f6f9ff_42%,#ffffff_100%)] px-4 py-5 md:px-6 md:py-7">
+    <main className="min-h-screen bg-[#fff8ea] px-4 py-5 md:px-6 md:py-7">
       <section className="mx-auto max-w-[1320px]">
-        <div className="relative mb-7 overflow-hidden rounded-section border border-line bg-gradient-to-br from-white via-surface-blue to-surface-green shadow-soft">
-          <div className="relative grid gap-4 p-6 md:grid-cols-[1.1fr_0.9fr] md:p-8">
-            <div>
-              <span className="inline-flex items-center rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-brand">
+        <div className="relative mb-7 min-h-[520px] overflow-hidden rounded-section border border-[#f1dfba] bg-[#fff2d4] shadow-soft">
+          <Image
+            src="/images/mandy-bike-hero.jpg"
+            alt="Mandy's Bike Finder illustrated bike assistant"
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 1320px"
+            className="object-cover object-[72%_center] md:object-[62%_center]"
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,248,234,0.98)_0%,rgba(255,248,234,0.94)_48%,rgba(255,248,234,0.42)_78%,rgba(255,248,234,0.16)_100%)] md:bg-[linear-gradient(90deg,rgba(255,248,234,0.96)_0%,rgba(255,248,234,0.88)_35%,rgba(255,248,234,0.28)_68%,rgba(255,248,234,0.05)_100%)]" />
+          <div className="relative flex min-h-[520px] items-center p-6 md:p-10">
+            <div className="max-w-xl">
+              <span className="inline-flex items-center rounded-full border border-[#edd59f] bg-white/82 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-brand">
                 Mandy&apos;s Bike Finder
               </span>
-              <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-[1.07] text-ink md:text-[3rem]">
+              <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-[1.07] text-ink md:text-[3.35rem]">
                 Is this used kids&apos; bike worth it?
               </h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
-                Upload a marketplace screenshot or paste the listing. Get a quick AI price, fit, and safety check before messaging the seller.
+              <p className="mt-4 max-w-lg text-base leading-7 text-slate-700 md:text-lg">
+                Upload a marketplace screenshot or paste the listing. Mandy helps you check price, fit, and safety before messaging the seller.
               </p>
-              <p className="mt-4 text-sm font-semibold text-slate-500">
+              <p className="mt-4 text-sm font-semibold text-slate-600">
                 Free to try · No account needed · One listing at a time
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
@@ -683,20 +693,19 @@ export default function Home() {
                   Paste listing text
                 </button>
               </div>
-            </div>
-            <div className="grid gap-3 self-center">
-              <div className="rounded-card border border-line bg-white/90 p-4 shadow-panel">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Listing snapshot</p>
-                <p className="mt-2 text-sm font-semibold text-slate-900">24&quot; Trek kids bike · $75</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">Good Deal</span>
-                  <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">Fair: $65–$95</span>
-                  <span className="rounded-full bg-teal-100 px-2.5 py-1 text-xs font-bold text-teal-700">Likely fit: 7–9 yrs</span>
+              <div className="mt-6 grid max-w-lg gap-2 rounded-card border border-[#ecd9ae] bg-white/78 p-3 shadow-panel backdrop-blur-sm sm:grid-cols-3">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Verdict</p>
+                  <p className="mt-1 text-sm font-bold text-good">Worth asking</p>
                 </div>
-              </div>
-              <div className="rounded-card border border-line bg-white/85 p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">AI check output</p>
-                <p className="mt-2 text-sm text-slate-700">Deal verdict · Fit guidance · Suggested offer · Seller questions</p>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Fair price</p>
+                  <p className="mt-1 text-sm font-bold text-ink">$65-$95</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Fit hint</p>
+                  <p className="mt-1 text-sm font-bold text-teal">Likely 20-24&quot;</p>
+                </div>
               </div>
             </div>
           </div>
