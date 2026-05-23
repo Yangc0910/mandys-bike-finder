@@ -126,8 +126,7 @@ export default function Home() {
   const [savedWaitlistEntries, setSavedWaitlistEntries] = useState<BikeScoutWaitlistEntry[]>([]);
   const [waitlistNotice, setWaitlistNotice] = useState("");
   const [showScoutSetup, setShowScoutSetup] = useState(false);
-  const [activeMode, setActiveMode] = useState<"free" | "scout">("free");
-  const [activeFreeStep, setActiveFreeStep] = useState<"rider" | "listing" | "review" | "result">("rider");
+  const [activeFreeStep, setActiveFreeStep] = useState<"rider" | "listing" | "review" | "result">("listing");
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -411,7 +410,7 @@ export default function Home() {
     if (!showProfileRecommendation || needsProfileRecommendationRerun) {
       recommendFromChildProfile();
     }
-    setActiveFreeStep("listing");
+    setActiveFreeStep(canContinueFromListing ? "review" : "listing");
   }
 
   function continueToReview() {
@@ -640,198 +639,87 @@ export default function Home() {
     setShowProfileRecommendation(false);
   }
 
-  function switchMode(nextMode: "free" | "scout", anchorId: string) {
-    setActiveMode(nextMode);
+  function switchMode(_nextMode: "free" | "scout", anchorId: string) {
     requestAnimationFrame(() => {
       document.getElementById(anchorId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
   return (
-    <main className="min-h-screen bg-slate-50/70 px-4 py-5 md:px-6 md:py-7">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#eef6ff_0%,#f6f9ff_42%,#ffffff_100%)] px-4 py-5 md:px-6 md:py-7">
       <section className="mx-auto max-w-[1320px]">
-        <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/90 bg-gradient-to-br from-white via-amber-50/35 to-blue-50/30 shadow-[0_18px_45px_-22px_rgba(15,23,42,0.35)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(59,130,246,0.12),transparent_42%),radial-gradient(circle_at_36%_72%,rgba(251,191,36,0.10),transparent_46%)]" />
-          <div className="relative grid items-stretch md:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative z-10 p-6 md:p-9">
-              <span className="inline-flex items-center rounded-full border border-blue-200/80 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand backdrop-blur-sm">
+        <div className="relative mb-7 overflow-hidden rounded-section border border-line bg-gradient-to-br from-white via-surface-blue to-surface-green shadow-soft">
+          <div className="relative grid gap-4 p-6 md:grid-cols-[1.1fr_0.9fr] md:p-8">
+            <div>
+              <span className="inline-flex items-center rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-brand">
                 Mandy&apos;s Bike Finder
               </span>
-              <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-[1.08] tracking-[-0.01em] text-slate-900 md:text-[2.8rem]">
-                Find the{" "}
-                <span className="bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
-                  right kids&apos; bike
-                </span>{" "}
-                with confidence
+              <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-[1.07] text-ink md:text-[3rem]">
+                Is this used kids&apos; bike worth it?
               </h1>
-              <p className="mt-4 max-w-lg text-base leading-7 text-slate-600">
-                Enter your child&apos;s profile, add a used-bike listing, and get a practical fit, value, and safety check before messaging the seller.
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+                Upload a marketplace screenshot or paste the listing. Get a quick AI price, fit, and safety check before messaging the seller.
               </p>
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                {["Fit for your child", "Deal quality", "Seller message help"].map((item) => (
-                  <span
-                    key={item}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-blue-100/90 bg-white/85 px-3.5 py-1.5 text-sm font-semibold text-blue-700 shadow-[0_6px_18px_-14px_rgba(59,130,246,0.55)] backdrop-blur-sm"
-                  >
-                    <span className="text-[11px]">+</span>
-                    {item}
-                  </span>
-                ))}
-              </div>
+              <p className="mt-4 text-sm font-semibold text-slate-500">
+                Free to try · No account needed · One listing at a time
+              </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={() => switchMode("free", "free-analyzer")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-bold text-white shadow-panel"
+                  className="inline-flex min-h-11 items-center justify-center rounded-button bg-brand px-5 text-sm font-bold text-white shadow-soft transition hover:bg-brand-hover"
                 >
-                  Start free bike check
+                  Check a bike now
                 </button>
                 <button
                   type="button"
-                  onClick={() => switchMode("scout", "bike-scout-details")}
-                  className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700"
+                  onClick={() => {
+                    setInputMode("link");
+                    setActiveFreeStep("listing");
+                    switchMode("free", "free-analyzer");
+                  }}
+                  className="inline-flex min-h-11 items-center justify-center rounded-button border border-line bg-white/90 px-5 text-sm font-bold text-ink shadow-panel transition hover:shadow-panel-hover"
                 >
-                  Join Bike Scout waitlist
+                  Paste listing text
                 </button>
               </div>
             </div>
-            <div className="relative min-h-[220px] md:min-h-[280px]">
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: "url('/images/mandy-bike-hero.jpg')" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-white/94 via-white/64 via-34% to-white/8 md:bg-gradient-to-r md:from-white/88 md:via-white/26 md:to-transparent" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_76%_45%,transparent_44%,rgba(15,23,42,0.1)_100%)]" />
+            <div className="grid gap-3 self-center">
+              <div className="rounded-card border border-line bg-white/90 p-4 shadow-panel">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Listing snapshot</p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">24&quot; Trek kids bike · $75</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">Good Deal</span>
+                  <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">Fair: $65–$95</span>
+                  <span className="rounded-full bg-teal-100 px-2.5 py-1 text-xs font-bold text-teal-700">Likely fit: 7–9 yrs</span>
+                </div>
+              </div>
+              <div className="rounded-card border border-line bg-white/85 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">AI check output</p>
+                <p className="mt-2 text-sm text-slate-700">Deal verdict · Fit guidance · Suggested offer · Seller questions</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <section className="mb-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-panel md:p-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Choose a mode</p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900">Start with the free bike check, or join Bike Scout early access</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                The free analyzer stays front and center. Bike Scout remains a waitlist-first planned paid feature until payment and monitoring are fully built.
-              </p>
-            </div>
-            <div className="inline-flex w-full rounded-2xl border border-slate-200 bg-slate-100 p-1 md:w-auto">
-              <button
-                type="button"
-                onClick={() => setActiveMode("free")}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition md:min-w-[190px] ${
-                  activeMode === "free" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-                }`}
-              >
-                Free Bike Check
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveMode("scout")}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition md:min-w-[190px] ${
-                  activeMode === "scout" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"
-                }`}
-              >
-                Bike Scout Waitlist
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {activeMode === "free" ? (
-          <>
-            <section id="free-analyzer" className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-panel md:p-6">
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-800">
-                      Free now
-                    </span>
-                    <span className="text-sm font-semibold text-slate-600">Analyze one listing at a time</span>
-                  </div>
-                  <h2 className="mt-4 text-2xl font-bold text-slate-900">Free Bike Check</h2>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                    Use the current MVP flow to check one used-bike listing at a time with fit, value, and safety guidance before you message the seller.
-                  </p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {[
-                      "Screenshot, link, pasted text, or manual entry",
-                      "Bike fit and wheel size guidance",
-                      "Value and safety checks",
-                      "Seller questions and message help",
-                    ].map((item) => (
-                      <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <aside className="rounded-3xl border border-blue-100 bg-[linear-gradient(180deg,#eff6ff_0%,#ffffff_100%)] p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Coming next</p>
-                  <h3 className="mt-2 text-xl font-bold text-slate-900">Mandy Bike Scout</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Planned paid feature: about $2.99/week. Join the waitlist for early access before payment or alerts go live.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => switchMode("scout", "bike-scout-details")}
-                    className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-bold text-white"
-                  >
-                    Join Bike Scout waitlist
-                  </button>
-                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    No payment is collected now.
-                  </p>
-                </aside>
-              </div>
-            </section>
-
-            <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-panel md:p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">How it works</h2>
-                  <p className="mt-1 text-sm text-slate-600">A simple 4-step flow for busy parents.</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                  AI extraction still stays behind existing daily limits.
-                </div>
-              </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <HowItWorksCard icon="1" title="Tell us about your rider" copy="Add height, age, and riding experience so we can estimate the right size and style." />
-                <HowItWorksCard icon="2" title="Add the bike you found" copy="Upload a screenshot, paste a listing link, or enter details manually." />
-                <HowItWorksCard icon="3" title="Double-check details" copy="Review price, wheel size, condition, and description before analysis." />
-                <HowItWorksCard icon="4" title="Get a recommendation" copy="See fit, value, and practical things to check before pickup." />
-              </div>
-            </section>
-
-            <details className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-slate-700 shadow-panel">
-              <summary className="cursor-pointer list-none font-semibold text-slate-900">
-                What this tool can and cannot do
-              </summary>
-              <p className="mt-3">
-                This tool gives a practical parent-friendly recommendation from available listing details. Used bikes still need a real-world check:
-                fit, brakes, tires, rust, and how comfortable your child feels during a test ride. AI extraction can miss details, and some marketplace pages are not directly readable. Manual edits are expected and welcome.
-              </p>
-            </details>
-
-            <section className="mb-5 rounded-lg border border-slate-200 bg-white p-3 shadow-panel md:p-4">
+        <>
+            <section id="free-analyzer" className="mb-5 rounded-lg border border-slate-200 bg-white p-3 shadow-panel md:p-4">
               <div className="grid gap-2 md:grid-cols-4">
                 <FlowStepButton
                   step="1"
-                  title="Rider"
-                  status={canContinueFromRider ? "Ready" : "Start here"}
-                  active={activeFreeStep === "rider"}
-                  complete={canContinueFromRider}
-                  onClick={() => setActiveFreeStep("rider")}
+                  title="Listing"
+                  status={canContinueFromListing ? "Details added" : "Start here"}
+                  active={activeFreeStep === "listing"}
+                  complete={canContinueFromListing}
+                  onClick={() => setActiveFreeStep("listing")}
                 />
                 <FlowStepButton
                   step="2"
-                  title="Listing"
-                  status={canContinueFromListing ? "Details added" : "Add a bike"}
-                  active={activeFreeStep === "listing"}
-                  complete={canContinueFromListing}
-                  disabled={!canContinueFromRider}
-                  onClick={() => setActiveFreeStep("listing")}
+                  title="Child info"
+                  status={canContinueFromRider ? "Fit ready" : "Add height"}
+                  active={activeFreeStep === "rider"}
+                  complete={canContinueFromRider}
+                  onClick={() => setActiveFreeStep("rider")}
                 />
                 <FlowStepButton
                   step="3"
@@ -858,8 +746,8 @@ export default function Home() {
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="grid gap-5">
             <section className={`${activeFreeStep === "rider" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
-              <SectionTitle step="1" title="Tell us about your rider" />
-              <p className="mb-4 text-sm text-slate-600">Height, age, and riding confidence help us estimate the right wheel size and bike style.</p>
+              <SectionTitle step="2" title="Add your child info" />
+              <p className="mb-4 text-sm text-slate-600">Height and riding confidence help estimate the right wheel size. Optional preferences stay tucked away.</p>
               {savedRiderProfile && (
                 <div className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -908,15 +796,6 @@ export default function Home() {
               <Field label="Age" required>
                 <input className={inputClass} type="number" placeholder="Age" value={child.age} onChange={(e) => setChild({ ...child, age: e.target.value })} />
               </Field>
-              <Field label="Weight" optional>
-                <div className="grid grid-cols-[110px_1fr] gap-2">
-                  <select className={inputClass} value={weightUnit} onChange={(e) => setWeightUnit(e.target.value as "lb" | "kg")}>
-                    <option value="lb">lb</option>
-                    <option value="kg">kg</option>
-                  </select>
-                  <input className={inputClass} type="number" placeholder="Weight value" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} />
-                </div>
-              </Field>
               <Field label="Riding experience" required>
                 <select className={inputClass} value={child.experience} onChange={(e) => setChild({ ...child, experience: e.target.value as ChildProfile["experience"] })}>
                   <option value="beginner">Beginner</option>
@@ -925,27 +804,41 @@ export default function Home() {
                   <option value="advanced">Advanced</option>
                 </select>
               </Field>
-              <Field label="Style preference" optional>
-                <select className={inputClass} value={child.stylePreference} onChange={(e) => setChild({ ...child, stylePreference: e.target.value })}>
-                  <option value="all good / no preference">All good / no preference</option>
-                  <option value="boy-style">Boy-style</option>
-                  <option value="girl-style">Girl-style</option>
-                </select>
-              </Field>
-              <div className="md:col-span-2">
-                <Field label="Color preference" optional>
-                  <div className="grid gap-2 rounded-md border border-slate-300 bg-slate-50 p-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {colorPreferenceOptions.map((option) => (
-                      <ColorPreferenceChip
-                        key={option}
-                        option={option}
-                        selected={child.colorPreferences.includes(option)}
-                        onClick={() => toggleColorPreference(option)}
-                      />
-                    ))}
+              <details className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                <summary className="cursor-pointer text-sm font-bold text-slate-800">Advanced options</summary>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <Field label="Weight" optional>
+                    <div className="grid grid-cols-[110px_1fr] gap-2">
+                      <select className={inputClass} value={weightUnit} onChange={(e) => setWeightUnit(e.target.value as "lb" | "kg")}>
+                        <option value="lb">lb</option>
+                        <option value="kg">kg</option>
+                      </select>
+                      <input className={inputClass} type="number" placeholder="Weight value" value={weightInput} onChange={(e) => setWeightInput(e.target.value)} />
+                    </div>
+                  </Field>
+                  <Field label="Style preference" optional>
+                    <select className={inputClass} value={child.stylePreference} onChange={(e) => setChild({ ...child, stylePreference: e.target.value })}>
+                      <option value="all good / no preference">All good / no preference</option>
+                      <option value="boy-style">Boy-style</option>
+                      <option value="girl-style">Girl-style</option>
+                    </select>
+                  </Field>
+                  <div className="md:col-span-2">
+                    <Field label="Color preference" optional>
+                      <div className="grid gap-2 rounded-md border border-slate-300 bg-white p-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {colorPreferenceOptions.map((option) => (
+                          <ColorPreferenceChip
+                            key={option}
+                            option={option}
+                            selected={child.colorPreferences.includes(option)}
+                            onClick={() => toggleColorPreference(option)}
+                          />
+                        ))}
+                      </div>
+                    </Field>
                   </div>
-                </Field>
-              </div>
+                </div>
+              </details>
               </div>
               <div className="mt-5 grid gap-2">
                 <button
@@ -954,7 +847,7 @@ export default function Home() {
                   disabled={!hasHeight || !hasAgeForRecommendation || !hasExperience}
                   className="min-h-14 rounded-md bg-brand px-5 text-left text-base font-bold text-white shadow-panel transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Find the best bike fit
+                  Update fit guidance
                 </button>
                 {(!hasHeight || !hasAgeForRecommendation || !hasExperience) && (
                   <p className="text-sm text-slate-600">Enter height, age, and riding experience to get a bike recommendation.</p>
@@ -1038,8 +931,8 @@ export default function Home() {
             </section>
 
             <section className={`${activeFreeStep === "listing" || activeFreeStep === "review" ? "block" : "hidden"} rounded-lg border border-line bg-white p-5 shadow-panel`}>
-            <SectionTitle step="3" title="Add the bike you found" />
-            <p className="mb-4 text-sm text-slate-600">Marketplace pages can be tricky. Screenshots and pasted listing text often give the best results.</p>
+            <SectionTitle step="1" title="Add the bike listing" />
+            <p className="mb-4 text-sm text-slate-600">Upload a screenshot, paste listing text, or enter the bike details manually.</p>
             <div className="mb-4 grid grid-cols-3 gap-2">
               {["screenshot", "link", "manual"].map((mode) => (
                 <button key={mode} type="button" onClick={() => handleInputModeChange(mode)} className={`min-h-11 rounded-md border font-bold ${inputMode === mode ? "border-brand bg-brand text-white" : "border-line bg-slate-50"}`}>
@@ -1224,7 +1117,7 @@ export default function Home() {
 
             <details className={`${activeFreeStep === "review" || (activeFreeStep === "listing" && inputMode === "manual") ? "block" : "hidden"} rounded-2xl border border-slate-200 bg-slate-50/70 p-4`} open>
               <summary className="cursor-pointer list-none">
-                <SectionTitle step="4" title="Double-check the listing details" />
+                <SectionTitle step="4" title="Review listing details" />
                 <p className="mt-2 text-sm text-slate-600">AI can miss details, especially from screenshots, so please adjust anything that looks wrong.</p>
               </summary>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -1267,7 +1160,7 @@ export default function Home() {
           <aside className="grid gap-4 xl:sticky xl:top-6 xl:self-start">
             <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Session snapshot</p>
-              <h3 className="mt-2 text-lg font-bold text-slate-900">Your bike check so far</h3>
+              <h3 className="mt-2 text-lg font-bold text-slate-900">Your AI bike check so far</h3>
               <p className="mt-2 text-sm text-slate-600">
                 Mandy checks rider fit, wheel size, value, condition, and seller follow-up questions from the details you provide.
               </p>
@@ -1289,7 +1182,7 @@ export default function Home() {
               ) : needsProfileRecommendationRerun ? (
                 <p className="mt-2 text-sm text-amber-700">Your rider details changed. Re-run bike fit to refresh this summary.</p>
               ) : (
-                <p className="mt-2 text-sm text-slate-600">Step 1 stays open by default. Enter height, age, and riding experience, then use “Find the best bike fit.”</p>
+                <p className="mt-2 text-sm text-slate-600">Step 1 stays open by default. Enter child info, then refresh fit guidance before checking the listing.</p>
               )}
             </section>
 
@@ -1314,18 +1207,6 @@ export default function Home() {
               )}
             </section>
 
-            <section className="rounded-lg border border-blue-100 bg-blue-50/70 p-5 shadow-panel">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Planned paid feature</p>
-              <h3 className="mt-2 text-lg font-bold text-slate-900">Mandy Bike Scout</h3>
-              <p className="mt-2 text-sm text-slate-600">Waitlist-first MVP. Planned price: about $2.99/week. No payment is collected now.</p>
-              <button
-                type="button"
-                onClick={() => switchMode("scout", "bike-scout-details")}
-                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 text-sm font-bold text-brand shadow-sm"
-              >
-                Join Bike Scout waitlist
-              </button>
-            </section>
           </aside>
           <div className={`${activeFreeStep === "review" || activeFreeStep === "result" ? "grid" : "hidden"} gap-2`}>
             <button
@@ -1333,7 +1214,7 @@ export default function Home() {
               type="submit"
               disabled={!canAnalyze}
             >
-              Evaluate this bike
+              Check this bike
             </button>
             {!canAnalyze && <p className="text-sm text-slate-600">{analyzeDisabledReason}</p>}
             {canAnalyze && (
@@ -1462,8 +1343,6 @@ export default function Home() {
             </div>
           </section>
             ) : null}
-          </>
-        ) : (
           <section id="bike-scout-details" className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-panel">
           <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#e0f2fe_0%,#ffffff_38%,#fef3c7_100%)] px-5 py-6 md:px-6">
             <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -1919,7 +1798,15 @@ export default function Home() {
             </article>
           </div>
           </section>
-        )}
+          <details className="mt-6 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-700 shadow-panel">
+            <summary className="cursor-pointer list-none font-semibold text-slate-900">
+              What this AI check can and cannot do
+            </summary>
+            <p className="mt-3">
+              AI can help screen listings, but always check fit, brakes, tires, rust, and condition in person.
+            </p>
+          </details>
+        </>
       </section>
     </main>
   );
@@ -1943,9 +1830,9 @@ function BikeSizeRecommendation({ child }: { child: ChildProfile }) {
 
 function InfoLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-blue-100 bg-white px-3 py-2">
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+    <div className="rounded-input border border-line bg-white px-3 py-2">
+      <p className="text-xs font-bold uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-ink">{value}</p>
     </div>
   );
 }
@@ -1978,18 +1865,18 @@ function FlowStepButton({
   onClick: () => void;
 }) {
   const tone = active
-    ? "border-brand bg-blue-50 text-slate-950 shadow-sm"
+    ? "border-brand bg-surface-blue text-ink shadow-sm"
     : complete
-      ? "border-emerald-200 bg-emerald-50 text-emerald-950"
-      : "border-slate-200 bg-slate-50 text-slate-600";
+      ? "border-emerald-200 bg-surface-green text-emerald-950"
+      : "border-line bg-white text-slate-600";
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex min-h-20 items-center gap-3 rounded-md border p-3 text-left transition disabled:cursor-not-allowed disabled:opacity-55 ${tone}`}
+      className={`flex min-h-20 items-center gap-3 rounded-card border p-3 text-left transition hover:shadow-panel disabled:cursor-not-allowed disabled:opacity-55 ${tone}`}
     >
-      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${active ? "bg-brand text-white" : complete ? "bg-emerald-600 text-white" : "bg-white text-slate-500"}`}>
+      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${active ? "bg-brand text-white" : complete ? "bg-good text-white" : "bg-slate-100 text-muted"}`}>
         {complete ? "OK" : step}
       </span>
       <span className="min-w-0">
@@ -2330,10 +2217,10 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
   };
 }
 
-const inputClass = "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-ink outline-brand/20 focus:border-brand focus:outline";
+const inputClass = "w-full rounded-input border border-line bg-white px-3 py-2 text-ink outline-brand/20 transition placeholder:text-muted focus:border-brand focus:outline";
 
 function SectionTitle({ step, title }: { step: string; title: string }) {
-  return <div className="mb-4 mt-2 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-brand font-bold text-white">{step}</span><h2 className="text-lg font-bold">{title}</h2></div>;
+  return <div className="mb-4 mt-2 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-brand font-bold text-white">{step}</span><h2 className="text-lg font-bold text-ink">{title}</h2></div>;
 }
 
 function Field({
