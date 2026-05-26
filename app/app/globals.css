@@ -29,10 +29,15 @@
   --shadow-soft: 0 18px 48px rgba(47, 111, 237, 0.12);
 }
 
+html {
+  background: #f4f7f9;
+}
+
 body {
   min-width: 320px;
   background: var(--color-bg);
   color: var(--color-text);
+  overscroll-behavior-y: none;
 }
 
 button,
@@ -40,4 +45,20 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .app-safe-shell {
+    padding-top: max(1.25rem, env(safe-area-inset-top));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  .app-safe-top {
+    top: env(safe-area-inset-top);
+  }
 }

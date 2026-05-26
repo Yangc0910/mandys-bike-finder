@@ -174,6 +174,89 @@ Then open:
 
 - `http://localhost:3000/`
 
+### App Store MVP Preview
+
+The App Store MVP surface is hidden by default so the existing web MVP remains unchanged. The mode flag is:
+
+- `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`
+
+#### Local Preview
+
+Windows PowerShell:
+
+```powershell
+cd app
+$env:NEXT_PUBLIC_APP_STORE_MVP_MODE="true"
+npm run dev
+```
+
+Mac/Linux:
+
+```bash
+cd app
+NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm run dev
+```
+
+Then open:
+
+- `http://localhost:3000/`
+
+You should see the four-tab App Store MVP shell: `Profile`, `Evaluate`, `History`, and `Settings`.
+
+#### Vercel Preview
+
+To preview this mode on Vercel:
+
+1. Add `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` to the Vercel Preview environment.
+2. Redeploy the preview deployment after changing the environment variable.
+3. Open the Vercel Preview URL and confirm the four-tab app shell appears.
+
+Because this is a `NEXT_PUBLIC_` variable, it is compiled into the client bundle at build time. Changing it requires a new build/deploy.
+
+#### Hosted App Store URL
+
+The intended future App Store/TestFlight URL is:
+
+- `https://app.mandysbikefinder.com/`
+
+Keep `https://www.mandysbikefinder.com/` on the default web MVP surface. Do not set `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` on a deployment that also serves `www.mandysbikefinder.com`.
+
+Current setup note: `app.mandysbikefinder.com` still needs its isolated Vercel deployment/domain configuration before Capacitor is added. See `docs/product/hosted-app-store-mvp-url-qa.md`.
+
+#### Default Web MVP Regression Check
+
+To check the default web MVP mode, unset the flag or set it to `false` before starting dev.
+
+Windows PowerShell:
+
+```powershell
+cd app
+$env:NEXT_PUBLIC_APP_STORE_MVP_MODE="false"
+npm run dev
+```
+
+Mac/Linux:
+
+```bash
+cd app
+NEXT_PUBLIC_APP_STORE_MVP_MODE=false npm run dev
+```
+
+In default web MVP mode, you should see the existing long web flow. The App Store bottom tab shell should not appear.
+
+#### Manual Smoke Checklist
+
+- Profile can save, reload, edit, and clear a child profile.
+- Evaluate can accept screenshot preview, link/text reference, or manual listing details.
+- Evaluate only runs analysis after the user taps the local evaluate action.
+- A result can be saved to History.
+- History can show, favorite/unfavorite, view, and delete saved evaluations.
+- Settings can clear child profile, history, and all App Store MVP local data.
+- Initial load should not call OpenAI or an LLM; the expected initial API request is `/api/status`.
+- Default web MVP mode still loads and the App Store tab shell stays hidden.
+
+App Store MVP mode includes Profile, Evaluate, History, and Settings with local profile/history storage and local fallback analysis. It intentionally hides or defers email report, PDF export, Bike Scout, waitlist, payment, account/login, push notifications, and marketplace automation.
+
 Current verification note:
 
 - Run checks from `/app` when Node.js/npm is available:
