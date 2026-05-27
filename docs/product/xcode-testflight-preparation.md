@@ -38,6 +38,12 @@ Validation already completed on Windows:
 - `NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm.cmd run build`: passed.
 - `npm.cmd run cap:doctor`: reaches expected Windows blocker: Xcode is not installed.
 
+GitHub handoff status:
+
+- Capacitor iOS baseline was pushed to `origin/main` at commit `3cacd08`.
+- Post-push hosted sanity check confirmed `https://app.mandysbikefinder.com/` still opens App Store MVP mode.
+- Post-push `www` regression check confirmed `https://www.mandysbikefinder.com/` still opens the default web MVP.
+
 ## Security And Privacy Static Check
 
 Current native project check:
