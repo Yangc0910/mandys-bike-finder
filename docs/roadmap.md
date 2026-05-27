@@ -133,13 +133,17 @@ Hosted App Store MVP URL decision:
 - Keep `https://www.mandysbikefinder.com/` as the public web MVP surface.
 - Use a separate App Store-facing hosted URL for Capacitor/TestFlight.
 - Preferred production App Store URL: `https://app.mandysbikefinder.com/` with `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`.
-- Acceptable first TestFlight fallback: a stable Vercel Preview/staging URL built with `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`.
-- Do not add Capacitor until the exact hosted URL is chosen and the hosted URL QA checklist passes.
+- Current isolated app-project preview URL: `https://mandys-bike-finder-app.vercel.app/`.
+- Acceptable first TestFlight fallback: a stable Vercel Preview/staging or isolated `.vercel.app` URL built with `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`.
+- Configure Capacitor to load `https://app.mandysbikefinder.com/`.
 - Detailed checklist: `docs/product/hosted-app-store-mvp-url-qa.md`.
-- Current Vercel inspection found `www.mandysbikefinder.com` on the existing `mandys-bike-finder` project and confirmed `app.mandysbikefinder.com` is not configured yet.
-- Next deployment task: create a separate App Store MVP Vercel project or otherwise configure a guaranteed isolated app-facing deployment before adding Capacitor.
-- Direct setup through the current workspace is blocked because no write-capable Vercel CLI/token/tool is available; manual Vercel setup is required unless write access is provided later.
-- Reconnecting the Vercel app did not expose safe project/env/domain write tools; do not proceed to Capacitor until the app project/domain is configured manually or write access is provided.
+- Live QA on 2026-05-26 confirmed `https://mandys-bike-finder-app.vercel.app/` loads the App Store MVP tab shell by default and `https://www.mandysbikefinder.com/` remains the default web MVP.
+- Final hosted URL QA on 2026-05-26 confirmed `https://app.mandysbikefinder.com/` is live over HTTPS, opens App Store MVP mode by default, and keeps `www` unaffected.
+- Hosted URL blocker is cleared.
+- `[Infra] Add Capacitor Dependencies And Config` is complete with hosted URL `https://app.mandysbikefinder.com`.
+- `[Infra] Generate Capacitor iOS Project And Validate Xcode Open` generated `app/ios/` and completed `cap sync`; Xcode validation remains pending on macOS.
+- Xcode/TestFlight preparation checklist: `docs/product/xcode-testflight-preparation.md`.
+- Next implementation task: `[Build] Xcode And TestFlight Preparation Pass`.
 
 Initial App Store readiness tasks:
 

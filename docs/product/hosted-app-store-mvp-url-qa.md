@@ -1,7 +1,7 @@
 # Hosted App Store MVP URL QA
 
-Status: Deployment planning decision  
-Last updated: 2026-05-25
+Status: Final hosted App Store MVP URL live
+Last updated: 2026-05-26
 
 ## Decision
 
@@ -277,6 +277,88 @@ DNS note:
 - Do not claim DNS is complete until Vercel marks `app.mandysbikefinder.com` as verified.
 - During this inspection, `app.mandysbikefinder.com` did not resolve.
 
+## Final Hosted URL Live QA Result
+
+Inspection date: 2026-05-26
+
+Final URL decision:
+
+- Use `https://app.mandysbikefinder.com/` as the formal hosted URL for Capacitor iOS shell and TestFlight planning.
+- Keep `https://www.mandysbikefinder.com/` as the public web MVP.
+
+Domain and deployment checks:
+
+- Public DNS resolvers resolve `app.mandysbikefinder.com` to Vercel via `cname.vercel-dns.com`.
+- HTTPS to `https://app.mandysbikefinder.com/` returns `200`.
+- TLS verification passed during curl validation.
+- The page opens directly into the App Store MVP four-tab shell.
+- `https://www.mandysbikefinder.com/` still returns `200` and remains the default web MVP surface.
+
+Routes checked:
+
+| URL | Result |
+| --- | --- |
+| `https://app.mandysbikefinder.com/` | `200`; App Store MVP mode active; `Profile`, `Evaluate`, `History`, and `Settings` visible; default web MVP marketing/long page not shown. |
+| `https://app.mandysbikefinder.com/privacy` | `200`; privacy page reachable. |
+| `https://app.mandysbikefinder.com/offline` | `200`; offline page reachable. |
+| `https://app.mandysbikefinder.com/api/status` | `200`; status endpoint reachable on same origin. |
+| `https://www.mandysbikefinder.com/` | `200`; default public web MVP remains active and does not show the App Store tab shell. |
+
+Functional smoke:
+
+- Profile local save and reload persistence passed in headless browser smoke.
+- Evaluate manual entry with a saved child profile generated a local fallback result and exposed `Save to History`.
+- Save to History wrote the result to `mbf.appStore.savedEvaluations`.
+- Settings privacy/AI/marketplace disclosure was visible.
+- Settings `Clear child profile`, `Clear history`, and `Clear all local data` cleared the scoped App Store MVP localStorage keys.
+
+Security/API checks:
+
+- No OpenAI/LLM request was intentionally triggered.
+- `/api/status` is same-origin under `app.mandysbikefinder.com`.
+- App Store MVP UI did not show email report, PDF export, Bike Scout, waitlist, payment, account/login, push, or marketplace automation surfaces.
+- Client-bundle scan found no `api.openai.com`, `OPENAI_API_KEY`, `NEXT_PUBLIC_OPENAI`, `RESEND_API_KEY`, `NEXT_PUBLIC_RESEND`, or likely OpenAI/Resend secret value patterns.
+- User-provided link/text/screenshot behavior remains framed as local reference/preview; no automatic marketplace scraping was observed or exposed.
+
+Decision:
+
+- Hosted URL blocker is cleared for `[Infra] Add Capacitor Dependencies And Config`.
+- Continue using `https://app.mandysbikefinder.com/` for iOS wrapper configuration unless a later deployment strategy intentionally changes it.
+- Capacitor hosted config has been added in `app/capacitor.config.ts`.
+- Native iOS platform files have been generated in `app/ios/`; Xcode validation remains a macOS follow-up.
+
+## Previous App Project Preview QA Result
+
+Inspection date: 2026-05-26
+
+Code state:
+
+- `origin/main` is at `9729d72`.
+- The connected Vercel MCP timed out during deployment metadata inspection, so the deployment commit could not be confirmed from Vercel metadata in this workspace.
+- The live app-project response shows the App Store MVP four-tab surface, which indicates the deployed build includes the App Store MVP mode work rather than the older default-only web MVP.
+
+URLs tested:
+
+| URL | Result |
+| --- | --- |
+| `https://mandys-bike-finder-app.vercel.app/` | `200`; App Store MVP mode is active; `Profile`, `Evaluate`, `History`, and `Settings` are visible; default web marketing/long page is not shown. |
+| `https://mandys-bike-finder-app.vercel.app/privacy` | `200`; privacy page reachable. |
+| `https://mandys-bike-finder-app.vercel.app/offline` | `200`; offline page reachable. |
+| `https://app.mandysbikefinder.com/` | DNS did not resolve; custom app domain is not live yet. |
+| `https://www.mandysbikefinder.com/` | `200`; default public web MVP remains active and does not show the App Store tab shell. |
+
+API and security checks:
+
+- `https://mandys-bike-finder-app.vercel.app/api/status` returns `200`.
+- App-project `/api/status` reports `emailReportEnabled=false`, `resendConfigured=false`, and `appBaseUrlConfigured=false`, which is acceptable for the local-first App Store MVP preview but should be reviewed before enabling optional server features.
+- Static client-bundle scan found no `api.openai.com`, `OPENAI_API_KEY`, `NEXT_PUBLIC_OPENAI`, `RESEND_API_KEY`, `NEXT_PUBLIC_RESEND`, or likely OpenAI/Resend secret value patterns.
+- The app-project client bundle does include inert default-web code strings such as Bike Scout/platform automation notes, but those surfaces were not visible in the App Store MVP UI.
+
+Functional smoke status:
+
+- Headless browser DOM check confirmed the App Store MVP shell renders as the first surface.
+- Full interactive localStorage QA should be repeated manually or with browser automation against the final URL before Capacitor, especially Profile save/reload, Evaluate local result, Save to History, favorite/delete, and Settings clear controls.
+
 ## Current Hosted URL Decision Status
 
 Final intended iOS URL:
@@ -285,8 +367,10 @@ Final intended iOS URL:
 
 Current status:
 
-- Decision made, but deployment/domain is not configured yet.
-- Do not proceed to Capacitor until the new app project/domain is live and the hosted URL QA checklist passes.
+- Decision made and live.
+- The final app domain is live at `https://app.mandysbikefinder.com/`.
+- The isolated app project preview is live at `https://mandys-bike-finder-app.vercel.app/`.
+- The hosted URL blocker is cleared for the next Capacitor setup task.
 
 ## Direct Setup Capability Check
 

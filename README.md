@@ -221,7 +221,41 @@ The intended future App Store/TestFlight URL is:
 
 Keep `https://www.mandysbikefinder.com/` on the default web MVP surface. Do not set `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` on a deployment that also serves `www.mandysbikefinder.com`.
 
-Current setup note: `app.mandysbikefinder.com` still needs its isolated Vercel deployment/domain configuration before Capacitor is added. See `docs/product/hosted-app-store-mvp-url-qa.md`.
+Current setup note: `app.mandysbikefinder.com` is the App Store MVP hosted URL for Capacitor/TestFlight planning. See `docs/product/hosted-app-store-mvp-url-qa.md`.
+
+Current live preview note:
+
+- `https://app.mandysbikefinder.com/` is live and opens directly into App Store MVP mode.
+- `https://mandys-bike-finder-app.vercel.app/` remains the underlying Vercel app-project URL.
+
+#### Capacitor iOS Wrapper Setup
+
+Capacitor dependencies and hosted-app config now live under `app/`.
+
+- Config file: `app/capacitor.config.ts`
+- App ID placeholder: `com.mandysbikefinder.app`
+- Hosted URL loaded by the iOS shell: `https://app.mandysbikefinder.com`
+- Provider secrets remain on hosted Vercel API routes and must not be added to Capacitor config.
+- Capacitor CLI currently requires Node 22+; local verification used Node 24.
+
+Useful commands:
+
+```powershell
+cd app
+npm.cmd run cap:doctor
+npm.cmd run cap:add:ios
+npm.cmd run cap:sync
+npm.cmd run cap:open:ios
+```
+
+Run `cap:add:ios` only when ready to generate the native iOS project files.
+
+Current native project status:
+
+- `app/ios/` has been generated with `npm.cmd run cap:add:ios`.
+- `npm.cmd run cap:sync` completed successfully.
+- `npm.cmd run cap:doctor` reaches the expected Windows blocker: Xcode is not installed. Continue Xcode validation on macOS.
+- Xcode/TestFlight checklist: `docs/product/xcode-testflight-preparation.md`.
 
 #### Default Web MVP Regression Check
 

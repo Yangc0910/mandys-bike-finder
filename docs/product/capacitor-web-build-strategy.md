@@ -1,7 +1,7 @@
 # Capacitor Web Build Strategy Validation
 
-Status: Validated for hosted-app planning  
-Last updated: 2026-05-25
+Status: iOS platform generated
+Last updated: 2026-05-26
 
 ## Decision
 
@@ -19,6 +19,18 @@ This is the lowest-risk near-term strategy for the current Next.js/Vercel codeba
 
 Do not bundle Next.js API routes into the iOS app. The iOS shell should not contain OpenAI, Resend, Salesforce, search, or other provider secrets.
 
+Current Capacitor config:
+
+- Config file: `app/capacitor.config.ts`
+- App ID placeholder: `com.mandysbikefinder.app`
+- App name: `Mandy's Bike Finder`
+- Hosted URL: `https://app.mandysbikefinder.com`
+- `webDir`: `public`, retained only as the Capacitor-required web directory while the first MVP uses hosted content.
+- Local verification used Node 24; Capacitor CLI currently requires Node 22+.
+- Native iOS project files now exist in `app/ios/`.
+- `cap sync` completed successfully.
+- `cap doctor` is blocked on Windows by missing Xcode; finish Xcode validation on macOS.
+
 ## Environment Strategy
 
 Use separate hosted URLs by stage:
@@ -34,13 +46,13 @@ Because `NEXT_PUBLIC_APP_STORE_MVP_MODE` is compiled into the client bundle, cha
 
 Recommendation:
 
-- Use a stable Vercel Preview/staging URL for early TestFlight if `app.mandysbikefinder.com` is not ready.
-- Prefer `app.mandysbikefinder.com` as the production App Store-facing URL.
+- Use `https://app.mandysbikefinder.com/` as the first Capacitor/TestFlight hosted URL.
 - Keep `www.mandysbikefinder.com` as the existing public web MVP surface.
 - Prefer a dedicated branch, Vercel environment, or app-specific domain/subdomain for the App Store MVP before public App Store submission.
 - A separate Vercel project is optional. It may reduce deployment mix-ups, but it adds environment-management overhead. A dedicated branch/environment is enough for the first validation pass if env values are carefully separated.
 
 Detailed hosted URL QA and Vercel setup instructions live in `docs/product/hosted-app-store-mvp-url-qa.md`.
+Xcode/TestFlight preparation details live in `docs/product/xcode-testflight-preparation.md`.
 
 ## API Routing Strategy
 
@@ -139,20 +151,16 @@ Before adding Capacitor dependencies, verify:
 - No secrets appear in client code or client-visible env vars.
 - Default web MVP remains available when `NEXT_PUBLIC_APP_STORE_MVP_MODE` is false or unset.
 
-## Blockers Before Adding Capacitor
+## Remaining Checks Before TestFlight
 
-Required before `[Infra] Add Capacitor Dependencies And Config`:
+Required after `[Infra] Add Capacitor Dependencies And Config` and before TestFlight:
 
-- Decide the exact hosted URL for the first iOS wrapper.
-- Decide whether TestFlight points to Vercel Preview, staging, or production.
-- Prefer `https://app.mandysbikefinder.com/` for the production App Store shell.
 - Avoid pointing the iOS shell at `https://www.mandysbikefinder.com/` while that domain remains the public web MVP.
-- Confirm `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` on the iOS-facing hosted deployment.
-- Confirm no client-visible secrets in the deployed bundle.
+- Confirm no client-visible secrets in the deployed bundle after any Capacitor config changes.
 - Finalize App Store Review Notes wording for hosted API architecture.
 - Confirm production app icon and launch/splash asset plan.
 - Finalize `/privacy` contact placeholder before submission.
-- Run one final mobile QA pass against the hosted App Store MVP URL.
+- Test screenshot upload/preview behavior in the actual iOS WebView.
 
 Recommended but not blocking for the first wrapper spike:
 
@@ -162,29 +170,30 @@ Recommended but not blocking for the first wrapper spike:
 
 ## Proceed / Wait Decision
 
-Proceed to Capacitor only after the hosted URL and environment target are chosen.
+Proceed to Capacitor now that the hosted URL and environment target are chosen.
 
-The hosted Vercel strategy is acceptable for the first Capacitor MVP. However, adding Capacitor before choosing the exact hosted URL would create avoidable iOS config churn.
+The hosted Vercel strategy is acceptable for the first Capacitor MVP. Configure the iOS shell to load `https://app.mandysbikefinder.com/`.
 
 Recommended next task:
 
-> `[Infra] Add Capacitor Dependencies And Config` after confirming the TestFlight hosted URL, or `[Build] Hosted App Store MVP URL QA` if the hosted deployment target is not yet fixed.
+> `[Build] Xcode And TestFlight Preparation Pass`
 
 ## Hosted URL QA Result
 
-Inspection date: 2026-05-25
+Inspection date: 2026-05-26
 
 Result:
 
-- Existing Vercel project found: `mandys-bike-finder`.
-- Existing production domains include `www.mandysbikefinder.com` and `mandysbikefinder.com`.
+- `https://app.mandysbikefinder.com/` is live over HTTPS and opens directly into the App Store MVP shell.
 - `https://www.mandysbikefinder.com/` currently loads the default web MVP surface.
-- `app.mandysbikefinder.com` is not configured yet and DNS did not resolve during inspection.
-- No Vercel changes were made because the available connected tools did not expose safe project/env/domain write operations.
+- `/privacy`, `/offline`, and `/api/status` are reachable from the app domain.
+- Profile local save, local fallback evaluation, Save to History, and Settings local data controls passed hosted URL smoke checks.
+- Client-bundle scan found no OpenAI/Resend provider secret exposure.
+- Capacitor iOS platform files have been generated and synced.
 
 Decision:
 
 - Keep `www.mandysbikefinder.com` unchanged for the public web MVP.
-- Create a separate Vercel project for `app.mandysbikefinder.com` if possible.
-- Add `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` only to the App Store MVP project/deployment.
-- Do not proceed to Capacitor until `https://app.mandysbikefinder.com/` is live and opens directly into the four-tab App Store MVP shell.
+- Use `https://app.mandysbikefinder.com/` for the Capacitor iOS shell.
+- Capacitor dependencies and hosted config have been added under `app/`.
+- Proceed to Xcode signing/build validation on macOS.

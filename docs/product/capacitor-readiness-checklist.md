@@ -1,7 +1,7 @@
 # Capacitor iOS Wrapper Readiness Checklist
 
-Status: Pre-implementation technical planning  
-Last updated: 2026-05-25
+Status: iOS platform generated; Xcode validation pending
+Last updated: 2026-05-26
 
 ## Purpose
 
@@ -11,7 +11,7 @@ This checklist decides whether Mandy's Bike Finder App Store MVP is ready to ent
 
 | Area | Current status | Notes |
 | --- | --- | --- |
-| App Store MVP mode | Ready for pre-Capacitor QA | Enabled with `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`. Default web MVP remains available when the flag is false/unset. |
+| App Store MVP mode | Ready | Enabled with `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`. `https://app.mandysbikefinder.com/` currently shows the four-tab App Store MVP surface. Default web MVP remains available on `www`. |
 | Environment flag clarity | Ready | README now includes local and Vercel Preview instructions for the flag. |
 | App shell | Mostly ready | Four tabs exist: `Profile`, `Evaluate`, `History`, `Settings`. Bottom nav and safe-area-aware spacing are implemented. |
 | Mobile friendliness | Ready for next QA pass | 390px smoke checks have passed in prior QA. Continue checking real iPhone sizes before TestFlight. |
@@ -22,13 +22,16 @@ This checklist decides whether Mandy's Bike Finder App Store MVP is ready to ent
 | Settings data controls | Ready | App Store MVP Settings can clear child profile, history, and all App Store MVP local data. |
 | Initial load AI behavior | Ready by current QA | Initial load has been verified to use `/api/status` only; no OpenAI/LLM call observed. |
 | Server-side API boundary | Ready conceptually | OpenAI/Resend/provider keys remain server-side. App Store MVP uses local fallback analysis and no client provider keys. |
-| Default web MVP | Ready | App Store MVP mode is isolated behind the flag; existing web MVP remains available. |
+| Default web MVP | Ready | `https://www.mandysbikefinder.com/` still shows the default web MVP and not the App Store tab shell. |
 | App Store metadata | Draft ready | `docs/product/app-store-listing-metadata.md` exists. |
 | App Review notes | Draft ready | Metadata and privacy docs include no-account, no-payment, no-scraping, optional-AI notes. |
+| Capacitor dependencies/config | Added | `@capacitor/core`, `@capacitor/ios`, and `@capacitor/cli` are installed under `app/`; `app/capacitor.config.ts` points the shell at `https://app.mandysbikefinder.com`. |
+| iOS platform files | Generated | `app/ios/` exists. `cap add ios` and `cap sync` completed successfully. |
+| Xcode validation | Pending on macOS | `cap doctor` fails on Windows because Xcode is not installed. This is expected and must be completed on macOS. |
 
 Readiness summary:
 
-> The product is ready for a Capacitor planning spike and iOS wrapper checklist execution, but not yet ready for adding Capacitor dependencies until API base URL strategy, icon/splash assets, iOS identity, and final App Review privacy details are decided.
+> The hosted URL blocker is cleared, Capacitor dependencies/config are in place, and native iOS project files have been generated. The next implementation step is macOS/Xcode validation and TestFlight preparation.
 
 ## Hosted Web Build Strategy Validation
 
@@ -51,6 +54,7 @@ Validation findings:
 
 The detailed validation lives in `docs/product/capacitor-web-build-strategy.md`.
 Hosted URL QA and Vercel setup instructions live in `docs/product/hosted-app-store-mvp-url-qa.md`.
+Xcode/TestFlight preparation details live in `docs/product/xcode-testflight-preparation.md`.
 
 ## Capacitor Architecture Recommendation
 
@@ -196,6 +200,11 @@ Risks:
 - Pulling native project complexity into the repo too early.
 - Misconfiguring hosted URL or asset path.
 
+Status:
+
+- Complete. `app/capacitor.config.ts` uses `https://app.mandysbikefinder.com` as the hosted URL.
+- Native iOS project files have been generated in `app/ios/`.
+
 ### 2. `[Infra] Configure iOS App Identity And Bundle ID Placeholder`
 
 Scope:
@@ -309,35 +318,40 @@ And manually verify:
 
 ## Decision
 
-Do not add Capacitor immediately in this task.
+Capacitor dependencies and hosted config are now added. Native iOS project generation remains separate.
 
 Recommended next step:
 
-> Complete `[Build] Configure App Store MVP Hosted Deployment In Vercel` or choose the exact stable TestFlight URL, then proceed to `[Infra] Add Capacitor Dependencies And Config`.
-
-After that, proceed to `[Infra] Add Capacitor Dependencies And Config` only if the build strategy is clear.
+> `[Build] Xcode And TestFlight Preparation Pass`
 
 ## Hosted Deployment Status
 
-Inspection date: 2026-05-25
+Inspection date: 2026-05-26
 
 Current Vercel state:
 
-- One existing project was found: `mandys-bike-finder`.
-- That project currently serves `www.mandysbikefinder.com` and `mandysbikefinder.com`.
-- The latest production deployment is on `main` and is `READY`.
+- `origin/main` is at `9729d72`.
+- `https://app.mandysbikefinder.com/` loads successfully and shows the App Store MVP tab shell by default.
+- The isolated app-project URL `https://mandys-bike-finder-app.vercel.app/` also loads successfully.
 - `www.mandysbikefinder.com` loads the default web MVP, which should remain unchanged.
-- `app.mandysbikefinder.com` is not configured yet and DNS did not resolve.
+- The connected Vercel MCP timed out during metadata inspection, so deployment commit/state should be confirmed in the Vercel dashboard before final TestFlight configuration.
 
-Current blocker:
+Capacitor readiness decision:
 
-- Create/configure the App Store MVP hosted deployment for `https://app.mandysbikefinder.com/`.
-- Prefer a separate Vercel project so `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` cannot affect `www.mandysbikefinder.com`.
-- Add the `app` DNS record and wait for Vercel verification.
-- Redeploy with `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`.
-- Run the hosted URL QA checklist in `docs/product/hosted-app-store-mvp-url-qa.md`.
+- Hosted URL QA passed for `https://app.mandysbikefinder.com/`.
+- Public `www` regression passed.
+- Capacitor iOS platform files were generated with `cap add ios`.
+- `cap sync` completed successfully.
+- Keep provider secrets out of Capacitor config and continue using hosted Vercel API routes for protected work.
+- Complete Xcode validation on macOS before TestFlight.
 
-Do not add Capacitor until this blocker is cleared.
+Remaining non-blocking pre-TestFlight items:
+
+- Confirm deployment commit/state in the Vercel dashboard because MCP metadata inspection timed out.
+- Test screenshot file picker behavior inside the actual iOS WebView after Capacitor exists.
+- Replace Settings version placeholder with native app/build version metadata.
+- Configure Apple signing team, bundle ID, icons, launch screen, and app display metadata in Xcode.
+- Follow `docs/product/xcode-testflight-preparation.md` on macOS.
 
 Direct setup capability check:
 
