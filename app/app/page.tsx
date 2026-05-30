@@ -2252,9 +2252,11 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
   const [inputMode, setInputMode] = useState<AppStoreEvaluateInputMode>("screenshot");
   const [draftListing, setDraftListing] = useState<Listing>(defaultListing);
   const [pastedListingText, setPastedListingText] = useState("");
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [screenshotName, setScreenshotName] = useState("");
   const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
-  const [notice, setNotice] = useState("Local analysis is ready. AI extraction is not automatic; if enabled later, it must require a separate user tap.");
+  const [isExtractingScreenshot, setIsExtractingScreenshot] = useState(false);
+  const [notice, setNotice] = useState("Local analysis is ready. AI screenshot extraction only starts after you tap the AI button.");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [sellerMessage, setSellerMessage] = useState("");
 
@@ -2290,14 +2292,59 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
     setResult(null);
     setSellerMessage("");
     if (!file) {
+      setScreenshotFile(null);
       setScreenshotName("");
       setScreenshotPreviewUrl("");
       setNotice("Screenshot removed. You can still paste text or enter details manually.");
       return;
     }
+    setScreenshotFile(file);
     setScreenshotName(file.name);
     setScreenshotPreviewUrl(URL.createObjectURL(file));
     setNotice("Screenshot attached for local preview only. No AI or server processing started.");
+  }
+
+  async function extractScreenshotWithAI() {
+    if (!screenshotFile) {
+      setNotice("Choose a screenshot first, then tap AI extraction.");
+      return;
+    }
+    if (screenshotFile.size > 5 * 1024 * 1024) {
+      setNotice("Screenshot file is too large. Please upload an image under 5 MB.");
+      return;
+    }
+    if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(screenshotFile.type)) {
+      setNotice("AI extraction supports jpg, jpeg, png, and webp screenshots. You can still enter details manually.");
+      return;
+    }
+
+    setIsExtractingScreenshot(true);
+    setNotice("Sending this screenshot to the server-side AI extraction service. Review the fields after it returns.");
+    try {
+      const prepared = await prepareScreenshotForExtraction(screenshotFile);
+      const response = await apiPost("/api/extract", {
+        imageDataUrl: prepared.dataUrl,
+        imageMimeType: prepared.mimeType,
+        imageSizeBytes: prepared.sizeBytes,
+      });
+      const fields = response?.result?.fields as Partial<Listing> | undefined;
+      if (fields && Object.keys(compactFields(fields)).length) {
+        setDraftListing((current) => ({ ...current, ...compactFields(fields) }));
+        setResult(null);
+        setSellerMessage("");
+        setNotice(
+          response?.fallback
+            ? response?.statusMessage || "AI extraction was unavailable. Review any returned fields or enter details manually."
+            : `AI extracted listing details${response?.result?.confidence ? ` (${response.result.confidence} confidence)` : ""}. Review and edit anything that looks wrong.`,
+        );
+      } else {
+        setNotice(response?.statusMessage || "AI extraction could not read enough listing details. Please enter the details manually.");
+      }
+    } catch {
+      setNotice("AI extraction failed. Manual entry and local analysis are still available.");
+    } finally {
+      setIsExtractingScreenshot(false);
+    }
   }
 
   function applyPastedTextLocally() {
@@ -2370,7 +2417,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       <AppScreenHeader
         eyebrow="One listing at a time"
         title="Evaluate"
-        copy="Upload a screenshot, paste listing text, or enter details manually. This App Store MVP slice uses local guidance until the user explicitly chooses an AI action in a future pass."
+        copy="Upload a screenshot, extract listing details with explicit AI help, or enter details manually. Screenshot AI only runs after you tap the AI action."
       />
 
       {!hasProfile && (
@@ -2401,7 +2448,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
         <AppStoreInputMethodButton
           active={inputMode === "screenshot"}
           title="Upload screenshot"
-          copy="Attach an image for local preview. Selecting a file does not start AI or server processing."
+          copy="Attach an image for local preview, then tap AI extraction if you want Mandy to read visible listing details."
           onClick={() => setInputMode("screenshot")}
         />
         <AppStoreInputMethodButton
@@ -2424,7 +2471,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
           <div className="mt-4 grid gap-4">
             <label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
               <span className="text-sm font-bold text-slate-900">{screenshotName || "Choose listing screenshot"}</span>
-              <span className="mt-1 text-xs font-semibold text-slate-500">JPG, PNG, or HEIC from the system picker</span>
+              <span className="mt-1 text-xs font-semibold text-slate-500">JPG, PNG, or WEBP from the system picker</span>
               <input
                 className="sr-only"
                 type="file"
@@ -2439,7 +2486,20 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
               </div>
             )}
             <p className="text-xs font-semibold text-slate-600">
-              Choosing a screenshot only creates a local preview. Any future AI extraction must use a separate button and server-side limits.
+              Choosing a screenshot only creates a local preview. AI starts only when you tap the extraction button below.
+            </p>
+            <button
+              type="button"
+              disabled={!screenshotFile || isExtractingScreenshot}
+              onClick={extractScreenshotWithAI}
+              className={`min-h-11 rounded-md px-4 text-sm font-bold ${
+                screenshotFile && !isExtractingScreenshot ? "bg-brand text-white" : "cursor-not-allowed bg-slate-300 text-slate-600"
+              }`}
+            >
+              {isExtractingScreenshot ? "Extracting details..." : "Extract details with AI"}
+            </button>
+            <p className="text-xs font-semibold text-slate-600">
+              This sends the selected screenshot to Mandy&apos;s server-side AI extraction service. OpenAI/provider keys stay on the server, and manual entry still works if AI is off or limited.
             </p>
           </div>
         )}

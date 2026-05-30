@@ -1,7 +1,7 @@
 # App Store Tab Shell Wireframe
 
-Status: Frontend UX implementation plan  
-Last updated: 2026-05-25
+Status: Frontend UX implementation plan
+Last updated: 2026-05-30
 
 ## Goal
 
@@ -92,6 +92,7 @@ Backend / LLM:
 Purpose:
 
 - Let the user evaluate one listing against the active child profile.
+- Make screenshot OCR/extraction a first-class flow while preserving explicit user consent and editable review fields.
 
 Top header:
 
@@ -106,6 +107,7 @@ Input method cards:
    - Controls: file input, preview, remove screenshot.
    - AI action: `Extract details with AI`
    - AI note: `Only sends the screenshot after you tap this button.`
+   - Failure path: if AI is disabled, unavailable, or rate-limited, keep the screenshot preview and guide the user to manual entry.
 
 2. `Paste listing link/text`
    - Controls: listing link input, pasted text textarea.
@@ -189,6 +191,7 @@ Backend / LLM:
 
 - `/api/status` may be used for provider status.
 - AI extraction routes only run after explicit user action.
+- Screenshot OCR uses `/api/extract` with `imageDataUrl`, `imageMimeType`, and `imageSizeBytes` only after the user taps `Extract details with AI`.
 - OpenAI API key remains server-side only.
 - No LLM call on initial load.
 
@@ -368,6 +371,7 @@ App Store MVP mode behavior:
 - Hide web hero, Bike Scout, waitlist, email report, PDF/export, payment, account, push, and marketplace automation surfaces.
 - Show tab shell as the primary UI.
 - Keep local fallback analysis and explicit AI actions.
+- Treat AI screenshot OCR as a core MVP capability, not a future-only enhancement, while keeping manual entry as the guaranteed fallback.
 
 ## 3. State Model
 

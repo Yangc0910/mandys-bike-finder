@@ -32,6 +32,16 @@ Mandy's Bike Finder is a web-first MVP deployed from `/app` (Next.js App Router)
 - Daily/session usage limits enforced server-side.
 - Local fallback remains available when disabled or limited.
 
+### App Store MVP screenshot OCR boundary
+
+- Screenshot OCR/extraction is a core App Store MVP capability.
+- Screenshot file selection in the app creates a local preview only.
+- The screenshot is sent to `/api/extract` only after the user taps `Extract details with AI`.
+- `/api/extract` validates mime type and size before calling the provider.
+- The OpenAI/provider key remains server-side in Vercel environment variables.
+- Extracted listing fields are written back into editable review fields before evaluation.
+- If AI is disabled, missing credentials, limited, or fails, the user can still use manual entry and local fallback analysis.
+
 ### Report generation (`/app/lib/server/report.ts`)
 
 - Builds parent-friendly report content from child profile + listing + analysis output.

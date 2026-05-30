@@ -1,11 +1,13 @@
 # App Store MVP PRD Slice
 
-Status: Implementation-ready planning slice  
-Last updated: 2026-05-25
+Status: Implementation-ready planning slice
+Last updated: 2026-05-30
 
 ## 1. Product Positioning
 
 Mandy's Bike Finder App Store MVP is a mobile decision tool that helps parents quickly evaluate whether a used kids' bike listing fits their child, is fairly priced, and is worth contacting the seller.
+
+AI-assisted screenshot OCR/extraction is a core product capability for the App Store MVP because many marketplace listings are easiest to capture as screenshots. This capability must remain explicit, user-triggered, server-side, and editable.
 
 The App Store MVP is intentionally smaller than the current web MVP. It should feel like a focused mobile app, not a complete repackaging of every web feature.
 
@@ -27,12 +29,13 @@ Typical situation:
 2. User creates, confirms, or edits a child profile.
 3. User opens `Evaluate`.
 4. User uploads a screenshot, pastes a listing link/text, or manually enters listing details.
-5. User reviews and edits listing fields before analysis.
-6. User explicitly taps `Analyze` / `Evaluate`.
-7. App returns fit, deal/value, risk, and an overall recommendation.
-8. User saves the evaluation to `History`.
-9. User later opens `History` to review, favorite/shortlist, or delete saved evaluations.
-10. User opens `Settings` to clear local data or review privacy/AI disclosures.
+5. If using a screenshot, user explicitly taps `Extract details with AI` before the screenshot is sent for OCR/extraction.
+6. User reviews and edits extracted or manually entered listing fields before analysis.
+7. User explicitly taps `Analyze` / `Evaluate`.
+8. App returns fit, deal/value, risk, and an overall recommendation.
+9. User saves the evaluation to `History`.
+10. User later opens `History` to review, favorite/shortlist, or delete saved evaluations.
+11. User opens `Settings` to clear local data or review privacy/AI disclosures.
 
 ## 4. MVP Screens
 
@@ -83,6 +86,7 @@ Purpose:
 Input methods:
 
 - Screenshot upload.
+- Explicit AI screenshot OCR/extraction.
 - Listing link as reference metadata.
 - Pasted listing text.
 - Manual listing fields.
@@ -99,6 +103,8 @@ Explicit AI trigger requirement:
 - Uploading or selecting a screenshot must not automatically trigger AI.
 - Initial app load must not trigger any OpenAI or LLM call.
 - Any AI button must explain that listing content or screenshot data may be sent for processing when the user taps it.
+- Screenshot OCR/extraction is allowed in the App Store MVP only through the server-side `/api/extract` route after the user taps `Extract details with AI`.
+- Extracted fields must be editable before evaluation because OCR/AI may miss or misread details.
 
 Fallback behavior:
 
@@ -193,6 +199,7 @@ Feedback placeholder:
 | Child profile local save | Included |
 | Bike fit matching | Included |
 | Screenshot upload | Included |
+| AI screenshot OCR / extraction | Included as a core capability, only after explicit user action |
 | Listing link/text input | Included, simplified as user-provided context |
 | Manual listing input | Included |
 | Local fallback analysis | Included |
@@ -250,6 +257,7 @@ Do not implement new flags as part of this PRD task.
 - User can review and edit listing fields before analysis.
 - User must explicitly tap an AI extraction/analyze action before any screenshot/text is sent for AI processing.
 - Screenshot selection alone does not trigger AI.
+- Screenshot AI extraction sends the selected screenshot only to the server-side API and returns editable listing fields.
 - If AI is disabled or rate-limited, user can still manually enter details and run local fallback analysis.
 - Result shows overall recommendation plus fit, deal/value, and risk guidance.
 - Result includes a simplified seller message draft.

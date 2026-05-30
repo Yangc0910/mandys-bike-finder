@@ -69,10 +69,12 @@ Do not declare "data not collected" unless all server, email, CRM, AI, analytics
 - No LLM call on initial app load.
 - No LLM call on screenshot file selection.
 - Screenshot extraction requires a dedicated user action.
+- Screenshot OCR/extraction is a core App Store MVP capability, but it only runs after the user taps `Extract details with AI`.
 - Supported screenshot formats remain jpg, jpeg, png, and webp.
 - Screenshot size limits must remain enforced before provider calls.
 - OpenAI API keys and all provider credentials remain server-side only.
 - If AI is disabled, limited, or unavailable, manual entry must remain available.
+- Extracted fields must be shown for user review/edit before evaluation.
 - Do not retain screenshots longer than needed unless a user explicitly sends/saves a report and retention is disclosed.
 - If screenshots are attached to report emails, disclose that email providers process the attachment.
 

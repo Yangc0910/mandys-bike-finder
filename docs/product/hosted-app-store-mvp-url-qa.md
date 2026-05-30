@@ -320,6 +320,13 @@ Security/API checks:
 - Client-bundle scan found no `api.openai.com`, `OPENAI_API_KEY`, `NEXT_PUBLIC_OPENAI`, `RESEND_API_KEY`, `NEXT_PUBLIC_RESEND`, or likely OpenAI/Resend secret value patterns.
 - User-provided link/text/screenshot behavior remains framed as local reference/preview; no automatic marketplace scraping was observed or exposed.
 
+AI OCR note:
+
+- The App Store MVP now treats screenshot OCR/extraction as a core capability.
+- `Extract details with AI` may call `/api/extract` only after the user taps the button.
+- Vercel must set `ENABLE_LLM_ANALYSIS=true`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `DAILY_LLM_LIMIT`, and `PER_SESSION_LLM_LIMIT` in the `mandys-bike-finder-app` project for live OCR.
+- Do not add any `NEXT_PUBLIC_OPENAI_*` variables.
+
 Decision:
 
 - Hosted URL blocker is cleared for `[Infra] Add Capacitor Dependencies And Config`.
