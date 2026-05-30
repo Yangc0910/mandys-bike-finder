@@ -67,7 +67,7 @@ export async function openAiExtractListingFieldsFromImage(
         {
           role: "system",
           content:
-            "Extract only visible marketplace listing details for a used kids bike screenshot. Return strict JSON with keys: title, askingPrice, brand, model, wheelSize, bikeType, colorStyle, condition, description, platform, confidence, missingFields. Explicitly extract visible asking price and support common formats like $35, $35.00, 35 dollars, and Price: $35; return askingPrice as a number-like string (for example 35). Do not invent missing values. Use empty strings for unknown string fields. confidence must be one of high, medium, low. missingFields must list unknown or unclear fields.",
+            "Extract only visible marketplace listing details for a used kids bike screenshot. Return strict JSON with keys: title, askingPrice, brand, model, wheelSize, bikeType, colorStyle, condition, description, platform, listingLink, location, confidence, missingFields. Explicitly extract visible asking price and support common formats like $35, $35.00, 35 dollars, asking 90, and Price: $35; return askingPrice as a number-like string (for example 35). Extract visible pickup city, town, neighborhood, or location text into location. Do not invent missing values. Use empty strings for unknown string fields. confidence must be one of high, medium, low. missingFields must list unknown or unclear fields.",
         },
         {
           role: "user",
@@ -239,7 +239,7 @@ function normalizeExtractedListingFields(parsed: Record<string, unknown>, fallba
     description: stringField(parsed.description),
     platform: stringField(parsed.platform),
     listingLink: stringField(parsed.listingLink),
-    location: stringField(parsed.location),
+    location: stringField(parsed.location ?? parsed.pickupLocation ?? parsed.pickupArea ?? parsed.city ?? parsed.town),
   };
 }
 
@@ -261,6 +261,9 @@ function extractPriceNumber(text: string) {
 
   const labelledMatch = normalized.match(/\bprice\s*[:=-]?\s*\$?\s*(\d+(?:\.\d{1,2})?)\b/i);
   if (labelledMatch?.[1]) return formatPriceNumber(labelledMatch[1]);
+
+  const askingMatch = normalized.match(/\basking\s*\$?\s*(\d+(?:\.\d{1,2})?)\b/i);
+  if (askingMatch?.[1]) return formatPriceNumber(askingMatch[1]);
 
   if (/^\d+(?:\.\d{1,2})?$/.test(normalized)) return formatPriceNumber(normalized);
   return "";

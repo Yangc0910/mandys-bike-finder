@@ -139,9 +139,10 @@ Hosted App Store MVP URL decision:
 - Detailed checklist: `docs/product/hosted-app-store-mvp-url-qa.md`.
 - Live QA on 2026-05-26 confirmed `https://mandys-bike-finder-app.vercel.app/` loads the App Store MVP tab shell by default and `https://www.mandysbikefinder.com/` remains the default web MVP.
 - Final hosted URL QA on 2026-05-26 confirmed `https://app.mandysbikefinder.com/` is live over HTTPS, opens App Store MVP mode by default, and keeps `www` unaffected.
+- OCR live QA on 2026-05-30 confirmed `https://app.mandysbikefinder.com/api/extract` returns real OpenAI screenshot extraction results when server-side AI env vars are enabled. Follow-up tuning added explicit `location` / `listingLink` extraction and `asking 90` price parsing.
 - Hosted URL blocker is cleared.
 - `[Infra] Add Capacitor Dependencies And Config` is complete with hosted URL `https://app.mandysbikefinder.com`.
-- `[Infra] Generate Capacitor iOS Project And Validate Xcode Open` generated `app/ios/` and completed `cap sync`; Xcode validation remains pending on macOS.
+- `[Infra] Generate Capacitor iOS Project And Validate Xcode Open` generated `app/ios/`, completed `cap sync`, and added iOS camera/photo-library usage descriptions; Xcode validation remains pending on macOS.
 - Xcode/TestFlight preparation checklist: `docs/product/xcode-testflight-preparation.md`.
 - Next implementation task: `[Build] Xcode And TestFlight Preparation Pass`.
 

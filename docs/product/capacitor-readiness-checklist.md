@@ -1,7 +1,7 @@
 # Capacitor iOS Wrapper Readiness Checklist
 
-Status: iOS platform generated; Xcode validation pending
-Last updated: 2026-05-26
+Status: iOS platform generated; hosted OCR live; Xcode validation pending
+Last updated: 2026-05-30
 
 ## Purpose
 
@@ -27,11 +27,13 @@ This checklist decides whether Mandy's Bike Finder App Store MVP is ready to ent
 | App Review notes | Draft ready | Metadata and privacy docs include no-account, no-payment, no-scraping, optional-AI notes. |
 | Capacitor dependencies/config | Added | `@capacitor/core`, `@capacitor/ios`, and `@capacitor/cli` are installed under `app/`; `app/capacitor.config.ts` points the shell at `https://app.mandysbikefinder.com`. |
 | iOS platform files | Generated | `app/ios/` exists. `cap add ios` and `cap sync` completed successfully. |
+| iOS screenshot permissions | Ready for Xcode validation | `Info.plist` includes camera and photo library usage descriptions for screenshot selection/capture. |
+| Screenshot OCR | Live on hosted app | `https://app.mandysbikefinder.com/api/extract` returns OpenAI extraction results when AI env vars are enabled. OCR remains user-triggered only. |
 | Xcode validation | Pending on macOS | `cap doctor` fails on Windows because Xcode is not installed. This is expected and must be completed on macOS. |
 
 Readiness summary:
 
-> The hosted URL blocker is cleared, Capacitor dependencies/config are in place, and native iOS project files have been generated. The next implementation step is macOS/Xcode validation and TestFlight preparation.
+> The hosted URL blocker is cleared, OCR is live on the app project, Capacitor dependencies/config are in place, and native iOS project files have been generated. The next implementation step is macOS/Xcode validation and TestFlight preparation.
 
 ## Hosted Web Build Strategy Validation
 

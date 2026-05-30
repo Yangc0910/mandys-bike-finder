@@ -24,6 +24,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Mandy's Bike Finder lets you choose or capture a bike listing screenshot so you can extract listing details after you tap the AI extraction action.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Mandy's Bike Finder lets you choose a bike listing screenshot from your library for local preview and optional AI extraction after your explicit action.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

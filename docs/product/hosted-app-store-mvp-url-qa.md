@@ -1,7 +1,7 @@
 # Hosted App Store MVP URL QA
 
-Status: Final hosted App Store MVP URL live
-Last updated: 2026-05-26
+Status: Final hosted App Store MVP URL live; OCR API live
+Last updated: 2026-05-30
 
 ## Decision
 
@@ -17,6 +17,26 @@ Recommended hosted URL strategy:
 | Public web MVP | `https://www.mandysbikefinder.com` | Keep as default web MVP mode unless intentionally changed later. |
 
 The future Capacitor iOS shell should load the App Store-facing URL, not `www.mandysbikefinder.com`.
+
+## OCR Live QA Update
+
+QA date: 2026-05-30
+
+`https://app.mandysbikefinder.com/api/extract` was tested with generated marketplace-style kids bike screenshots after enabling server-side AI environment variables on the `mandys-bike-finder-app` Vercel project.
+
+Results:
+
+- The API returned `provider: openai`, `fallback: false`, and `confidence: high` for the tested screenshots.
+- Title, asking price, brand, wheel size, bike type, condition, and platform were extracted successfully across Facebook Marketplace, Craigslist-style, OfferUp-style, and compact/messy listing layouts.
+- QA identified location as the main missed field before prompt tightening.
+- The extraction prompt now explicitly requests `location` and `listingLink`, and the price parser now handles `asking 90` style values.
+
+Guardrails remain unchanged:
+
+- Selecting a screenshot only creates a local preview.
+- OCR starts only after the user taps `Extract details with AI`.
+- OpenAI/provider keys stay server-side.
+- Manual entry and local fallback analysis remain available if AI is disabled, limited, or unavailable.
 
 ## Current Deployment Assumptions
 
