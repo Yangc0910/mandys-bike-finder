@@ -3,20 +3,21 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Mandy's Bike Finder",
-  description: "Product privacy draft for Mandy's Bike Finder App Store MVP.",
+  description: "Privacy policy for Mandy's Bike Finder App Store MVP.",
 };
 
-const lastUpdated = "May 25, 2026";
+const lastUpdated = "May 30, 2026";
+const supportEmail = "support@mandysbikefinder.com";
 
 export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900">
       <article className="mx-auto max-w-3xl rounded-lg border border-slate-200 bg-white p-6 shadow-panel">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Product privacy draft</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Mandy&apos;s Bike Finder</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight">Privacy Policy</h1>
         <p className="mt-2 text-sm font-semibold text-slate-500">Last updated: {lastUpdated}</p>
         <p className="mt-5 text-sm leading-6 text-slate-700">
-          Mandy&apos;s Bike Finder helps parents and guardians evaluate used kids bike listings. This page is a practical privacy draft for the App Store MVP and is not legal advice.
+          Mandy&apos;s Bike Finder helps parents and guardians evaluate used kids bike listings. This page explains the practical privacy behavior of the App Store MVP and is not legal advice.
         </p>
 
         <PrivacySection title="What Data Is Used">
@@ -79,12 +80,14 @@ export default function PrivacyPage() {
             <li>Use Settings to clear the saved child profile.</li>
             <li>Use Settings or History controls to clear saved evaluations.</li>
             <li>Use Settings to clear all App Store MVP local data.</li>
-            <li>For web/email features, contact support when a final support address is published. TODO: add final contact email before App Store submission.</li>
+            <li>For web/email features outside the App Store MVP, contact support at <a className="font-bold text-brand" href={`mailto:${supportEmail}`}>{supportEmail}</a>.</li>
           </ul>
         </PrivacySection>
 
         <PrivacySection title="Contact">
-          <p>TODO: add final privacy contact email before App Store submission.</p>
+          <p>
+            For privacy or support questions, contact <a className="font-bold text-brand" href={`mailto:${supportEmail}`}>{supportEmail}</a>.
+          </p>
         </PrivacySection>
 
         <div className="mt-8">

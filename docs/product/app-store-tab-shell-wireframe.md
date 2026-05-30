@@ -305,8 +305,8 @@ Local data controls:
 App version/about:
 
 - App name: `Mandy's Bike Finder`
-- Version placeholder.
-- Build/channel placeholder if useful later.
+- Version: `1.0` for the first App Store MVP unless App Store Connect/Xcode changes it.
+- Build/channel can be added later when native build metadata is wired into the web surface.
 
 Feedback placeholder:
 

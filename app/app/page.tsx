@@ -51,6 +51,7 @@ const RIDER_PROFILE_STORAGE_KEY = "mandy-free-bike-check-rider-profile";
 const APP_STORE_MVP_MODE = process.env.NEXT_PUBLIC_APP_STORE_MVP_MODE === "true";
 const APP_STORE_ACTIVE_CHILD_PROFILE_KEY = "mbf.appStore.activeChildProfile";
 const APP_STORE_SAVED_EVALUATIONS_KEY = "mbf.appStore.savedEvaluations";
+const APP_STORE_MVP_VERSION = "1.0";
 const APP_STORE_MVP_LOCAL_STORAGE_KEYS = [
   APP_STORE_ACTIVE_CHILD_PROFILE_KEY,
   APP_STORE_SAVED_EVALUATIONS_KEY,
@@ -58,6 +59,13 @@ const APP_STORE_MVP_LOCAL_STORAGE_KEYS = [
 
 type AppStoreTab = "profile" | "evaluate" | "history" | "settings";
 type AppStoreEvaluateInputMode = "screenshot" | "link" | "manual";
+
+type AppStoreAiExtractionSummary = {
+  provider: string;
+  confidence?: string;
+  missingFields: string[];
+  fallback: boolean;
+};
 
 type AppStoreActiveChildProfile = {
   nickname?: string;
@@ -2257,6 +2265,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
   const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
   const [isExtractingScreenshot, setIsExtractingScreenshot] = useState(false);
   const [notice, setNotice] = useState("Local analysis is ready. AI screenshot extraction only starts after you tap the AI button.");
+  const [aiExtractionSummary, setAiExtractionSummary] = useState<AppStoreAiExtractionSummary | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [sellerMessage, setSellerMessage] = useState("");
 
@@ -2295,25 +2304,30 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       setScreenshotFile(null);
       setScreenshotName("");
       setScreenshotPreviewUrl("");
+      setAiExtractionSummary(null);
       setNotice("Screenshot removed. You can still paste text or enter details manually.");
       return;
     }
     setScreenshotFile(file);
     setScreenshotName(file.name);
     setScreenshotPreviewUrl(URL.createObjectURL(file));
+    setAiExtractionSummary(null);
     setNotice("Screenshot attached for local preview only. No AI or server processing started.");
   }
 
   async function extractScreenshotWithAI() {
     if (!screenshotFile) {
+      setAiExtractionSummary(null);
       setNotice("Choose a screenshot first, then tap AI extraction.");
       return;
     }
     if (screenshotFile.size > 5 * 1024 * 1024) {
+      setAiExtractionSummary(null);
       setNotice("Screenshot file is too large. Please upload an image under 5 MB.");
       return;
     }
     if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(screenshotFile.type)) {
+      setAiExtractionSummary(null);
       setNotice("AI extraction supports jpg, jpeg, png, and webp screenshots. You can still enter details manually.");
       return;
     }
@@ -2332,15 +2346,25 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
         setDraftListing((current) => ({ ...current, ...compactFields(fields) }));
         setResult(null);
         setSellerMessage("");
+        setAiExtractionSummary({
+          provider: String(response?.result?.provider || "AI"),
+          confidence: response?.result?.confidence ? String(response.result.confidence) : undefined,
+          missingFields: Array.isArray(response?.result?.missingFields)
+            ? response.result.missingFields.map((field: unknown) => String(field))
+            : [],
+          fallback: Boolean(response?.fallback),
+        });
         setNotice(
           response?.fallback
             ? response?.statusMessage || "AI extraction was unavailable. Review any returned fields or enter details manually."
             : `AI extracted listing details${response?.result?.confidence ? ` (${response.result.confidence} confidence)` : ""}. Review and edit anything that looks wrong.`,
         );
       } else {
+        setAiExtractionSummary(null);
         setNotice(response?.statusMessage || "AI extraction could not read enough listing details. Please enter the details manually.");
       }
     } catch {
+      setAiExtractionSummary(null);
       setNotice("AI extraction failed. Manual entry and local analysis are still available.");
     } finally {
       setIsExtractingScreenshot(false);
@@ -2361,6 +2385,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
     }));
     setResult(null);
     setSellerMessage("");
+    setAiExtractionSummary(null);
     setNotice("Listing text was parsed locally on this device. Review the fields before analyzing.");
   }
 
@@ -2589,6 +2614,25 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
           <p className="mt-4 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600">
             {notice}
           </p>
+        )}
+        {aiExtractionSummary && (
+          <article className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-3 text-xs font-semibold text-emerald-950">
+            <p className="font-bold uppercase tracking-[0.12em] text-emerald-700">AI extraction review</p>
+            <p className="mt-2">
+              Fields were extracted by {aiExtractionSummary.provider === "openai" ? "server-side AI" : aiExtractionSummary.provider}
+              {aiExtractionSummary.confidence ? ` with ${aiExtractionSummary.confidence} confidence` : ""}. Please confirm title, price, wheel size, location, and condition before analyzing.
+            </p>
+            {aiExtractionSummary.missingFields.length > 0 && (
+              <p className="mt-2 text-emerald-900">
+                Missing or unclear: {aiExtractionSummary.missingFields.join(", ")}.
+              </p>
+            )}
+            {aiExtractionSummary.fallback && (
+              <p className="mt-2 text-emerald-900">
+                AI was unavailable, so any extracted fields should be treated as a fallback starting point.
+              </p>
+            )}
+          </article>
         )}
         <button
           type="button"
@@ -2926,7 +2970,7 @@ function SettingsScreenPlaceholder() {
           <div className="mt-2 grid gap-2 text-sm leading-6 text-slate-600">
             <p><span className="font-bold text-slate-800">App:</span> Mandy&apos;s Bike Finder</p>
             <p><span className="font-bold text-slate-800">Mode:</span> App Store MVP</p>
-            <p><span className="font-bold text-slate-800">Version:</span> Build placeholder</p>
+            <p><span className="font-bold text-slate-800">Version:</span> {APP_STORE_MVP_VERSION}</p>
             <p><span className="font-bold text-slate-800">Feedback:</span> Coming in a later release.</p>
           </div>
         </article>

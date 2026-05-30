@@ -1,7 +1,7 @@
 # App Store Listing Metadata Draft
 
-Status: Product draft for App Store Connect preparation  
-Last updated: 2026-05-25
+Status: Close-to-final App Store Connect preparation draft  
+Last updated: 2026-05-30
 
 ## Product Positioning
 
@@ -68,7 +68,8 @@ Mandy's Bike Finder is for parents and guardians shopping for used kids bikes an
 ### Key Features
 
 - Child bike-fit profile stored on your device.
-- Listing evaluation from screenshot reference, pasted link/text, or manual details.
+- Listing evaluation from screenshot, pasted link/text, or manual details.
+- User-triggered AI screenshot extraction to help read visible listing details.
 - Local fallback analysis for fit, deal/value, and risk.
 - Overall recommendation to help decide whether to contact the seller.
 - Seller message draft with practical questions.
@@ -79,7 +80,7 @@ Mandy's Bike Finder is for parents and guardians shopping for used kids bikes an
 
 The App Store MVP does not require an account. Child profiles and saved evaluations are stored on your device, and you can clear local data in Settings.
 
-AI features, if enabled, are optional and only start after a clear user action. Selecting a screenshot or pasting text does not automatically send data to AI. Marketplace links and screenshots are treated as user-provided references. The app does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages.
+AI screenshot extraction, if enabled, is optional and only starts after a clear user action. Selecting a screenshot or pasting text does not automatically send data to AI. Marketplace links and screenshots are treated as user-provided references. The app does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages.
 
 ### Important Note
 
@@ -138,8 +139,8 @@ Avoid relying on competitor or marketplace names as keywords unless reviewed aga
    - Suggested caption: `Start with your child's fit profile`
 
 2. Evaluate
-   - Show screenshot/link/text/manual input options and editable listing fields.
-   - Suggested caption: `Review one used bike listing at a time`
+   - Show screenshot/link/text/manual input options, the explicit AI extraction action, and editable listing fields.
+   - Suggested caption: `Extract details, then review before analyzing`
 
 3. Result
    - Show overall recommendation plus fit, deal/value, risk, and seller message.
@@ -170,6 +171,7 @@ Review notes:
 - The app does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages.
 - Marketplace links, pasted text, and screenshots are user-provided references.
 - AI, if enabled, only runs after an explicit user action. Initial app load does not call OpenAI or an LLM.
+- Selecting a screenshot creates a local preview only; the user must tap `Extract details with AI` before the screenshot is sent to server-side AI extraction.
 - Local fallback analysis works without AI.
 - OpenAI/provider keys remain server-side.
 - Child profile and saved evaluations are stored locally on the device.
@@ -180,10 +182,11 @@ Suggested reviewer test path:
 1. Open the app.
 2. Create a child profile in `Profile`.
 3. Go to `Evaluate`.
-4. Enter listing details manually.
-5. Tap the local evaluate action.
-6. Save the result to `History`.
-7. Open `Settings` to review privacy disclosures and local data controls.
+4. Enter listing details manually, or upload a screenshot and tap `Extract details with AI`.
+5. Review/edit the extracted or entered fields.
+6. Tap the local evaluate action.
+7. Save the result to `History`.
+8. Open `Settings` to review privacy disclosures and local data controls.
 
 ## Age Rating / Privacy Considerations To Confirm
 
@@ -195,7 +198,7 @@ These are product review questions, not legal conclusions.
 - Confirm whether screenshots are processed only after explicit user action in the shipped build.
 - Confirm that no account, payment, subscription, push notification, analytics, or tracking is included in the first App Store MVP.
 - Confirm whether web MVP email report features remain outside the App Store MVP surface.
-- Confirm public privacy policy URL and final privacy contact email before submission.
+- Confirm `support@mandysbikefinder.com` is a working support/privacy mailbox before submission.
 - Confirm App Review notes explain local fallback behavior and no automatic marketplace scraping.
 
 ## Deferred From First App Store MVP

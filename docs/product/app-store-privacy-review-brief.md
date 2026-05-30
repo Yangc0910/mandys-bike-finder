@@ -49,7 +49,7 @@ Current draft status:
 
 - A lightweight public privacy draft is available at `/privacy`.
 - App Store MVP Settings links to the public privacy draft.
-- Before App Store submission, replace TODO contact placeholders with a final privacy/support contact and review the policy against the exact shipped iOS behavior.
+- Before App Store submission, confirm `support@mandysbikefinder.com` is a working privacy/support contact and review the policy against the exact shipped iOS behavior.
 
 ## App Store Privacy Label Planning
 

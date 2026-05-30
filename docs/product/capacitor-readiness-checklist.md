@@ -18,7 +18,7 @@ This checklist decides whether Mandy's Bike Finder App Store MVP is ready to ent
 | PWA metadata | Basic foundation ready | `app/app/layout.tsx` includes manifest, theme color, Apple standalone metadata, viewport fit, and app icons. |
 | Manifest | Basic foundation ready | `app/public/manifest.webmanifest` exists with standalone display, portrait orientation, theme/background colors, categories, and icon reference. |
 | Icons | Needs production assets | Current icon path uses `/icon.svg`. App Store / iOS will need production icon sizes and possibly splash assets. |
-| Privacy page | Draft ready | Public route `/privacy` exists as a product privacy draft. Final contact email and legal/product review remain required. |
+| Privacy page | Close-to-final draft ready | Public route `/privacy` exists and uses `support@mandysbikefinder.com` as the support/privacy contact. Confirm the mailbox works before submission. |
 | Settings data controls | Ready | App Store MVP Settings can clear child profile, history, and all App Store MVP local data. |
 | Initial load AI behavior | Ready by current QA | Initial load has been verified to use `/api/status` only; no OpenAI/LLM call observed. |
 | Server-side API boundary | Ready conceptually | OpenAI/Resend/provider keys remain server-side. App Store MVP uses local fallback analysis and no client provider keys. |
@@ -161,7 +161,7 @@ Must be addressed before adding Capacitor dependencies:
 - Do not use `https://www.mandysbikefinder.com/` for the iOS shell while it remains the public web MVP.
 - Confirm `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` deployment target for iOS preview.
 - Create production App Store icon set and splash/launch asset checklist.
-- Finalize public privacy policy contact placeholder on `/privacy`.
+- Confirm `support@mandysbikefinder.com` receives support/privacy mail.
 - Decide final App Store review notes based on exact shipped AI behavior.
 - Confirm App Store screenshots plan and capture real mobile app-shell screens.
 - Confirm no provider keys or secrets appear in client bundle.
@@ -176,8 +176,8 @@ Must be addressed before adding Capacitor dependencies:
 Non-blocking but recommended before TestFlight:
 
 - Split App Store MVP components out of the large `page.tsx` file to reduce future maintenance risk.
-- Replace About version placeholder with real app/build version once Capacitor build metadata exists.
-- Add final support/privacy contact email.
+- Keep Settings version aligned with the App Store Connect version/build before submission.
+- Confirm final support/privacy contact email is live.
 
 ## Capacitor Implementation Plan
 

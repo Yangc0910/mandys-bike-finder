@@ -1,7 +1,7 @@
 # Xcode And TestFlight Preparation
 
-Status: Ready for macOS/Xcode validation  
-Last updated: 2026-05-26
+Status: Close-to-final web/App Store MVP ready for macOS/Xcode validation  
+Last updated: 2026-05-30
 
 ## Purpose
 
@@ -50,8 +50,9 @@ Current native project check:
 
 - No OpenAI, Resend, Salesforce, or provider secret values were found in `app/capacitor.config.ts` or `app/ios/`.
 - The iOS wrapper uses the hosted HTTPS URL and keeps provider work on Vercel API routes.
-- No native camera, photo library, microphone, tracking, or background-mode permission keys are currently present in `Info.plist`.
-- Screenshot upload remains the web file picker flow; native camera/photo permissions should not be added unless a later task explicitly introduces native capture.
+- `Info.plist` includes camera and photo library usage descriptions for screenshot selection/capture through the iOS WebView file picker.
+- No microphone, tracking, background-mode, account, payment, or push capabilities are currently present.
+- Screenshot upload remains the web file picker flow; no extra native image-processing plugin is included.
 
 ## macOS Setup Steps
 
@@ -84,7 +85,8 @@ In Xcode:
 - Confirm iOS deployment target is acceptable for first TestFlight. Current target is `15.0`.
 - Confirm App Transport Security allows the HTTPS hosted URL without adding broad exceptions.
 - Confirm no unnecessary native capabilities are enabled.
-- Confirm no camera/photo/tracking permission prompts appear unless explicitly added later.
+- Confirm camera/photo permission prompts, if shown by the iOS file picker path, match the `Info.plist` explanations.
+- Confirm no tracking, microphone, background mode, account, payment, or push permission prompts appear.
 
 ## App Assets Checklist
 
@@ -94,6 +96,7 @@ Before TestFlight:
 - Confirm icon has no transparency and satisfies Apple icon requirements.
 - Replace or polish generated splash/launch asset if it looks generic.
 - Confirm launch screen does not imply offline/native functionality the hosted app does not provide.
+- Capture five App Store screenshots from the App Store MVP surface: Profile, Evaluate with AI extraction, Result, History, Settings/privacy.
 
 ## Simulator QA Checklist
 
@@ -110,6 +113,8 @@ Run the app in at least one small and one large iPhone simulator:
 - Settings clear profile, clear history, and clear all local data work.
 - `/privacy` and `/offline` are reachable.
 - Screenshot/file picker flow works in iOS WebView.
+- AI screenshot extraction returns editable listing fields after the user taps `Extract details with AI`.
+- AI extraction failure or rate-limit states still leave manual entry and local analysis available.
 - Initial load does not trigger OpenAI/LLM.
 - Screenshot selection does not trigger AI.
 - Pasting link/text does not scrape marketplace pages.
@@ -134,11 +139,11 @@ Before uploading:
   - Profile and History are stored locally.
   - Settings contains local data controls.
   - Hosted Vercel API routes keep provider keys server-side.
+  - Screenshot OCR is user-triggered; selecting a screenshot alone only creates a local preview.
 
 ## Known Follow-Ups
 
 - Finalize production app icon and splash assets.
-- Replace Settings version placeholder with native version/build display.
-- Finalize `/privacy` contact email before App Store submission.
+- Confirm `support@mandysbikefinder.com` is receiving mail before App Store submission.
 - Capture App Store screenshots from the four-tab app shell.
 - Confirm Vercel app project deployment commit/state in dashboard before the first external TestFlight.
