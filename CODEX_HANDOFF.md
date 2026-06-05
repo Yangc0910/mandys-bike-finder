@@ -4,64 +4,134 @@ Last updated: 2026-06-05
 
 ## What This Project Is
 
-Mandy's Bike Finder is a Next.js + TypeScript web MVP for parents evaluating used kids' bike listings. It helps with bike fit, price/value, safety/risk, seller questions, seller-message drafting, and transactional email reports.
+Mandy's Bike Finder is a product repository with one active product track and two agent-style subsystems documented for continuity.
+
+Active product track:
+
+- `app/`: live Next.js App Store MVP and future Capacitor/TestFlight path
+
+Agent-style subsystems:
+
+- `agents/bike-coach/` with implementation in `app/`: workflow-specific guided assistant inside the bike-check flow
+- `src/listing_monitor/` documented under `agents/listing-monitor-agent/`: historical personal listing monitor CLI using Playwright, SQLite, YAML config, and Gmail
+
+The active product workstream is the App Store MVP / iOS review handoff. Do not assume the Python listing monitor or historical `web/` prototype is the current product surface.
 
 ## Where To Start Reading
 
-1. `README.md` for setup, architecture, environment variables, and deployment notes.
-2. `PROJECT_STATUS.md` for the current truth snapshot.
-3. `docs/PRD.md` for product requirements and scope boundaries.
-4. `docs/architecture/overview.md` for system boundaries.
-5. `workstreams/github-cross-device-handoff.md` for this handoff/migration workstream.
-6. `agents/bike-coach/README.md` for the guided assistant workstream.
+Start in this order:
+
+1. [PROJECT_STATUS.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/PROJECT_STATUS.md)
+2. [workstreams/app-store-mvp-ios-review-handoff.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/workstreams/app-store-mvp-ios-review-handoff.md)
+3. [workstreams/github-cross-device-handoff.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/workstreams/github-cross-device-handoff.md)
+4. [README.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/README.md)
+5. [docs/product/app-store-final-review-checklist.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/docs/product/app-store-final-review-checklist.md)
+6. [docs/product/xcode-testflight-preparation.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/docs/product/xcode-testflight-preparation.md)
+
+For code entry points:
+
+- Product UI/API: [app/app/page.tsx](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/app/app/page.tsx), [app/app/api](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/app/app/api)
+- Bike Coach assistant internals: [app/lib/assistant.ts](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/app/lib/assistant.ts), [app/app/api/assistant/route.ts](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/app/app/api/assistant/route.ts)
+- Server-side providers/config: [app/lib/server](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/app/lib/server)
+- iOS wrapper: [app/capacitor.config.ts](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/app/capacitor.config.ts), [app/ios](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/app/ios)
+- Historical listing monitor: [src/listing_monitor](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/src/listing_monitor)
 
 ## Current Workstream Status
 
-Current workstream: `github-cross-device-handoff`
+Primary current workstream:
 
-Goal: make the repo self-contained enough that work can continue from either Windows or Mac without relying on Codex thread history.
+- `app-store-mvp-ios-review-handoff`
 
-Status: documentation and ignore rules are being updated. Code is already on GitHub `main`.
+Status:
+
+- Close-to-final for App Review preparation on the web/Vercel side
+- Ready to continue on a Mac for Xcode, iOS simulator, signing, and TestFlight steps
+
+Cross-device continuity workstream:
+
+- `github-cross-device-handoff`
+- Root-level status, handoff, agent, and workstream docs are now in place
+
+What is already true:
+
+- App Store MVP hosted URL is live
+- OCR works through server-side AI when enabled in Vercel
+- privacy/support copy is in place
+- local history/settings controls are in place
+- Capacitor iOS project has already been generated
+- Mandy Bike Coach is implemented and separately documented
+
+What is not done yet:
+
+- Xcode validation on macOS
+- App Store asset finalization
+- real iPhone WebView QA
+- TestFlight archive/upload
 
 ## Important Files
 
-- `app/app/page.tsx`: main user-facing app page and Bike Coach UI.
-- `app/app/api/assistant/route.ts`: server route for Mandy Bike Coach.
-- `app/lib/assistant.ts`: assistant intents, local fallback responses, and prompt suggestions.
-- `app/lib/server/providers.ts`: OpenAI provider helpers, including assistant response generation.
-- `app/lib/server/config.ts`: feature flags, provider config, and limits.
-- `app/lib/email.ts`: Resend transactional email service.
-- `app/lib/crm.ts` and `app/lib/crm/salesforce.ts`: optional consent-gated CRM sync.
-- `.env.example` and `app/.env.example`: non-secret environment variable templates.
+- [README.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/README.md)
+- [PROJECT_STATUS.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/PROJECT_STATUS.md)
+- [docs/roadmap.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/docs/roadmap.md)
+- [docs/product/app-store-final-review-checklist.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/docs/product/app-store-final-review-checklist.md)
+- [docs/product/capacitor-readiness-checklist.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/docs/product/capacitor-readiness-checklist.md)
+- [docs/product/xcode-testflight-preparation.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/docs/product/xcode-testflight-preparation.md)
+- [agents/bike-coach/README.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/agents/bike-coach/README.md)
+- [agents/listing-monitor-agent/README.md](/C:/Users/yangc/.codex/worktrees/f4de/Mandy's Bike Finder Project/agents/listing-monitor-agent/README.md)
 
 ## How To Continue From Here
 
-On a new machine:
+If continuing on Windows:
 
-```bash
-git clone https://github.com/Yangc0910/mandys-bike-finder.git
-cd mandys-bike-finder/app
-npm install
-npm run lint
-npm run build
-npm run dev
-```
+- Keep product/docs/Vercel work centered in `app/` and `docs/`.
+- Avoid making the legacy `web/` folder the source of new product changes.
+- Treat `src/listing_monitor/` as historical unless explicitly reviving that subsystem.
 
-Then copy `app/.env.example` to `app/.env.local` only if local provider testing is needed. Never commit `.env.local`.
+If continuing on Mac:
+
+1. Clone the repo.
+2. Enter `app/`.
+3. Run `npm install`.
+4. Run `npx cap sync ios`.
+5. Run `npx cap open ios`.
+6. Continue with the checklist in `docs/product/xcode-testflight-preparation.md`.
+
+If continuing the legacy listing monitor:
+
+1. Read `agents/listing-monitor-agent/AGENT_SPEC.md`.
+2. Follow `docs/operations/local-runbook.md`.
+3. Keep secrets in local `.env` and `config.yaml`, never in Git.
 
 ## What Not To Change Without Confirmation
 
-- Do not remove or bypass server-side feature flags and usage limits.
-- Do not expose API keys or provider credentials to frontend code.
-- Do not automate Facebook Marketplace scraping or login-gated pages.
-- Do not make Bike Scout look payment-live before Stripe/payment and backend scheduling exist.
-- Do not make Salesforce/CRM a user-facing concept.
-- Do not force-push or rewrite GitHub history.
+- Do not point the iOS shell at `www.mandysbikefinder.com`.
+- Do not expose provider keys through `NEXT_PUBLIC_*` variables.
+- Do not re-enable hidden App Store-risky features in App Store MVP mode:
+  - email report
+  - PDF export
+  - Bike Scout waitlist
+  - payment/subscription
+  - account/login
+  - automated marketplace scraping
+- Do not turn Mandy Bike Coach into a generic chatbot without product review.
+- Do not treat `src/listing_monitor/` as the primary product without explicit confirmation.
+- Do not remove the public web MVP unless that product decision is explicit.
+- Do not force-push or rewrite GitHub history casually.
 
 ## Suggested Next Codex Prompts
 
-- "Review the homepage UX and suggest one focused improvement that makes first-time bike checking clearer."
-- "Add a lightweight smoke test plan for screenshot extraction, analysis, report email, and Bike Coach."
-- "Prepare Mac setup verification after cloning this repository."
-- "Audit the docs for stale statements against the current codebase and production behavior."
+For Mac/Xcode continuation:
 
+- `Open the iOS wrapper on this Mac, validate signing, and prepare the first TestFlight build.`
+- `Run a simulator QA pass for the hosted App Store MVP on iPhone sizes and report blockers.`
+- `Prepare App Store screenshots and final App Review notes from the current hosted app.`
+
+For product/repo hygiene:
+
+- `Review the docs for stale statements that still describe the old web MVP as the current product.`
+- `Prepare a release candidate checklist for Mandy's Bike Finder App Store MVP.`
+
+For the agent subsystems:
+
+- `Audit Mandy Bike Coach against the current homepage UI and confirm the docs match the shipped behavior.`
+- `Review the historical listing monitor docs for any remaining Windows-only assumptions before Mac setup.`

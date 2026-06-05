@@ -41,8 +41,11 @@ Thumbs.db
 
 # iOS / Capacitor local build products
 DerivedData/
+app/ios/DerivedData/
 app/ios/App/build/
 app/ios/App/Pods/
 app/ios/App/Podfile.lock
 *.xcuserstate
 xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/

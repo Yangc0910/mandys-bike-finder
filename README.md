@@ -2,6 +2,27 @@
 
 Mandy's Bike Finder is a web-first product project for helping parents decide whether a used kids bike listing is worth contacting the seller about.
 
+## Project Control Docs
+
+For cross-device continuation and GitHub-based handoff, start with:
+
+- [PROJECT_STATUS.md](PROJECT_STATUS.md)
+- [CODEX_HANDOFF.md](CODEX_HANDOFF.md)
+- [workstreams/app-store-mvp-ios-review-handoff.md](workstreams/app-store-mvp-ios-review-handoff.md)
+- [docs/workstreams](docs/workstreams)
+
+This repository currently contains two tracks:
+
+- The active product track in `app/`: Next.js App Store MVP, hosted on Vercel and prepared for Capacitor/Xcode/TestFlight work.
+- A historical agent-style track in `src/listing_monitor/`: a personal listing monitor CLI kept for reference and separate documentation.
+
+## Cross-Device Notes
+
+- GitHub `main` is the source of truth for continuation between Windows and Mac.
+- The active app flow in `app/` is cross-platform, but the iOS wrapper steps require macOS and Xcode.
+- Some older docs still show Windows-oriented examples such as PowerShell or `npm.cmd`; on Mac use standard `npm run ...`, `npx ...`, `python3`, and `cp`.
+- The local listing monitor runbook now includes both Windows and macOS/Linux setup examples.
+
 The project is inspired by helping Mandy find the right used bike. It is also a learning project for practicing the full software product development process: product story, PRD, version history, decisions, user flows, implementation phases, testing, and release discipline.
 
 ## Product One-Liner

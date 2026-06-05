@@ -15,6 +15,19 @@ Copy-Item config.example.yaml config.yaml
 Copy-Item .env.example .env
 ```
 
+macOS / Linux equivalent:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+python -m playwright install chromium
+cp config.example.yaml config.yaml
+cp .env.example .env
+```
+
 ## Sensitive Local Files
 
 Do not commit:
@@ -35,11 +48,23 @@ Run:
 listing-monitor login
 ```
 
+macOS / Linux:
+
+```bash
+listing-monitor login
+```
+
 Log in manually in the visible browser. The app does not automate login.
 
 ## Run Once
 
 ```powershell
+listing-monitor run
+```
+
+macOS / Linux:
+
+```bash
 listing-monitor run
 ```
 

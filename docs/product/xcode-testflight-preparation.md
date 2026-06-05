@@ -31,12 +31,12 @@ Current native settings:
 
 Validation already completed on Windows:
 
-- `npm.cmd run cap:add:ios`: passed.
-- `npm.cmd run cap:sync`: passed.
-- `npm.cmd run lint`: passed.
-- `npm.cmd run build`: passed.
-- `NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm.cmd run build`: passed.
-- `npm.cmd run cap:doctor`: reaches expected Windows blocker: Xcode is not installed.
+- `npm run cap:add:ios`: passed.
+- `npm run cap:sync`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm run build`: passed.
+- `npm run cap:doctor`: reaches expected Windows blocker: Xcode is not installed.
 
 GitHub handoff status:
 
