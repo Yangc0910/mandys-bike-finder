@@ -2019,13 +2019,20 @@ export default function Home() {
       <button
         type="button"
         onClick={() => setIsBikeCoachOpen(true)}
-        className="fixed bottom-4 right-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-bold text-white shadow-[0_18px_45px_rgba(15,23,42,0.24)] transition hover:-translate-y-0.5 hover:bg-brand"
+        className="fixed bottom-4 right-4 z-40 inline-flex min-h-16 items-center gap-3 rounded-[24px] border border-white/70 bg-[linear-gradient(135deg,#0f172a_0%,#2563eb_62%,#14b8a6_100%)] px-4 py-3 text-left text-white shadow-[0_22px_55px_rgba(15,23,42,0.28)] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(15,23,42,0.34)]"
       >
-        <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm text-slate-950">
-          AI
+        <span aria-hidden className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white shadow-[inset_0_-10px_18px_rgba(37,99,235,0.08),0_8px_18px_rgba(15,23,42,0.22)] sm:h-14 sm:w-14">
+          <BikeCoachLauncherIllustration />
         </span>
-        <span className="hidden sm:inline">Ask Bike Coach</span>
-        <span className="sm:hidden">Coach</span>
+        <span className="min-w-0">
+          <span className="block text-sm font-black leading-tight sm:text-base">Ask Bike Coach</span>
+          <span className="mt-0.5 hidden text-[11px] font-semibold leading-tight text-white/82 sm:block">
+            Fit, price, risk, seller tips
+          </span>
+          <span className="mt-0.5 block text-[11px] font-semibold leading-tight text-white/82 sm:hidden">
+            Quick help
+          </span>
+        </span>
       </button>
       {isBikeCoachOpen && (
         <>
@@ -3233,6 +3240,21 @@ function HowItWorksCard({ icon, title, copy }: { icon: string; title: string; co
       <h3 className="mt-1 text-sm font-bold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-600">{copy}</p>
     </article>
+  );
+}
+
+function BikeCoachLauncherIllustration() {
+  return (
+    <svg viewBox="0 0 64 64" className="h-11 w-11 sm:h-12 sm:w-12" role="img" aria-label="Small bike coach illustration">
+      <circle cx="18" cy="43" r="9" fill="#dff7f1" stroke="#0f766e" strokeWidth="3" />
+      <circle cx="46" cy="43" r="9" fill="#dbeafe" stroke="#2563eb" strokeWidth="3" />
+      <path d="M18 43l10-18h9l9 18M28 25l8 18H18m18 0l10-18" fill="none" stroke="#0f172a" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+      <path d="M33 20h9" stroke="#0f172a" strokeLinecap="round" strokeWidth="3" />
+      <path d="M25 20h7" stroke="#f59e0b" strokeLinecap="round" strokeWidth="4" />
+      <path d="M45 15l1.6 3.2 3.4.5-2.5 2.4.6 3.4-3.1-1.7-3.1 1.7.6-3.4-2.5-2.4 3.4-.5L45 15z" fill="#fbbf24" />
+      <circle cx="19" cy="42.5" r="2" fill="#0f172a" />
+      <circle cx="46" cy="42.5" r="2" fill="#0f172a" />
+    </svg>
   );
 }
 
