@@ -175,6 +175,123 @@ Then open:
 
 - `http://localhost:3000/`
 
+### App Store MVP Preview
+
+The App Store MVP surface is hidden by default so the existing web MVP remains unchanged. The mode flag is:
+
+- `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`
+
+#### Local Preview
+
+Windows PowerShell:
+
+```powershell
+cd app
+$env:NEXT_PUBLIC_APP_STORE_MVP_MODE="true"
+npm run dev
+```
+
+Mac/Linux:
+
+```bash
+cd app
+NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm run dev
+```
+
+Then open:
+
+- `http://localhost:3000/`
+
+You should see the four-tab App Store MVP shell: `Profile`, `Evaluate`, `History`, and `Settings`.
+
+#### Vercel Preview
+
+To preview this mode on Vercel:
+
+1. Add `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` to the Vercel Preview environment.
+2. Redeploy the preview deployment after changing the environment variable.
+3. Open the Vercel Preview URL and confirm the four-tab app shell appears.
+
+Because this is a `NEXT_PUBLIC_` variable, it is compiled into the client bundle at build time. Changing it requires a new build/deploy.
+
+#### Hosted App Store URL
+
+The intended future App Store/TestFlight URL is:
+
+- `https://app.mandysbikefinder.com/`
+
+Keep `https://www.mandysbikefinder.com/` on the default web MVP surface. Do not set `NEXT_PUBLIC_APP_STORE_MVP_MODE=true` on a deployment that also serves `www.mandysbikefinder.com`.
+
+Current setup note: `app.mandysbikefinder.com` is the App Store MVP hosted URL for Capacitor/TestFlight planning. See `docs/product/hosted-app-store-mvp-url-qa.md`.
+
+Current live preview note:
+
+- `https://app.mandysbikefinder.com/` is live and opens directly into App Store MVP mode.
+- `https://mandys-bike-finder-app.vercel.app/` remains the underlying Vercel app-project URL.
+
+#### Capacitor iOS Wrapper Setup
+
+Capacitor dependencies and hosted-app config now live under `app/`.
+
+- Config file: `app/capacitor.config.ts`
+- App ID placeholder: `com.mandysbikefinder.app`
+- Hosted URL loaded by the iOS shell: `https://app.mandysbikefinder.com`
+- Provider secrets remain on hosted Vercel API routes and must not be added to Capacitor config.
+- Capacitor CLI currently requires Node 22+; local verification used Node 24.
+
+Useful commands:
+
+```powershell
+cd app
+npm.cmd run cap:doctor
+npm.cmd run cap:add:ios
+npm.cmd run cap:sync
+npm.cmd run cap:open:ios
+```
+
+Run `cap:add:ios` only when ready to generate the native iOS project files.
+
+Current native project status:
+
+- `app/ios/` has been generated with `npm.cmd run cap:add:ios`.
+- `npm.cmd run cap:sync` completed successfully.
+- `npm.cmd run cap:doctor` reaches the expected Windows blocker: Xcode is not installed. Continue Xcode validation on macOS.
+- Xcode/TestFlight checklist: `docs/product/xcode-testflight-preparation.md`.
+
+#### Default Web MVP Regression Check
+
+To check the default web MVP mode, unset the flag or set it to `false` before starting dev.
+
+Windows PowerShell:
+
+```powershell
+cd app
+$env:NEXT_PUBLIC_APP_STORE_MVP_MODE="false"
+npm run dev
+```
+
+Mac/Linux:
+
+```bash
+cd app
+NEXT_PUBLIC_APP_STORE_MVP_MODE=false npm run dev
+```
+
+In default web MVP mode, you should see the existing long web flow. The App Store bottom tab shell should not appear.
+
+#### Manual Smoke Checklist
+
+- Profile can save, reload, edit, and clear a child profile.
+- Evaluate can accept screenshot preview, link/text reference, or manual listing details.
+- Evaluate only runs analysis after the user taps the local evaluate action.
+- A result can be saved to History.
+- History can show, favorite/unfavorite, view, and delete saved evaluations.
+- Settings can clear child profile, history, and all App Store MVP local data.
+- Initial load should not call OpenAI or an LLM; the expected initial API request is `/api/status`.
+- Default web MVP mode still loads and the App Store tab shell stays hidden.
+
+App Store MVP mode includes Profile, Evaluate, History, and Settings with local profile/history storage and local fallback analysis. It intentionally hides or defers email report, PDF export, Bike Scout, waitlist, payment, account/login, push notifications, and marketplace automation.
+
 Current verification note:
 
 - Run checks from `/app` when Node.js/npm is available:

@@ -49,6 +49,49 @@ const defaultListing: Listing = {
 };
 
 const RIDER_PROFILE_STORAGE_KEY = "mandy-free-bike-check-rider-profile";
+const APP_STORE_MVP_MODE = process.env.NEXT_PUBLIC_APP_STORE_MVP_MODE === "true";
+const APP_STORE_ACTIVE_CHILD_PROFILE_KEY = "mbf.appStore.activeChildProfile";
+const APP_STORE_SAVED_EVALUATIONS_KEY = "mbf.appStore.savedEvaluations";
+const APP_STORE_MVP_VERSION = "1.0";
+const APP_STORE_MVP_LOCAL_STORAGE_KEYS = [
+  APP_STORE_ACTIVE_CHILD_PROFILE_KEY,
+  APP_STORE_SAVED_EVALUATIONS_KEY,
+];
+
+type AppStoreTab = "profile" | "evaluate" | "history" | "settings";
+type AppStoreEvaluateInputMode = "screenshot" | "link" | "manual";
+
+type AppStoreAiExtractionSummary = {
+  provider: string;
+  confidence?: string;
+  missingFields: string[];
+  fallback: boolean;
+};
+
+type AppStoreActiveChildProfile = {
+  nickname?: string;
+  child: ChildProfile;
+  savedAt: string;
+};
+
+type AppStoreSavedEvaluation = {
+  id: string;
+  createdAt: string;
+  listing: Listing;
+  analysis: AnalysisResult;
+  sellerMessage: string;
+  childNickname?: string;
+  childSnapshot: ChildProfile;
+  inputMode: AppStoreEvaluateInputMode;
+  screenshotName?: string;
+  savedAt: string;
+  favorite: boolean;
+};
+
+type AppStoreSavedEvaluationWriteResult = {
+  evaluation: AppStoreSavedEvaluation;
+  wasDuplicate: boolean;
+};
 
 type SavedRiderProfile = {
   child: ChildProfile;
@@ -106,6 +149,7 @@ export default function Home() {
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [analyzedSignature, setAnalyzedSignature] = useState("");
   const [status, setStatus] = useState("Local fallback ready");
+  const [isOffline, setIsOffline] = useState(false);
   const [providerModes, setProviderModes] = useState<ProviderModes | null>(null);
   const [messageGoal, setMessageGoal] = useState("lowerOffer");
   const [messageTone, setMessageTone] = useState("friendly");
@@ -137,6 +181,7 @@ export default function Home() {
   const [bikeCoachInput, setBikeCoachInput] = useState("");
   const [bikeCoachMessages, setBikeCoachMessages] = useState<BikeCoachMessage[]>([]);
   const [isBikeCoachLoading, setIsBikeCoachLoading] = useState(false);
+  const [activeAppStoreTab, setActiveAppStoreTab] = useState<AppStoreTab>("profile");
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -210,12 +255,23 @@ export default function Home() {
   }, [listing, savedScoutProfiles]);
 
   useEffect(() => {
+    setIsOffline(typeof navigator !== "undefined" ? !navigator.onLine : false);
     apiGet("/api/status").then((result) => {
       if (result?.providers) {
         setProviderModes(result.providers);
         setStatus(providerStatusText(result.providers));
       }
     });
+  }, []);
+
+  useEffect(() => {
+    const updateOnlineStatus = () => setIsOffline(!navigator.onLine);
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    return () => {
+      window.removeEventListener("online", updateOnlineStatus);
+      window.removeEventListener("offline", updateOnlineStatus);
+    };
   }, []);
 
   useEffect(() => {
@@ -720,8 +776,23 @@ export default function Home() {
     };
   }
 
+  if (APP_STORE_MVP_MODE) {
+    return (
+      <AppStoreTabShell
+        activeTab={activeAppStoreTab}
+        isOffline={isOffline}
+        onSelectTab={setActiveAppStoreTab}
+      />
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-[#fff8ea] px-4 py-5 md:px-6 md:py-7">
+    <main className="app-safe-shell min-h-screen bg-[#fff8ea] px-4 py-5 md:px-6 md:py-7">
+      {isOffline && (
+        <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-[1320px] rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 shadow-panel">
+          You are offline. Local guidance may remain visible, but screenshot extraction, link analysis, and email reports need a connection.
+        </div>
+      )}
       <section className="mx-auto max-w-[1320px]">
         <div className="relative mb-7 min-h-[520px] overflow-hidden rounded-section border border-[#f1dfba] bg-[#fff2d4] shadow-soft">
           <Image
@@ -1989,6 +2060,1114 @@ export default function Home() {
   );
 }
 
+function AppStoreTabShell({
+  activeTab,
+  isOffline,
+  onSelectTab,
+}: {
+  activeTab: AppStoreTab;
+  isOffline: boolean;
+  onSelectTab: (tab: AppStoreTab) => void;
+}) {
+  return (
+    <main className="app-safe-shell min-h-screen bg-slate-50 px-4 pb-28 text-slate-900 md:px-6">
+      {isOffline && (
+        <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-2xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 shadow-panel">
+          You are offline. Local guidance may remain visible, but screenshot extraction and link analysis need a connection.
+        </div>
+      )}
+      <section className="mx-auto grid max-w-2xl gap-4">
+        {activeTab === "profile" && <ProfileScreenPlaceholder onEvaluate={() => onSelectTab("evaluate")} />}
+        {activeTab === "evaluate" && (
+          <EvaluateScreenPlaceholder
+            onHistory={() => onSelectTab("history")}
+            onProfile={() => onSelectTab("profile")}
+          />
+        )}
+        {activeTab === "history" && <HistoryScreenPlaceholder onEvaluate={() => onSelectTab("evaluate")} />}
+        {activeTab === "settings" && <SettingsScreenPlaceholder />}
+      </section>
+      <BottomTabNav activeTab={activeTab} onSelectTab={onSelectTab} />
+    </main>
+  );
+}
+
+function AppScreenHeader({ title, eyebrow, copy }: { title: string; eyebrow: string; copy: string }) {
+  return (
+    <header className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{eyebrow}</p>
+      <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">{title}</h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{copy}</p>
+    </header>
+  );
+}
+
+function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
+  const [savedProfile, setSavedProfile] = useState<AppStoreActiveChildProfile | null>(null);
+  const [isEditing, setIsEditing] = useState(true);
+  const [nickname, setNickname] = useState("");
+  const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
+  const [heightCmInput, setHeightCmInput] = useState("");
+  const [heightFeet, setHeightFeet] = useState("");
+  const [heightInches, setHeightInches] = useState("");
+  const [age, setAge] = useState("");
+  const [experience, setExperience] = useState<ChildProfile["experience"]>("beginner");
+  const [weightUnit, setWeightUnit] = useState<"lb" | "kg">("lb");
+  const [weightInput, setWeightInput] = useState("");
+  const [stylePreference, setStylePreference] = useState("all good / no preference");
+  const [colorPreferences, setColorPreferences] = useState<string[]>(defaultChild.colorPreferences);
+  const [validationMessage, setValidationMessage] = useState("");
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+
+  useEffect(() => {
+    const storedProfile = loadAppStoreActiveChildProfile();
+    if (!storedProfile) return;
+    setSavedProfile(storedProfile);
+    hydrateAppStoreProfileForm(storedProfile);
+    setIsEditing(false);
+    // Profile hydration should run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const normalizedChild = useMemo<ChildProfile>(() => {
+    const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
+    const normalizedWeightKg = weightInput ? (weightUnit === "lb" ? lbToKg(weightInput) : toFixed(weightInput, 1)) : "";
+    return {
+      ...defaultChild,
+      heightCm: normalizedHeightCm,
+      age,
+      weight: normalizedWeightKg,
+      experience,
+      stylePreference,
+      colorPreferences,
+    };
+  }, [age, colorPreferences, experience, heightCmInput, heightFeet, heightInches, heightUnit, stylePreference, weightInput, weightUnit]);
+
+  const activeRecommendation = savedProfile ? buildChildBikeRecommendation(savedProfile.child) : null;
+
+  function hydrateAppStoreProfileForm(profile: AppStoreActiveChildProfile) {
+    const childProfile = profile.child;
+    setNickname(profile.nickname || "");
+    setHeightUnit("cm");
+    setHeightCmInput(childProfile.heightCm || "");
+    setHeightFeet("");
+    setHeightInches("");
+    setAge(childProfile.age || "");
+    setExperience(childProfile.experience || "beginner");
+    setWeightUnit("kg");
+    setWeightInput(childProfile.weight || "");
+    setStylePreference(childProfile.stylePreference || "all good / no preference");
+    setColorPreferences(childProfile.colorPreferences?.length ? childProfile.colorPreferences : defaultChild.colorPreferences);
+  }
+
+  function toggleAppStoreColorPreference(option: string) {
+    setColorPreferences((current) => {
+      const values = current || [];
+      if (option === "No preference / all colors are fine") {
+        return ["No preference / all colors are fine"];
+      }
+      const next = values.filter((value) => value !== "No preference / all colors are fine");
+      if (next.includes(option)) {
+        const filtered = next.filter((value) => value !== option);
+        return filtered.length ? filtered : ["No preference / all colors are fine"];
+      }
+      return [...next, option];
+    });
+  }
+
+  function validateAppStoreProfile() {
+    const height = Number(normalizedChild.heightCm);
+    const parsedAge = Number(age);
+    if (!height) return "Enter height to estimate bike size.";
+    if (height < 80 || height > 190) return "Check height. Use a child-height value.";
+    if (age && (!Number.isFinite(parsedAge) || parsedAge < 2 || parsedAge > 18)) return "Check age. Use a value from 2 to 18.";
+    if (!experience) return "Choose riding experience.";
+    return "";
+  }
+
+  function saveProfile() {
+    const error = validateAppStoreProfile();
+    if (error) {
+      setValidationMessage(error);
+      return;
+    }
+    const nextProfile: AppStoreActiveChildProfile = {
+      nickname: nickname.trim(),
+      child: normalizedChild,
+      savedAt: new Date().toISOString(),
+    };
+    saveAppStoreActiveChildProfile(nextProfile);
+    setSavedProfile(nextProfile);
+    setValidationMessage("");
+    setIsConfirmingClear(false);
+    setIsEditing(false);
+  }
+
+  function editProfile() {
+    if (savedProfile) hydrateAppStoreProfileForm(savedProfile);
+    setValidationMessage("");
+    setIsConfirmingClear(false);
+    setIsEditing(true);
+  }
+
+  function clearProfile() {
+    clearAppStoreActiveChildProfile();
+    setSavedProfile(null);
+    setNickname("");
+    setHeightUnit("cm");
+    setHeightCmInput("");
+    setHeightFeet("");
+    setHeightInches("");
+    setAge("");
+    setExperience("beginner");
+    setWeightUnit("lb");
+    setWeightInput("");
+    setStylePreference("all good / no preference");
+    setColorPreferences(defaultChild.colorPreferences);
+    setValidationMessage("");
+    setIsConfirmingClear(false);
+    setIsEditing(true);
+  }
+
+  function cancelEdit() {
+    if (!savedProfile) return;
+    hydrateAppStoreProfileForm(savedProfile);
+    setValidationMessage("");
+    setIsConfirmingClear(false);
+    setIsEditing(false);
+  }
+
+  return (
+    <>
+      <AppScreenHeader
+        eyebrow="Mandy's Bike Finder"
+        title="Profile"
+        copy="Save your child's bike fit profile so each listing check starts from the right size and riding context."
+      />
+      {!savedProfile && !isEditing && (
+        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
+          <h2 className="mt-2 text-xl font-bold text-slate-950">Add your rider</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Height, age, and riding experience help Mandy estimate the right bike size. Stored locally. No account needed.
+          </p>
+          <button type="button" onClick={() => setIsEditing(true)} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
+            Create profile
+          </button>
+        </section>
+      )}
+      {savedProfile && !isEditing && activeRecommendation && (
+        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Saved on this device</p>
+              <h2 className="mt-2 text-2xl font-bold text-slate-950">{savedProfile.nickname || "Your child"}</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Age {savedProfile.child.age || "not set"} - {savedProfile.child.heightCm || "unknown"} cm - {savedProfile.child.experience}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={editProfile} className="min-h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700">
+                Edit
+              </button>
+              <button type="button" onClick={() => setIsConfirmingClear(true)} className="min-h-10 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-bold text-red-700">
+                Clear
+              </button>
+            </div>
+          </div>
+          {isConfirmingClear && (
+            <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3">
+              <p className="text-sm font-semibold text-red-800">Clear this profile from this device?</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" onClick={clearProfile} className="min-h-10 rounded-md bg-red-700 px-3 text-sm font-bold text-white">
+                  Confirm clear
+                </button>
+                <button type="button" onClick={() => setIsConfirmingClear(false)} className="min-h-10 rounded-md border border-red-200 bg-white px-3 text-sm font-bold text-red-700">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <InfoLine label="Recommended wheel size" value={activeRecommendation.wheelSize} />
+            <InfoLine label="Recommended bike type" value={activeRecommendation.category} />
+            <InfoLine label="Growth option" value={activeRecommendation.growthOption || "No growth option needed now"} />
+            <InfoLine label="Style guidance" value={activeRecommendation.styleRecommendation || "Fit-first neutral styling"} />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-700">{activeRecommendation.explanation}</p>
+          <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-slate-700">
+            This recommendation is a starting point. Parents should still check fit, brakes, tires, rust, and test-ride comfort before buying.
+          </p>
+          <button type="button" onClick={onEvaluate} className="mt-5 min-h-11 w-full rounded-md bg-brand px-4 text-sm font-bold text-white">
+            Evaluate a bike
+          </button>
+        </section>
+      )}
+      {isEditing && (
+        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
+          <h2 className="mt-2 text-xl font-bold text-slate-950">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
+          <div className="mt-4 grid gap-4">
+            <Field label="Child name / nickname" optional>
+              <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Optional nickname" />
+            </Field>
+            <Field label="Height" required>
+              <div className="grid grid-cols-[110px_1fr] gap-2">
+                <select className={inputClass} value={heightUnit} onChange={(event) => setHeightUnit(event.target.value as "cm" | "ft-in")}>
+                  <option value="cm">cm</option>
+                  <option value="ft-in">ft-in</option>
+                </select>
+                {heightUnit === "cm" ? (
+                  <input className={inputClass} type="number" min="80" max="190" placeholder="Height value" value={heightCmInput} onChange={(event) => setHeightCmInput(event.target.value)} />
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <input className={inputClass} type="number" min="2" max="6" placeholder="feet" value={heightFeet} onChange={(event) => setHeightFeet(event.target.value)} />
+                    <input className={inputClass} type="number" min="0" max="11" placeholder="inches" value={heightInches} onChange={(event) => setHeightInches(event.target.value)} />
+                  </div>
+                )}
+              </div>
+            </Field>
+            <Field label="Age" required>
+              <input className={inputClass} type="number" min="2" max="18" placeholder="Age" value={age} onChange={(event) => setAge(event.target.value)} />
+            </Field>
+            <Field label="Riding experience" required>
+              <select className={inputClass} value={experience} onChange={(event) => setExperience(event.target.value as ChildProfile["experience"])}>
+                <option value="beginner">Beginner</option>
+                <option value="comfortable">Comfortable</option>
+                <option value="confident">Confident</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </Field>
+            <Field label="Weight" optional>
+              <div className="grid grid-cols-[110px_1fr] gap-2">
+                <select className={inputClass} value={weightUnit} onChange={(event) => setWeightUnit(event.target.value as "lb" | "kg")}>
+                  <option value="lb">lb</option>
+                  <option value="kg">kg</option>
+                </select>
+                <input className={inputClass} type="number" placeholder="Weight value" value={weightInput} onChange={(event) => setWeightInput(event.target.value)} />
+              </div>
+            </Field>
+            <Field label="Style preference" optional>
+              <select className={inputClass} value={stylePreference} onChange={(event) => setStylePreference(event.target.value)}>
+                <option value="all good / no preference">All good / no preference</option>
+                <option value="boy-style">Boy-style</option>
+                <option value="girl-style">Girl-style</option>
+              </select>
+            </Field>
+            <Field label="Color preference" optional>
+              <div className="grid gap-2 rounded-md border border-slate-300 bg-slate-50 p-3 sm:grid-cols-2">
+                {colorPreferenceOptions.map((option) => (
+                  <ColorPreferenceChip
+                    key={option}
+                    option={option}
+                    selected={colorPreferences.includes(option)}
+                    onClick={() => toggleAppStoreColorPreference(option)}
+                  />
+                ))}
+              </div>
+            </Field>
+          </div>
+          {validationMessage && (
+            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+              {validationMessage}
+            </p>
+          )}
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            <button type="button" onClick={saveProfile} className="min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
+              {savedProfile ? "Update profile" : "Save profile"}
+            </button>
+            {savedProfile ? (
+              <button type="button" onClick={cancelEdit} className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700">
+                Cancel
+              </button>
+            ) : (
+              <button type="button" onClick={onEvaluate} className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700">
+                Evaluate a bike
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => void; onProfile: () => void }) {
+  const [activeProfile, setActiveProfile] = useState<AppStoreActiveChildProfile | null>(null);
+  const [inputMode, setInputMode] = useState<AppStoreEvaluateInputMode>("screenshot");
+  const [draftListing, setDraftListing] = useState<Listing>(defaultListing);
+  const [pastedListingText, setPastedListingText] = useState("");
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotName, setScreenshotName] = useState("");
+  const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
+  const [isExtractingScreenshot, setIsExtractingScreenshot] = useState(false);
+  const [notice, setNotice] = useState("Local analysis is ready. AI screenshot extraction only starts after you tap the AI button.");
+  const [aiExtractionSummary, setAiExtractionSummary] = useState<AppStoreAiExtractionSummary | null>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [sellerMessage, setSellerMessage] = useState("");
+
+  const hasProfile = Boolean(activeProfile);
+  const hasListingDetails = Boolean(
+    (draftListing.title || "").trim() ||
+      (draftListing.askingPrice || "").trim() ||
+      (draftListing.wheelSize || "").trim() ||
+      (draftListing.description || "").trim() ||
+      pastedListingText.trim() ||
+      screenshotName,
+  );
+  const canAnalyze = hasProfile && hasListingDetails;
+
+  useEffect(() => {
+    setActiveProfile(loadAppStoreActiveChildProfile());
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
+    };
+  }, [screenshotPreviewUrl]);
+
+  function updateDraftListingField<K extends keyof Listing>(field: K, value: Listing[K]) {
+    setDraftListing((current) => ({ ...current, [field]: value }));
+    setResult(null);
+    setSellerMessage("");
+  }
+
+  function handleScreenshotUpload(file: File | null) {
+    if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
+    setResult(null);
+    setSellerMessage("");
+    if (!file) {
+      setScreenshotFile(null);
+      setScreenshotName("");
+      setScreenshotPreviewUrl("");
+      setAiExtractionSummary(null);
+      setNotice("Screenshot removed. You can still paste text or enter details manually.");
+      return;
+    }
+    setScreenshotFile(file);
+    setScreenshotName(file.name);
+    setScreenshotPreviewUrl(URL.createObjectURL(file));
+    setAiExtractionSummary(null);
+    setNotice("Screenshot attached for local preview only. No AI or server processing started.");
+  }
+
+  async function extractScreenshotWithAI() {
+    if (!screenshotFile) {
+      setAiExtractionSummary(null);
+      setNotice("Choose a screenshot first, then tap AI extraction.");
+      return;
+    }
+    if (screenshotFile.size > 5 * 1024 * 1024) {
+      setAiExtractionSummary(null);
+      setNotice("Screenshot file is too large. Please upload an image under 5 MB.");
+      return;
+    }
+    if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(screenshotFile.type)) {
+      setAiExtractionSummary(null);
+      setNotice("AI extraction supports jpg, jpeg, png, and webp screenshots. You can still enter details manually.");
+      return;
+    }
+
+    setIsExtractingScreenshot(true);
+    setNotice("Sending this screenshot to the server-side AI extraction service. Review the fields after it returns.");
+    try {
+      const prepared = await prepareScreenshotForExtraction(screenshotFile);
+      const response = await apiPost("/api/extract", {
+        imageDataUrl: prepared.dataUrl,
+        imageMimeType: prepared.mimeType,
+        imageSizeBytes: prepared.sizeBytes,
+      });
+      const fields = response?.result?.fields as Partial<Listing> | undefined;
+      if (fields && Object.keys(compactFields(fields)).length) {
+        setDraftListing((current) => ({ ...current, ...compactFields(fields) }));
+        setResult(null);
+        setSellerMessage("");
+        setAiExtractionSummary({
+          provider: String(response?.result?.provider || "AI"),
+          confidence: response?.result?.confidence ? String(response.result.confidence) : undefined,
+          missingFields: Array.isArray(response?.result?.missingFields)
+            ? response.result.missingFields.map((field: unknown) => String(field))
+            : [],
+          fallback: Boolean(response?.fallback),
+        });
+        setNotice(
+          response?.fallback
+            ? response?.statusMessage || "AI extraction was unavailable. Review any returned fields or enter details manually."
+            : `AI extracted listing details${response?.result?.confidence ? ` (${response.result.confidence} confidence)` : ""}. Review and edit anything that looks wrong.`,
+        );
+      } else {
+        setAiExtractionSummary(null);
+        setNotice(response?.statusMessage || "AI extraction could not read enough listing details. Please enter the details manually.");
+      }
+    } catch {
+      setAiExtractionSummary(null);
+      setNotice("AI extraction failed. Manual entry and local analysis are still available.");
+    } finally {
+      setIsExtractingScreenshot(false);
+    }
+  }
+
+  function applyPastedTextLocally() {
+    const text = pastedListingText.trim();
+    if (!text) {
+      setNotice("Paste listing text first, then apply it to the editable review fields.");
+      return;
+    }
+    const extracted = localExtract(text);
+    setDraftListing((current) => ({
+      ...current,
+      ...compactFields(extracted),
+      description: extracted.description || current.description,
+    }));
+    setResult(null);
+    setSellerMessage("");
+    setAiExtractionSummary(null);
+    setNotice("Listing text was parsed locally on this device. Review the fields before analyzing.");
+  }
+
+  function analyzeListingLocally() {
+    if (!activeProfile) {
+      setNotice("Save a child profile first so Mandy can check bike fit.");
+      return;
+    }
+
+    const parsedText: Partial<Listing> = pastedListingText.trim() ? localExtract(pastedListingText) : {};
+    const listingForAnalysis: Listing = {
+      ...draftListing,
+      ...compactFields({
+        title: draftListing.title || parsedText.title,
+        askingPrice: draftListing.askingPrice || parsedText.askingPrice,
+        wheelSize: draftListing.wheelSize || parsedText.wheelSize,
+        description: draftListing.description || parsedText.description,
+      }),
+    };
+
+    if (!hasListingDetails) {
+      setNotice("Add a screenshot, pasted text, or a few manual listing details before analyzing.");
+      return;
+    }
+
+    const localResult = analyzeBike(activeProfile.child, listingForAnalysis, localPriceReference(listingForAnalysis));
+    setDraftListing(listingForAnalysis);
+    setResult(localResult);
+    setSellerMessage(generateSellerMessage("askQuestions", "friendly", listingForAnalysis, {}));
+    setNotice("Local analysis complete. No screenshot, listing text, or child profile was sent to an AI service for this result.");
+  }
+
+  function saveResultToHistory() {
+    if (!activeProfile || !result) {
+      setNotice("Run an analysis before saving to History.");
+      return;
+    }
+
+    const saved = addAppStoreSavedEvaluation({
+      listing: draftListing,
+      analysis: result,
+      sellerMessage,
+      childNickname: activeProfile.nickname,
+      childSnapshot: activeProfile.child,
+      inputMode,
+      screenshotName,
+    });
+    setNotice(saved.wasDuplicate ? "This result is already in History, so the existing saved item was moved to the top." : "Saved to History on this device.");
+    onHistory();
+  }
+
+  return (
+    <>
+      <AppScreenHeader
+        eyebrow="One listing at a time"
+        title="Evaluate"
+        copy="Upload a screenshot, extract listing details with explicit AI help, or enter details manually. Screenshot AI only runs after you tap the AI action."
+      />
+
+      {!hasProfile && (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 p-5 shadow-panel">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-700">Profile needed</p>
+          <h2 className="mt-2 text-xl font-bold text-slate-950">Save a child profile first</h2>
+          <p className="mt-2 text-sm leading-6 text-amber-900">
+            Bike fit depends on height and riding experience. Your profile stays on this device.
+          </p>
+          <button type="button" onClick={onProfile} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
+            Go to Profile
+          </button>
+        </section>
+      )}
+
+      {activeProfile && (
+        <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-sm font-bold text-emerald-950">
+            Checking for {activeProfile.nickname?.trim() || "your child"}
+          </p>
+          <p className="mt-1 text-xs font-semibold text-emerald-800">
+            {activeProfile.child.heightCm || "Unknown"} cm, {activeProfile.child.experience} rider
+          </p>
+        </section>
+      )}
+
+      <section className="grid gap-3">
+        <AppStoreInputMethodButton
+          active={inputMode === "screenshot"}
+          title="Upload screenshot"
+          copy="Attach an image for local preview, then tap AI extraction if you want Mandy to read visible listing details."
+          onClick={() => setInputMode("screenshot")}
+        />
+        <AppStoreInputMethodButton
+          active={inputMode === "link"}
+          title="Paste link or text"
+          copy="Save the link as a reference and paste readable listing text. No marketplace page is scraped automatically."
+          onClick={() => setInputMode("link")}
+        />
+        <AppStoreInputMethodButton
+          active={inputMode === "manual"}
+          title="Manual entry"
+          copy="Enter details yourself and use local guidance. No AI is required."
+          onClick={() => setInputMode("manual")}
+        />
+      </section>
+
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Input</p>
+        {inputMode === "screenshot" && (
+          <div className="mt-4 grid gap-4">
+            <label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+              <span className="text-sm font-bold text-slate-900">{screenshotName || "Choose listing screenshot"}</span>
+              <span className="mt-1 text-xs font-semibold text-slate-500">JPG, PNG, or WEBP from the system picker</span>
+              <input
+                className="sr-only"
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleScreenshotUpload(event.target.files?.[0] || null)}
+              />
+            </label>
+            {screenshotPreviewUrl && (
+              <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="max-h-72 w-full object-contain" />
+              </div>
+            )}
+            <p className="text-xs font-semibold text-slate-600">
+              Choosing a screenshot only creates a local preview. AI starts only when you tap the extraction button below.
+            </p>
+            <button
+              type="button"
+              disabled={!screenshotFile || isExtractingScreenshot}
+              onClick={extractScreenshotWithAI}
+              className={`min-h-11 rounded-md px-4 text-sm font-bold ${
+                screenshotFile && !isExtractingScreenshot ? "bg-brand text-white" : "cursor-not-allowed bg-slate-300 text-slate-600"
+              }`}
+            >
+              {isExtractingScreenshot ? "Extracting details..." : "Extract details with AI"}
+            </button>
+            <p className="text-xs font-semibold text-slate-600">
+              This sends the selected screenshot to Mandy&apos;s server-side AI extraction service. OpenAI/provider keys stay on the server, and manual entry still works if AI is off or limited.
+            </p>
+          </div>
+        )}
+
+        {inputMode === "link" && (
+          <div className="mt-4 grid gap-4">
+            <Field label="Listing link" optional>
+              <input
+                className={inputClass}
+                type="url"
+                placeholder="https://..."
+                value={draftListing.listingLink || ""}
+                onChange={(event) => {
+                  const url = event.target.value;
+                  const marketplace = detectMarketplace(url);
+                  updateDraftListingField("listingLink", url);
+                  updateDraftListingField("platform", marketplace.label || draftListing.platform || "");
+                }}
+              />
+            </Field>
+            <Field label="Listing text" optional>
+              <textarea
+                className={`${inputClass} min-h-32`}
+                placeholder="Paste the marketplace title, price, wheel size, condition, or description here."
+                value={pastedListingText}
+                onChange={(event) => {
+                  setPastedListingText(event.target.value);
+                  setResult(null);
+                  setSellerMessage("");
+                }}
+              />
+            </Field>
+            <button type="button" onClick={applyPastedTextLocally} className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-800">
+              Apply pasted text locally
+            </button>
+          </div>
+        )}
+
+        {inputMode === "manual" && (
+          <p className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600">
+            Enter or edit the listing details below, then run local analysis.
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-lg border border-blue-100 bg-blue-50/80 p-5 shadow-panel">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Review first</p>
+        <h2 className="mt-2 text-xl font-bold text-slate-950">Listing details</h2>
+        <div className="mt-4 grid gap-4">
+          <Field label="Bike title" optional>
+            <input className={inputClass} value={draftListing.title} onChange={(event) => updateDraftListingField("title", event.target.value)} placeholder="20 inch Trek kids bike" />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Price" optional>
+              <input className={inputClass} inputMode="numeric" value={draftListing.askingPrice || ""} onChange={(event) => updateDraftListingField("askingPrice", event.target.value)} placeholder="120" />
+            </Field>
+            <Field label="Wheel size" optional>
+              <input className={inputClass} value={draftListing.wheelSize || ""} onChange={(event) => updateDraftListingField("wheelSize", event.target.value)} placeholder="20 inch" />
+            </Field>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Brand" optional>
+              <input className={inputClass} value={draftListing.brand || ""} onChange={(event) => updateDraftListingField("brand", event.target.value)} placeholder="Trek, Woom, Schwinn" />
+            </Field>
+            <Field label="Bike type" optional>
+              <input className={inputClass} value={draftListing.bikeType || ""} onChange={(event) => updateDraftListingField("bikeType", event.target.value)} placeholder="Hybrid, mountain, cruiser" />
+            </Field>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Platform/source" optional>
+              <input className={inputClass} value={draftListing.platform || ""} onChange={(event) => updateDraftListingField("platform", event.target.value)} placeholder="Facebook Marketplace" />
+            </Field>
+            <Field label="Location" optional>
+              <input className={inputClass} value={draftListing.location || ""} onChange={(event) => updateDraftListingField("location", event.target.value)} placeholder="Nearby city or pickup area" />
+            </Field>
+          </div>
+          <Field label="Condition / description" optional>
+            <textarea
+              className={`${inputClass} min-h-28`}
+              value={draftListing.description}
+              onChange={(event) => updateDraftListingField("description", event.target.value)}
+              placeholder="Brakes work, tires hold air, light rust, needs tube..."
+            />
+          </Field>
+        </div>
+        {notice && (
+          <p className="mt-4 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600">
+            {notice}
+          </p>
+        )}
+        {aiExtractionSummary && (
+          <article className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-3 text-xs font-semibold text-emerald-950">
+            <p className="font-bold uppercase tracking-[0.12em] text-emerald-700">AI extraction review</p>
+            <p className="mt-2">
+              Fields were extracted by {aiExtractionSummary.provider === "openai" ? "server-side AI" : aiExtractionSummary.provider}
+              {aiExtractionSummary.confidence ? ` with ${aiExtractionSummary.confidence} confidence` : ""}. Please confirm title, price, wheel size, location, and condition before analyzing.
+            </p>
+            {aiExtractionSummary.missingFields.length > 0 && (
+              <p className="mt-2 text-emerald-900">
+                Missing or unclear: {aiExtractionSummary.missingFields.join(", ")}.
+              </p>
+            )}
+            {aiExtractionSummary.fallback && (
+              <p className="mt-2 text-emerald-900">
+                AI was unavailable, so any extracted fields should be treated as a fallback starting point.
+              </p>
+            )}
+          </article>
+        )}
+        <button
+          type="button"
+          disabled={!canAnalyze}
+          onClick={analyzeListingLocally}
+          className={`mt-5 min-h-11 w-full rounded-md px-4 text-sm font-bold ${
+            canAnalyze ? "bg-brand text-white" : "cursor-not-allowed bg-slate-300 text-slate-600"
+          }`}
+        >
+          Analyze bike locally
+        </button>
+        <p className="mt-3 text-xs font-semibold text-slate-600">
+          This button uses the local fallback engine only. It does not send listing text, screenshots, or profile data to OpenAI.
+        </p>
+      </section>
+
+      {result && (
+        <section className="rounded-lg border border-emerald-200 bg-white p-5 shadow-panel">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Result</p>
+          <h2 className="mt-2 text-2xl font-bold text-slate-950">{result.overall.label}</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">{result.overall.reasoning}</p>
+          <div className="mt-4 grid gap-3">
+            <ResultMeter label="Fit" item={result.dimensions.fit} />
+            <ResultMeter label="Deal/value" item={result.dimensions.price} />
+            <ResultMeter label="Risk" item={result.dimensions.risk} />
+          </div>
+          <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+            <p className="text-sm font-bold text-slate-900">Seller message</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">{sellerMessage}</p>
+          </div>
+          <button type="button" onClick={saveResultToHistory} className="mt-4 min-h-11 w-full rounded-md bg-brand px-4 text-sm font-bold text-white">
+            Save to History
+          </button>
+          <p className="mt-3 text-xs font-semibold text-slate-600">
+            Saved history stores this local result on this device and does not re-run AI.
+          </p>
+        </section>
+      )}
+    </>
+  );
+}
+
+function AppStoreInputMethodButton({
+  active,
+  title,
+  copy,
+  onClick,
+}: {
+  active: boolean;
+  title: string;
+  copy: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-lg border p-5 text-left shadow-panel transition ${
+        active ? "border-brand bg-blue-50" : "border-slate-200 bg-white"
+      }`}
+      aria-pressed={active}
+    >
+      <span className="block text-lg font-bold text-slate-950">{title}</span>
+      <span className="mt-2 block text-sm leading-6 text-slate-600">{copy}</span>
+    </button>
+  );
+}
+
+function ResultMeter({ label, item }: { label: string; item: MeterResult }) {
+  const meterClasses: Record<MeterResult["meter"], string> = {
+    green: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    yellow: "border-amber-200 bg-amber-50 text-amber-900",
+    red: "border-rose-200 bg-rose-50 text-rose-900",
+  };
+
+  return (
+    <article className={`rounded-md border p-3 ${meterClasses[item.meter]}`}>
+      <p className="text-xs font-bold uppercase tracking-[0.14em]">{label}</p>
+      <h3 className="mt-1 text-sm font-bold">{item.label}</h3>
+      <p className="mt-1 text-xs leading-5">{item.reasoning}</p>
+    </article>
+  );
+}
+
+function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
+  const [savedEvaluations, setSavedEvaluations] = useState<AppStoreSavedEvaluation[]>([]);
+  const [selectedEvaluationId, setSelectedEvaluationId] = useState("");
+
+  useEffect(() => {
+    const saved = loadAppStoreSavedEvaluations();
+    setSavedEvaluations(saved);
+    setSelectedEvaluationId(saved[0]?.id || "");
+  }, []);
+
+  const selectedEvaluation = savedEvaluations.find((evaluation) => evaluation.id === selectedEvaluationId) || null;
+
+  function refreshHistory(next: AppStoreSavedEvaluation[]) {
+    saveAppStoreSavedEvaluations(next);
+    setSavedEvaluations(next);
+    if (selectedEvaluationId && !next.some((evaluation) => evaluation.id === selectedEvaluationId)) {
+      setSelectedEvaluationId(next[0]?.id || "");
+    }
+  }
+
+  function toggleFavorite(id: string) {
+    refreshHistory(savedEvaluations.map((evaluation) => (
+      evaluation.id === id ? { ...evaluation, favorite: !evaluation.favorite } : evaluation
+    )));
+  }
+
+  function deleteEvaluation(id: string) {
+    if (!window.confirm("Delete this saved bike check from this device?")) return;
+    refreshHistory(savedEvaluations.filter((evaluation) => evaluation.id !== id));
+  }
+
+  return (
+    <>
+      <AppScreenHeader
+        eyebrow="Saved on this device"
+        title="History"
+        copy="Saved evaluations stay on this device for the first App Store MVP. Opening History does not re-run analysis or call AI."
+      />
+
+      {!savedEvaluations.length ? (
+        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Empty state</p>
+          <h2 className="mt-2 text-xl font-bold text-slate-950">No saved bike checks yet</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Save an evaluation to keep title, price, source, recommendation, fit/deal/risk summary, and favorite status on this device.
+          </p>
+          <button type="button" onClick={onEvaluate} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
+            Evaluate a bike
+          </button>
+        </section>
+      ) : (
+        <section className="grid gap-3">
+          {savedEvaluations.map((evaluation) => (
+            <article key={evaluation.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-panel">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                    {evaluation.listing.platform || sourceLabelFromInputMode(evaluation.inputMode)}
+                  </p>
+                  <h2 className="mt-1 text-lg font-bold text-slate-950">{evaluation.listing.title || "Untitled bike listing"}</h2>
+                  <p className="mt-1 text-sm font-semibold text-slate-600">
+                    {evaluation.listing.askingPrice ? `$${evaluation.listing.askingPrice}` : "Price not set"} - {formatAppStoreDate(evaluation.savedAt)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(evaluation.id)}
+                  className={`min-h-10 rounded-md border px-3 text-xs font-bold ${
+                    evaluation.favorite ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-300 bg-white text-slate-700"
+                  }`}
+                  aria-pressed={evaluation.favorite}
+                >
+                  {evaluation.favorite ? "Favorite" : "Shortlist"}
+                </button>
+              </div>
+              <div className="mt-3 grid gap-2 text-sm text-slate-700">
+                <p className="font-bold text-slate-950">{evaluation.analysis.overall.label}</p>
+                <p>
+                  Fit: {evaluation.analysis.dimensions.fit.label} - Deal: {evaluation.analysis.dimensions.price.label} - Risk: {evaluation.analysis.dimensions.risk.label}
+                </p>
+                {evaluation.screenshotName && (
+                  <p className="text-xs font-semibold text-slate-500">Screenshot reference: {evaluation.screenshotName}</p>
+                )}
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedEvaluationId((current) => current === evaluation.id ? "" : evaluation.id)}
+                  className="min-h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-bold text-slate-800"
+                >
+                  {selectedEvaluationId === evaluation.id ? "Hide details" : "View details"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteEvaluation(evaluation.id)}
+                  className="min-h-10 rounded-md border border-rose-200 bg-rose-50 px-3 text-sm font-bold text-rose-800"
+                >
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {selectedEvaluation && (
+        <section className="rounded-lg border border-blue-100 bg-blue-50/80 p-5 shadow-panel">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Saved detail</p>
+          <h2 className="mt-2 text-xl font-bold text-slate-950">{selectedEvaluation.analysis.overall.label}</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">{selectedEvaluation.analysis.overall.reasoning}</p>
+          <div className="mt-4 grid gap-2 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+            <p className="font-bold text-slate-950">Listing basics</p>
+            <p>{selectedEvaluation.listing.title || "Untitled bike listing"}</p>
+            <p>
+              {selectedEvaluation.listing.askingPrice ? `$${selectedEvaluation.listing.askingPrice}` : "Price not set"}
+              {selectedEvaluation.listing.wheelSize ? ` - ${selectedEvaluation.listing.wheelSize}` : ""}
+              {selectedEvaluation.listing.brand ? ` - ${selectedEvaluation.listing.brand}` : ""}
+            </p>
+            <p>{selectedEvaluation.listing.location || selectedEvaluation.listing.platform || sourceLabelFromInputMode(selectedEvaluation.inputMode)}</p>
+            {selectedEvaluation.listing.listingLink && <p className="break-words text-xs font-semibold text-slate-500">Reference: {selectedEvaluation.listing.listingLink}</p>}
+          </div>
+          <div className="mt-3 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+            <p className="font-bold text-slate-950">Child snapshot</p>
+            <p className="mt-1">
+              {selectedEvaluation.childNickname?.trim() || "Your child"} - {selectedEvaluation.childSnapshot.heightCm || "unknown"} cm - {selectedEvaluation.childSnapshot.experience}
+            </p>
+          </div>
+          <div className="mt-4 grid gap-3">
+            <ResultMeter label="Fit" item={selectedEvaluation.analysis.dimensions.fit} />
+            <ResultMeter label="Deal/value" item={selectedEvaluation.analysis.dimensions.price} />
+            <ResultMeter label="Risk" item={selectedEvaluation.analysis.dimensions.risk} />
+          </div>
+          <div className="mt-4 rounded-md border border-slate-200 bg-white p-3">
+            <p className="text-sm font-bold text-slate-900">Seller message</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">{selectedEvaluation.sellerMessage}</p>
+          </div>
+          <p className="mt-3 text-xs font-semibold text-slate-600">
+            Opening this saved item does not re-run AI, re-analyze the listing, or re-fetch marketplace pages.
+          </p>
+        </section>
+      )}
+    </>
+  );
+}
+
+function SettingsScreenPlaceholder() {
+  const [hasProfile, setHasProfile] = useState(false);
+  const [historyCount, setHistoryCount] = useState(0);
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    refreshSettingsDataSummary();
+  }, []);
+
+  function refreshSettingsDataSummary() {
+    setHasProfile(Boolean(loadAppStoreActiveChildProfile()));
+    setHistoryCount(loadAppStoreSavedEvaluations().length);
+  }
+
+  function clearProfileFromSettings() {
+    if (!hasProfile) {
+      setNotice("No child profile is saved on this device.");
+      return;
+    }
+    if (!window.confirm("Clear the saved child profile from this device?")) return;
+    clearAppStoreActiveChildProfile();
+    refreshSettingsDataSummary();
+    setNotice("Child profile cleared from this device.");
+  }
+
+  function clearHistoryFromSettings() {
+    if (!historyCount) {
+      setNotice("No saved evaluations are stored on this device.");
+      return;
+    }
+    if (!window.confirm("Clear all saved bike evaluations from this device?")) return;
+    clearAppStoreSavedEvaluations();
+    refreshSettingsDataSummary();
+    setNotice("Saved evaluations cleared from this device.");
+  }
+
+  function clearAllLocalDataFromSettings() {
+    if (!hasProfile && !historyCount) {
+      setNotice("No App Store MVP local data is stored on this device.");
+      return;
+    }
+    if (!window.confirm("Clear child profile and saved evaluations from this device?")) return;
+    clearAppStoreMvpLocalData();
+    refreshSettingsDataSummary();
+    setNotice("All App Store MVP local data cleared from this device.");
+  }
+
+  return (
+    <>
+      <AppScreenHeader
+        eyebrow="Privacy and controls"
+        title="Settings"
+        copy="The App Store MVP keeps privacy, AI disclosure, local data controls, and app information in one predictable place."
+      />
+      <section className="grid gap-3">
+        <SettingsPlaceholderCard title="Privacy summary" copy="Child profile and saved evaluations are stored on this device for the App Store MVP. No account or cloud sync is required, and you can clear local data at any time." />
+        <SettingsPlaceholderCard title="AI disclosure" copy="AI features are optional and must start from a clear user action. Choosing a screenshot or pasting text does not start AI by itself. Local fallback analysis works without AI, provider keys stay server-side, and initial app load does not call OpenAI or an LLM." />
+        <SettingsPlaceholderCard title="Marketplace disclosure" copy="Links, text, and screenshots are user-provided references. Mandy's Bike Finder does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages, and saved History does not re-fetch marketplace pages." />
+        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+          <h2 className="text-lg font-bold text-slate-950">Privacy policy</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Review the public product privacy draft for the App Store MVP.
+          </p>
+          <a className="mt-4 inline-flex min-h-11 items-center rounded-md bg-brand px-4 text-sm font-bold text-white" href="/privacy">
+            Open privacy policy
+          </a>
+        </article>
+
+        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+          <h2 className="text-lg font-bold text-slate-950">Local data controls</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Current device data: {hasProfile ? "1 child profile" : "no child profile"} and {historyCount} saved {historyCount === 1 ? "evaluation" : "evaluations"}.
+          </p>
+          {notice && (
+            <p className="mt-3 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-900">
+              {notice}
+            </p>
+          )}
+          <div className="mt-4 grid gap-2">
+            <button
+              type="button"
+              onClick={clearProfileFromSettings}
+              className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-800"
+            >
+              Clear child profile
+            </button>
+            <button
+              type="button"
+              onClick={clearHistoryFromSettings}
+              className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-800"
+            >
+              Clear history
+            </button>
+            <button
+              type="button"
+              onClick={clearAllLocalDataFromSettings}
+              className="min-h-11 rounded-md border border-rose-200 bg-rose-50 px-4 text-sm font-bold text-rose-800"
+            >
+              Clear all local data
+            </button>
+          </div>
+        </article>
+
+        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+          <h2 className="text-lg font-bold text-slate-950">About</h2>
+          <div className="mt-2 grid gap-2 text-sm leading-6 text-slate-600">
+            <p><span className="font-bold text-slate-800">App:</span> Mandy&apos;s Bike Finder</p>
+            <p><span className="font-bold text-slate-800">Mode:</span> App Store MVP</p>
+            <p><span className="font-bold text-slate-800">Version:</span> {APP_STORE_MVP_VERSION}</p>
+            <p><span className="font-bold text-slate-800">Feedback:</span> Coming in a later release.</p>
+          </div>
+        </article>
+
+        <SettingsPlaceholderCard
+          title="Disclaimer"
+          copy="Bike recommendations are decision support only. Parents should inspect fit, brakes, tires, frame condition, and safety before purchase."
+        />
+      </section>
+    </>
+  );
+}
+
+function SettingsPlaceholderCard({ title, copy }: { title: string; copy: string }) {
+  return (
+    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+      <h2 className="text-lg font-bold text-slate-950">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{copy}</p>
+    </article>
+  );
+}
+
+function BottomTabNav({
+  activeTab,
+  onSelectTab,
+}: {
+  activeTab: AppStoreTab;
+  onSelectTab: (tab: AppStoreTab) => void;
+}) {
+  const tabs: Array<{ id: AppStoreTab; label: string }> = [
+    { id: "profile", label: "Profile" },
+    { id: "evaluate", label: "Evaluate" },
+    { id: "history", label: "History" },
+    { id: "settings", label: "Settings" },
+  ];
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-12px_30px_-24px_rgba(15,23,42,0.55)] backdrop-blur" aria-label="App Store MVP tabs">
+      <div className="mx-auto grid max-w-2xl grid-cols-4 gap-2">
+        {tabs.map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              aria-current={active ? "page" : undefined}
+              onClick={() => onSelectTab(tab.id)}
+              className={`min-h-12 rounded-md px-2 text-xs font-bold transition ${
+                active ? "bg-brand text-white shadow-panel" : "bg-slate-50 text-slate-600"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 function BikeSizeRecommendation({ child }: { child: ChildProfile }) {
   const result = recommendWheelSize(child.heightCm, child.experience);
   const details = buildSizeRecommendationDetails(child.heightCm, child.experience, result);
@@ -2751,6 +3930,117 @@ function loadSavedRiderProfile(): SavedRiderProfile | null {
 function saveSavedRiderProfile(profile: SavedRiderProfile) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(RIDER_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+}
+
+function loadAppStoreActiveChildProfile(): AppStoreActiveChildProfile | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(APP_STORE_ACTIVE_CHILD_PROFILE_KEY);
+    return raw ? JSON.parse(raw) as AppStoreActiveChildProfile : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveAppStoreActiveChildProfile(profile: AppStoreActiveChildProfile) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(APP_STORE_ACTIVE_CHILD_PROFILE_KEY, JSON.stringify(profile));
+}
+
+function clearAppStoreActiveChildProfile() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(APP_STORE_ACTIVE_CHILD_PROFILE_KEY);
+}
+
+function loadAppStoreSavedEvaluations(): AppStoreSavedEvaluation[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(APP_STORE_SAVED_EVALUATIONS_KEY);
+    const parsed = raw ? JSON.parse(raw) as AppStoreSavedEvaluation[] : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAppStoreSavedEvaluations(evaluations: AppStoreSavedEvaluation[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(APP_STORE_SAVED_EVALUATIONS_KEY, JSON.stringify(evaluations.slice(0, 10)));
+}
+
+function clearAppStoreSavedEvaluations() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(APP_STORE_SAVED_EVALUATIONS_KEY);
+}
+
+function clearAppStoreMvpLocalData() {
+  if (typeof window === "undefined") return;
+  APP_STORE_MVP_LOCAL_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
+}
+
+function addAppStoreSavedEvaluation(evaluation: Omit<AppStoreSavedEvaluation, "createdAt" | "favorite" | "id" | "savedAt">): AppStoreSavedEvaluationWriteResult {
+  const existing = loadAppStoreSavedEvaluations();
+  const duplicateIndex = existing.findIndex((savedEvaluation) => appStoreEvaluationSignature(savedEvaluation) === appStoreEvaluationSignature(evaluation));
+  if (duplicateIndex >= 0) {
+    const duplicate = {
+      ...existing[duplicateIndex],
+      ...evaluation,
+      id: existing[duplicateIndex].id,
+      createdAt: existing[duplicateIndex].createdAt || existing[duplicateIndex].savedAt || new Date().toISOString(),
+      savedAt: new Date().toISOString(),
+      favorite: existing[duplicateIndex].favorite,
+    };
+    saveAppStoreSavedEvaluations([duplicate, ...existing.filter((_, index) => index !== duplicateIndex)]);
+    return { evaluation: duplicate, wasDuplicate: true };
+  }
+
+  const next: AppStoreSavedEvaluation = {
+    ...evaluation,
+    id: createAppStoreEvaluationId(),
+    createdAt: new Date().toISOString(),
+    savedAt: new Date().toISOString(),
+    favorite: false,
+  };
+  saveAppStoreSavedEvaluations([next, ...existing].slice(0, 10));
+  return { evaluation: next, wasDuplicate: false };
+}
+
+function appStoreEvaluationSignature(evaluation: Pick<AppStoreSavedEvaluation, "analysis" | "childSnapshot" | "listing">) {
+  const listing = evaluation.listing || defaultListing;
+  return JSON.stringify({
+    title: normalizeHistoryValue(listing.title),
+    askingPrice: normalizeHistoryValue(listing.askingPrice),
+    brand: normalizeHistoryValue(listing.brand),
+    wheelSize: normalizeHistoryValue(listing.wheelSize),
+    platform: normalizeHistoryValue(listing.platform),
+    overall: normalizeHistoryValue(evaluation.analysis?.overall?.label),
+    fit: normalizeHistoryValue(evaluation.analysis?.dimensions?.fit?.label),
+    deal: normalizeHistoryValue(evaluation.analysis?.dimensions?.price?.label),
+    risk: normalizeHistoryValue(evaluation.analysis?.dimensions?.risk?.label),
+    childHeight: normalizeHistoryValue(evaluation.childSnapshot?.heightCm),
+    childExperience: normalizeHistoryValue(evaluation.childSnapshot?.experience),
+  });
+}
+
+function normalizeHistoryValue(value: unknown) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function createAppStoreEvaluationId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `evaluation-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function formatAppStoreDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Saved recently";
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
+}
+
+function sourceLabelFromInputMode(inputMode: AppStoreEvaluateInputMode) {
+  if (inputMode === "screenshot") return "Screenshot";
+  if (inputMode === "link") return "Link/text";
+  return "Manual entry";
 }
 
 function feetInchesToCm(feet: string, inches: string) {

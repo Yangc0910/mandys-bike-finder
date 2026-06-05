@@ -1,0 +1,20 @@
+{
+  "name": "Mandy's Bike Finder",
+  "short_name": "Bike Finder",
+  "description": "A used kids bike fit, price, style, and seller-message helper for parents.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f7f9",
+  "theme_color": "#f4f7f9",
+  "orientation": "portrait",
+  "categories": ["lifestyle", "shopping", "utilities"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
