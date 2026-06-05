@@ -1,6 +1,8 @@
 # Current Status
 
-Last updated: 2026-05-15
+Last updated: 2026-06-05
+
+For the latest cross-device continuation snapshot, start with root-level `PROJECT_STATUS.md` and `CODEX_HANDOFF.md`. This file remains useful for implementation detail and historical context.
 
 ## Production Path
 

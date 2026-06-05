@@ -8,6 +8,13 @@ The project is inspired by helping Mandy find the right used bike. It is also a 
 
 Mandy's Bike Finder helps parents decide whether a used kids bike is the right size, the right style, and a good enough deal to contact the seller.
 
+## Start Here For Continuation
+
+- Current project truth snapshot: [PROJECT_STATUS.md](PROJECT_STATUS.md)
+- Codex / cross-device handoff: [CODEX_HANDOFF.md](CODEX_HANDOFF.md)
+- Current handoff workstream: [workstreams/github-cross-device-handoff.md](workstreams/github-cross-device-handoff.md)
+- Mandy Bike Coach agent docs: [agents/bike-coach/README.md](agents/bike-coach/README.md)
+
 Planned paid direction:
 
 - Single paid product only: `Mandy Bike Scout`

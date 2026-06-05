@@ -24,6 +24,7 @@ Mandy's Bike Finder is a web-first MVP deployed from `/app` (Next.js App Router)
 - `/api/extract`, `/api/extract-link`: extraction entry points with guarded behavior.
 - `/api/analyze`, `/api/message`, `/api/report`: analysis and report helpers.
 - `/api/reports/email`: transactional report email sending with validation + rate limits.
+- `/api/assistant`: Mandy Bike Coach guided-assistant route with assistant-specific limits and local fallback guidance.
 
 ### AI / LLM analysis layer (`/app/lib/server/providers.ts`, `/app/lib/server/config.ts`)
 
@@ -31,6 +32,17 @@ Mandy's Bike Finder is a web-first MVP deployed from `/app` (Next.js App Router)
 - Server-side only provider key usage.
 - Daily/session usage limits enforced server-side.
 - Local fallback remains available when disabled or limited.
+
+### Guided assistant (`/app/lib/assistant.ts`, `/app/app/api/assistant/route.ts`)
+
+- Product name: Mandy Bike Coach.
+- Scope: current used kids-bike check only.
+- Inputs: child profile, listing, analysis result, seller message, missing inputs, and selected intent/user question.
+- Outputs: concise parent-friendly guidance, suggested prompts, and suggested next action.
+- Uses OpenAI only server-side when LLM analysis is enabled and within `GUIDED_ASSISTANT_DAILY_LIMIT` / `GUIDED_ASSISTANT_PER_SESSION_LIMIT`.
+- Falls back to static local guidance when disabled, limited, or unavailable.
+- Does not store durable chat history.
+- Must not expose CRM, Salesforce, Resend, API keys, or backend details in user-facing answers.
 
 ### App Store MVP screenshot OCR boundary
 
