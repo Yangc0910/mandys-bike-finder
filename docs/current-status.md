@@ -32,6 +32,7 @@ The `/app` implementation uses:
 - Red/yellow/green result meter.
 - Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
 - Negotiation Boost UI.
+- Mandy Bike Coach guided assistant for contextual help with the current bike check, including missing inputs, verdict explanation, fit guidance, price/risk guidance, seller questions, and seller-message drafting.
 - Email report UI with Resend-backed delivery when configured.
 - Transactional report email API (`/api/reports/email`) with validation, config checks, and rate limits.
 - Optional Salesforce CRM sync for explicitly opted-in bike-deal/product-update leads, with REST API and Web-to-Lead modes.
@@ -46,6 +47,7 @@ The `/app` implementation uses:
   - `/api/message`
   - `/api/report`
   - `/api/reports/email`
+  - `/api/assistant`
 
 All listed API routes are migrated under `/app/app/api`.
 

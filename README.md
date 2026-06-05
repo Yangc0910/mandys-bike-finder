@@ -42,6 +42,7 @@ Phase 1 includes:
 - Dimension-level assessments for fit, price, condition, brand, color/kid appeal, and risk.
 - Negotiation Boost UI and local message generation.
 - Email Report UI with Resend-backed delivery when configured, plus local report preview fallback.
+- Mandy Bike Coach guided assistant for workflow-specific help with missing inputs, verdicts, fit, price, risks, seller questions, and message drafting.
 - Service interfaces for future search, OCR, email, and backend metadata logging.
 
 Phase 1.5 adds a controlled real API beta architecture. Real integrations can be enabled only through server-side feature flags and environment variables. The app must still work without API keys through mock/local fallbacks.
@@ -209,8 +210,16 @@ Core feature flags and controls:
 - `SALESFORCE_AUTH_MODE`
 - `DAILY_LLM_LIMIT`
 - `PER_SESSION_LLM_LIMIT`
+- `GUIDED_ASSISTANT_DAILY_LIMIT`
+- `GUIDED_ASSISTANT_PER_SESSION_LIMIT`
 
 If required email variables are missing or invalid, `/api/reports/email` returns a clear configuration error instead of crashing.
+
+### Guided Assistant
+
+`Mandy Bike Coach` is a workflow-specific assistant inside the bike-check experience. It is not a generic chatbot. It can explain what information is missing, why child height matters, what a verdict means, whether a price looks reasonable, what risks to inspect, and what to ask or message the seller.
+
+The assistant uses server-side LLM calls only when `ENABLE_LLM_ANALYSIS=true` and provider credentials are configured. If the LLM is disabled, unavailable, or over limit, it returns static local guidance so the main bike-check flow still works. It has separate cost controls through `GUIDED_ASSISTANT_DAILY_LIMIT` and `GUIDED_ASSISTANT_PER_SESSION_LIMIT`.
 
 Optional Salesforce CRM sync variables:
 
@@ -545,6 +554,7 @@ See [docs/roadmap.md](docs/roadmap.md) for details.
 
 - Bike Scout waitlist is local-browser storage only (no durable backend waitlist database yet).
 - Report email is HTML/plain-text delivery (no PDF attachment flow yet).
+- Mandy Bike Coach is contextual help for the current bike check, not a durable saved chat history.
 - Live multi-source marketplace monitoring is not live yet.
 - No user auth/account system in the current MVP.
 - No Stripe payment flow yet.

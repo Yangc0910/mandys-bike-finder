@@ -79,6 +79,14 @@ Current report email flow:
 4. Server sends transactional email through Resend when configured.
 5. Parent gets success/failure feedback in the UI.
 
+Current guided assistant flow:
+
+1. Parent can open `Mandy Bike Coach` from the bike-check workspace.
+2. Assistant suggests context-aware prompts such as missing inputs, fit guidance, price fairness, risk checks, seller questions, and seller-message drafting.
+3. Server-side LLM response is used only when LLM analysis is enabled and within assistant limits.
+4. If LLM is disabled, unavailable, or rate-limited, local static guidance keeps the workflow usable.
+5. The assistant does not expose Salesforce, CRM, Resend, API keys, or backend implementation details in the user-facing UI.
+
 Planned Bike Scout flow after backend work:
 
 1. Parent saves a child fit profile and search preferences.
@@ -329,6 +337,8 @@ Bike Scout waitlist storage:
 - Pasted-text extraction is available in link flow.
 - Facebook link flow relies on pasted text/screenshot fallback when direct page read is not possible.
 - Manual entry always remains available.
+- Guided assistant responses are user-triggered only and scoped to the current used kids-bike check.
+- Guided assistant fallback guidance is available when provider configuration or limits prevent LLM use.
 
 ## 11A. Bike Scout Marketplace Connector Foundation
 
@@ -377,6 +387,8 @@ Current server-side configuration:
 
 - `DAILY_LLM_LIMIT` default: `10` (per IP/day baseline)
 - `PER_SESSION_LLM_LIMIT` default baseline: `10`
+- `GUIDED_ASSISTANT_DAILY_LIMIT` default: `50`
+- `GUIDED_ASSISTANT_PER_SESSION_LIMIT` default: `10`
 
 Configured in:
 

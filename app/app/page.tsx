@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 
+import type { BikeCoachIntent } from "@/lib/assistant";
 import { analyzeBike, generateSellerMessage, localPriceReference, recommendWheelSize } from "@/lib/analysis";
 import {
   BIKE_SCOUT_PICKUP_CHECKLIST,
@@ -53,6 +54,11 @@ type SavedRiderProfile = {
   child: ChildProfile;
   recommendation: ChildBikeRecommendation;
   savedAt: string;
+};
+
+type BikeCoachMessage = {
+  role: "assistant" | "user";
+  content: string;
 };
 
 const colorPreferenceOptions = [
@@ -127,6 +133,10 @@ export default function Home() {
   const [waitlistNotice, setWaitlistNotice] = useState("");
   const [showScoutSetup, setShowScoutSetup] = useState(false);
   const [activeFreeStep, setActiveFreeStep] = useState<"rider" | "listing" | "review" | "result">("listing");
+  const [isBikeCoachOpen, setIsBikeCoachOpen] = useState(false);
+  const [bikeCoachInput, setBikeCoachInput] = useState("");
+  const [bikeCoachMessages, setBikeCoachMessages] = useState<BikeCoachMessage[]>([]);
+  const [isBikeCoachLoading, setIsBikeCoachLoading] = useState(false);
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -180,6 +190,19 @@ export default function Home() {
   const hasValidReportEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reportEmail.trim());
   const canRunLinkAction = Boolean(linkValue) && (
     detectedMarketplace.extractionMode !== "fallback_only" || hasPastedText
+  );
+  const bikeCoachMissingInputs = useMemo(() => {
+    const missing: string[] = [];
+    if (!hasCoreListing && !hasScreenshotManualListing && !hasAnyListingField) missing.push("a listing screenshot or pasted listing text");
+    if (!hasHeight) missing.push("child height");
+    if (!hasExperience) missing.push("riding confidence");
+    if (!listing.askingPrice) missing.push("asking price if shown");
+    if (!listing.wheelSize) missing.push("wheel size if shown");
+    return missing;
+  }, [hasAnyListingField, hasCoreListing, hasExperience, hasHeight, hasScreenshotManualListing, listing.askingPrice, listing.wheelSize]);
+  const bikeCoachPrompts = useMemo(
+    () => buildBikeCoachPromptChips(showAnalysisResults, bikeCoachMissingInputs),
+    [bikeCoachMissingInputs, showAnalysisResults],
   );
   const scoutPreview = useMemo(() => {
     if (!savedScoutProfiles.length) return null;
@@ -643,6 +666,58 @@ export default function Home() {
     requestAnimationFrame(() => {
       document.getElementById(anchorId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  }
+
+  async function askBikeCoach(intent: BikeCoachIntent, label?: string, messageOverride?: string) {
+    const userText = (messageOverride || label || "").trim();
+    setIsBikeCoachOpen(true);
+    setBikeCoachMessages((current) => [
+      ...current,
+      { role: "user", content: userText || labelForBikeCoachIntent(intent) },
+    ]);
+    setIsBikeCoachLoading(true);
+    try {
+      const result = await apiPost("/api/assistant", {
+        intent,
+        message: userText,
+        context: buildBikeCoachContext(),
+      });
+      setBikeCoachMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: result?.message || "I can help with fit, price, risk, and seller questions for this bike check.",
+        },
+      ]);
+    } catch {
+      setBikeCoachMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: "I can explain the workflow, but detailed AI explanation is not available right now.",
+        },
+      ]);
+    } finally {
+      setIsBikeCoachLoading(false);
+      setBikeCoachInput("");
+    }
+  }
+
+  function submitBikeCoachMessage(event: FormEvent) {
+    event.preventDefault();
+    const message = bikeCoachInput.trim();
+    if (!message) return;
+    void askBikeCoach("next_step", message, message);
+  }
+
+  function buildBikeCoachContext() {
+    return {
+      child: normalizedChild,
+      listing,
+      analysis: showAnalysisResults ? visibleAnalysis : null,
+      sellerMessage,
+      missingInputs: bikeCoachMissingInputs,
+    };
   }
 
   return (
@@ -1247,6 +1322,17 @@ export default function Home() {
               )}
             </section>
 
+            <BikeCoachPanel
+              className="hidden lg:block"
+              messages={bikeCoachMessages}
+              prompts={bikeCoachPrompts}
+              input={bikeCoachInput}
+              loading={isBikeCoachLoading}
+              onPrompt={(intent, label) => void askBikeCoach(intent, label)}
+              onInputChange={setBikeCoachInput}
+              onSubmit={submitBikeCoachMessage}
+            />
+
           </aside>
           <div className={`${activeFreeStep === "review" || activeFreeStep === "result" ? "grid" : "hidden"} gap-2`}>
             <button
@@ -1291,6 +1377,17 @@ export default function Home() {
                 {dimensionCards(visibleAnalysis).map(([name, item]) => <CompactDimensionCard key={name} name={name} item={item} />)}
               </div>
             </section>
+
+            <BikeCoachPanel
+              className="hidden lg:block"
+              messages={bikeCoachMessages}
+              prompts={bikeCoachPrompts}
+              input={bikeCoachInput}
+              loading={isBikeCoachLoading}
+              onPrompt={(intent, label) => void askBikeCoach(intent, label)}
+              onInputChange={setBikeCoachInput}
+              onSubmit={submitBikeCoachMessage}
+            />
 
             <section className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-lg border border-line bg-white p-5 shadow-panel">
@@ -1848,6 +1945,46 @@ export default function Home() {
           </details>
         </>
       </section>
+      <button
+        type="button"
+        onClick={() => setIsBikeCoachOpen(true)}
+        className="fixed bottom-4 right-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-bold text-white shadow-[0_18px_45px_rgba(15,23,42,0.24)] lg:hidden"
+      >
+        <span aria-hidden>?</span>
+        Ask Bike Coach
+      </button>
+      {isBikeCoachOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/35 px-3 py-4 backdrop-blur-sm lg:hidden">
+          <div className="absolute inset-x-3 bottom-3 max-h-[82vh] overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.28)]">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+              <div>
+                <p className="text-sm font-bold text-slate-950">Mandy Bike Coach</p>
+                <p className="text-xs text-slate-500">Quick help with this bike check</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBikeCoachOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-lg font-bold text-slate-600"
+                aria-label="Close Bike Coach"
+              >
+                x
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto p-4">
+              <BikeCoachPanel
+                messages={bikeCoachMessages}
+                prompts={bikeCoachPrompts}
+                input={bikeCoachInput}
+                loading={isBikeCoachLoading}
+                isMobileSheet
+                onPrompt={(intent, label) => void askBikeCoach(intent, label)}
+                onInputChange={setBikeCoachInput}
+                onSubmit={submitBikeCoachMessage}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -1884,6 +2021,104 @@ function HowItWorksCard({ icon, title, copy }: { icon: string; title: string; co
       <h3 className="mt-1 text-sm font-bold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-600">{copy}</p>
     </article>
+  );
+}
+
+function BikeCoachPanel({
+  messages,
+  prompts,
+  input,
+  loading,
+  className = "",
+  isMobileSheet = false,
+  onPrompt,
+  onInputChange,
+  onSubmit,
+}: {
+  messages: BikeCoachMessage[];
+  prompts: Array<{ intent: BikeCoachIntent; label: string }>;
+  input: string;
+  loading: boolean;
+  className?: string;
+  isMobileSheet?: boolean;
+  onPrompt: (intent: BikeCoachIntent, label: string) => void;
+  onInputChange: (value: string) => void;
+  onSubmit: (event: FormEvent) => void;
+}) {
+  const hasConversation = messages.length > 0;
+  return (
+    <section className={`rounded-2xl border border-blue-100 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] p-4 shadow-panel ${className}`}>
+      {!isMobileSheet && (
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand text-lg font-black text-white shadow-sm">
+            ?
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Mandy Bike Coach</p>
+            <h3 className="mt-1 text-lg font-bold text-slate-950">Need help deciding?</h3>
+            <p className="mt-1 text-sm leading-5 text-slate-600">
+              Ask for a plain-English explanation of fit, price, risks, or what to say to the seller.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className={`${isMobileSheet ? "" : "mt-4"} flex flex-wrap gap-2`}>
+        {prompts.map((prompt) => (
+          <button
+            key={`${prompt.intent}-${prompt.label}`}
+            type="button"
+            onClick={() => onPrompt(prompt.intent, prompt.label)}
+            disabled={loading}
+            className="rounded-full border border-blue-100 bg-white px-3 py-2 text-xs font-bold text-brand shadow-sm transition hover:border-brand hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
+          >
+            {prompt.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {!hasConversation && (
+          <div className="rounded-2xl border border-dashed border-blue-200 bg-white/80 p-4 text-sm leading-6 text-slate-600">
+            Start with one quick question, like “What info is missing?” or “Is this price fair?”
+          </div>
+        )}
+        {messages.slice(-6).map((message, index) => (
+          <div
+            key={`${message.role}-${index}-${message.content.slice(0, 18)}`}
+            className={`rounded-2xl px-3 py-2 text-sm leading-6 ${
+              message.role === "user"
+                ? "ml-8 bg-brand text-white"
+                : "mr-5 border border-slate-100 bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            {message.content}
+          </div>
+        ))}
+        {loading && (
+          <div className="mr-10 rounded-2xl border border-slate-100 bg-white px-3 py-2 text-sm font-semibold text-slate-500 shadow-sm">
+            Mandy is thinking...
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={onSubmit} className="mt-4 flex gap-2">
+        <input
+          value={input}
+          onChange={(event) => onInputChange(event.target.value)}
+          className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand focus:ring-2 focus:ring-blue-100"
+          placeholder="Ask about fit, price, risk..."
+          disabled={loading}
+        />
+        <button
+          type="submit"
+          disabled={loading || !input.trim()}
+          className="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Ask
+        </button>
+      </form>
+    </section>
   );
 }
 
@@ -2355,6 +2590,47 @@ function OverallRecommendationMeter({ meter }: { meter: MeterResult["meter"] }) 
 
 function dimensionCards(analysis: AnalysisResult): Array<[string, MeterResult]> {
   return [["Fit", analysis.dimensions.fit], ["Price", analysis.dimensions.price], ["Condition", analysis.dimensions.condition], ["Brand", analysis.dimensions.brand], ["Kid Appeal", analysis.dimensions.color], ["Risk", analysis.dimensions.risk]];
+}
+
+function buildBikeCoachPromptChips(hasAnalysis: boolean, missingInputs: string[]): Array<{ intent: BikeCoachIntent; label: string }> {
+  if (missingInputs.length) {
+    return [
+      { intent: "explain_missing_inputs", label: "What info is missing?" },
+      { intent: "explain_required_info", label: "What should I add?" },
+      { intent: "explain_flow", label: "How does this work?" },
+    ];
+  }
+  if (hasAnalysis) {
+    return [
+      { intent: "explain_verdict", label: "Explain the verdict" },
+      { intent: "explain_fit_guidance", label: "Explain fit" },
+      { intent: "explain_price_range", label: "Is the price fair?" },
+      { intent: "suggest_seller_questions", label: "What should I ask?" },
+      { intent: "draft_seller_message", label: "Write seller message" },
+    ];
+  }
+  return [
+    { intent: "explain_flow", label: "How does this work?" },
+    { intent: "explain_required_info", label: "What info do I need?" },
+    { intent: "explain_fit_guidance", label: "Why child height?" },
+    { intent: "next_step", label: "What should I do next?" },
+  ];
+}
+
+function labelForBikeCoachIntent(intent: BikeCoachIntent) {
+  const labels: Record<BikeCoachIntent, string> = {
+    explain_flow: "How does this work?",
+    explain_required_info: "What info do I need?",
+    explain_missing_inputs: "What info is missing?",
+    explain_verdict: "Explain the verdict",
+    explain_fit_guidance: "Explain fit guidance",
+    explain_price_range: "Is this price fair?",
+    explain_risks: "What risks should I check?",
+    suggest_seller_questions: "What should I ask the seller?",
+    draft_seller_message: "Help write a seller message",
+    next_step: "What should I do next?",
+  };
+  return labels[intent];
 }
 
 function meterSignal(meter: MeterResult["meter"]) {

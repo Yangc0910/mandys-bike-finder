@@ -1,4 +1,5 @@
 import { generateSellerMessage, localPriceReference } from "../analysis";
+import type { BikeCoachContext, BikeCoachIntent } from "../assistant";
 import type { AnalysisResult, ChildProfile, Listing, PriceReference } from "../types";
 import { ageBucket, heightBucket, normalizeListingQuery } from "./utils";
 
@@ -116,6 +117,21 @@ export async function openAiReportSummary(
 ) {
   return openAiChatText(apiKey, model, [
     { role: "system", content: "Summarize this used kids bike recommendation for an email report in 2-4 concise sentences. Include no numeric score." },
+    { role: "user", content: JSON.stringify(payload) },
+  ]);
+}
+
+export async function openAiBikeCoachResponse(
+  apiKey: string,
+  model: string,
+  payload: { intent: BikeCoachIntent; message?: string; context: BikeCoachContext },
+) {
+  return openAiChatText(apiKey, model, [
+    {
+      role: "system",
+      content:
+        "You are Mandy Bike Coach, a guided assistant for evaluating used kids' bike listings. Help parents understand the current bike-check workflow, missing inputs, verdict, fit, price, risks, seller questions, and seller messages. Stay focused on used kids' bike evaluation. Use only the provided child profile, listing, and analysis context. Do not invent facts. When uncertain, say what information is missing. Always remind users that used bikes should be inspected in person for fit, brakes, tires, rust, and condition. Do not discuss CRM, Salesforce, Resend, API keys, cost controls, backend implementation, or unrelated general chat. Keep the answer concise and parent-friendly, ideally 2-5 short sentences.",
+    },
     { role: "user", content: JSON.stringify(payload) },
   ]);
 }
