@@ -2019,12 +2019,16 @@ export default function Home() {
       <button
         type="button"
         onClick={() => setIsBikeCoachOpen(true)}
-        className="fixed bottom-4 right-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-bold text-white shadow-[0_18px_45px_rgba(15,23,42,0.24)] lg:hidden"
+        className="fixed bottom-4 right-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-bold text-white shadow-[0_18px_45px_rgba(15,23,42,0.24)] transition hover:-translate-y-0.5 hover:bg-brand"
       >
-        <span aria-hidden>?</span>
-        Ask Bike Coach
+        <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm text-slate-950">
+          AI
+        </span>
+        <span className="hidden sm:inline">Ask Bike Coach</span>
+        <span className="sm:hidden">Coach</span>
       </button>
       {isBikeCoachOpen && (
+        <>
         <div className="fixed inset-0 z-50 bg-slate-950/35 px-3 py-4 backdrop-blur-sm lg:hidden">
           <div className="absolute inset-x-3 bottom-3 max-h-[82vh] overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.28)]">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
@@ -2055,6 +2059,35 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <div className="fixed bottom-24 right-6 z-50 hidden w-[410px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.28)] lg:block">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
+            <div>
+              <p className="text-sm font-bold text-slate-950">Mandy Bike Coach</p>
+              <p className="text-xs text-slate-500">Ask about fit, price, risk, or seller messages</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsBikeCoachOpen(false)}
+              className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-lg font-bold text-slate-600"
+              aria-label="Close Bike Coach"
+            >
+              x
+            </button>
+          </div>
+          <div className="max-h-[70vh] overflow-y-auto p-4">
+            <BikeCoachPanel
+              messages={bikeCoachMessages}
+              prompts={bikeCoachPrompts}
+              input={bikeCoachInput}
+              loading={isBikeCoachLoading}
+              isMobileSheet
+              onPrompt={(intent, label) => void askBikeCoach(intent, label)}
+              onInputChange={setBikeCoachInput}
+              onSubmit={submitBikeCoachMessage}
+            />
+          </div>
+        </div>
+        </>
       )}
     </main>
   );
