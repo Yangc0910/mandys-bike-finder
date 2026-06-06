@@ -1,4 +1,5 @@
 import type { AnalysisResult, ChildProfile, Listing, MeterResult, PriceReference } from "./types";
+import { normalizeListingTitle } from "./listing-copy";
 
 const BRAND_TIERS = {
   entry: ["huffy", "dynacraft", "hyper", "kent"],
@@ -75,7 +76,7 @@ export function generateSellerMessage(
   listing: Listing,
   options: { targetOffer?: string; pickupTiming?: string; reason?: string },
 ) {
-  const title = listing.title || "the bike";
+  const title = normalizeListingTitle(listing.title) || "the bike";
   const targetOffer = options.targetOffer ? `$${options.targetOffer}` : "a lower price";
   const timing = options.pickupTiming || "soon";
   const reason = options.reason && options.reason !== "no reason" ? ` since I ${options.reason}` : "";

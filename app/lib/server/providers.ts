@@ -1,5 +1,6 @@
 import { generateSellerMessage, localPriceReference } from "../analysis";
 import type { BikeCoachContext, BikeCoachIntent } from "../assistant";
+import { normalizeListingTitle } from "../listing-copy";
 import type { AnalysisResult, ChildProfile, Listing, PriceReference } from "../types";
 import { ageBucket, heightBucket, normalizeListingQuery } from "./utils";
 
@@ -27,7 +28,7 @@ export function mockExtractListingFields(text: string) {
     provider: "mock",
     fallbackReason: "LLM analysis disabled or missing server-side API key.",
     fields: {
-      title: text.split(/\r?\n/).find((line) => line.trim())?.trim() || "",
+      title: normalizeListingTitle(text),
       askingPrice: priceMatch ? priceMatch[1] : "",
       brand: brandMatch ? capitalize(brandMatch[1]) : "",
       wheelSize: wheelMatch ? wheelMatch[1] : "",
@@ -244,7 +245,7 @@ function normalizeExtractedListingFields(parsed: Record<string, unknown>, fallba
     "";
 
   return {
-    title: stringField(parsed.title),
+    title: normalizeListingTitle(parsed.title),
     askingPrice: normalizePriceValue(rawAskingPrice, fallbackText),
     brand: stringField(parsed.brand),
     model: stringField(parsed.model),

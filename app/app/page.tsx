@@ -23,6 +23,7 @@ import {
 import { detectMarketplace } from "@/lib/marketplace";
 import type { MarketplaceId } from "@/lib/marketplace";
 import type { BikeScoutProfile, BikeScoutWaitlistEntry, NormalizedListing } from "@/lib/bike-scout";
+import { normalizeListingTitle } from "@/lib/listing-copy";
 import type { AnalysisResult, ChildProfile, Listing, MeterResult, ProviderModes } from "@/lib/types";
 
 const defaultChild: ChildProfile = {
@@ -3998,7 +3999,7 @@ function providerStatusText(status?: ProviderModes | null) {
 function localExtract(text: string) {
   const priceMatch = text.match(/\$?\b(\d{2,4})\b/);
   const wheelMatch = text.match(/\b(12|14|16|18|20|24|26|27\.5)\s*(?:inch|in|")\b/i);
-  return { title: text.split(/\r?\n/).find((line) => line.trim()) || "", askingPrice: priceMatch?.[1] || "", wheelSize: wheelMatch?.[1] || "", description: text };
+  return { title: normalizeListingTitle(text), askingPrice: priceMatch?.[1] || "", wheelSize: wheelMatch?.[1] || "", description: text };
 }
 
 function splitCommaValues(value: string) {
