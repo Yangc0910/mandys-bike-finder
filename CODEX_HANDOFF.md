@@ -1,6 +1,6 @@
 # Codex Handoff
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
 
 ## What This Project Is
 
@@ -61,11 +61,20 @@ What is already true:
 - Capacitor iOS project has already been generated
 - Mandy Bike Coach is implemented and separately documented
 
+What is now validated on macOS:
+
+- Capacitor sync and Capacitor Doctor
+- Xcode simulator build and launch
+- iPhone 17 Pro simulator flow checks
+- iPhone 17e cold-launch check
+- Profile persistence, local evaluation, History, and Settings data controls
+- Production-style app icon installation and simulator home-screen rendering
+
 What is not done yet:
 
-- Xcode validation on macOS
+- physical-iPhone WebView QA
+- Apple Developer Team/signing confirmation
 - App Store asset finalization
-- real iPhone WebView QA
 - TestFlight archive/upload
 
 ## Important Files
@@ -89,12 +98,12 @@ If continuing on Windows:
 
 If continuing on Mac:
 
-1. Clone the repo.
-2. Enter `app/`.
-3. Run `npm install`.
-4. Run `npx cap sync ios`.
-5. Run `npx cap open ios`.
-6. Continue with the checklist in `docs/product/xcode-testflight-preparation.md`.
+1. Pull the latest GitHub state after the local June 6 commits have been pushed.
+2. Connect and trust a physical iPhone.
+3. Open `app/ios/App/App.xcodeproj`.
+4. Select the `App` target and an Apple Developer Team under Signing & Capabilities.
+5. Select the connected iPhone and run the physical-device checklist in `docs/product/xcode-testflight-preparation.md`.
+6. Archive and upload only after the physical-device pass.
 
 If continuing the legacy listing monitor:
 

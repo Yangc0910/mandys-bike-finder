@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
 
 ## Project
 
@@ -63,6 +63,10 @@ Historical personal automation subsystem:
   - App Review and TestFlight checklists updated
 - Mandy Bike Coach guided assistant is implemented and documented.
 - Capacitor dependencies, hosted-app config, and generated iOS project files are already in the repo.
+- Capacitor sync and Xcode simulator builds now pass on macOS.
+- Simulator QA has passed on iPhone 17 Pro, with a cold-launch check on iPhone 17e.
+- Profile persistence, local evaluation, History, and Settings data-clearing flows pass in the simulator.
+- A production-style iOS app icon is installed and verified on the simulator home screen.
 - Root-level GitHub handoff documentation has been added for cross-device continuation.
 
 ## In Progress
@@ -70,12 +74,13 @@ Historical personal automation subsystem:
 - Preparing the repository for durable GitHub-backed, cross-device continuation.
 - Tightening project-level status/handoff documentation.
 - Making current and legacy workstreams easier to understand without Codex thread history.
-- Preparing for Mac/Xcode/TestFlight continuation.
+- Preparing physical-iPhone QA, Apple signing, archive, and TestFlight upload.
 
 ## Known Issues
 
-- Xcode validation has not been completed yet because the current machine is Windows.
-- App Store screenshots and final iOS app icon/launch polish are still manual follow-up work.
+- No physical iPhone was connected during the June 6 preparation pass.
+- Apple Developer Team selection and physical-device signing still need confirmation in Xcode.
+- App Store screenshots and final launch-screen polish are still manual follow-up work.
 - HEIC behavior in iOS WebView file selection still needs real-device QA.
 - No durable database exists yet for saved reports, waitlist entries, usage counters, or Bike Scout profiles.
 - Rate limits are runtime scoped unless backed by durable storage later.
@@ -105,19 +110,17 @@ Historical personal automation subsystem:
 
 ## Recommended Next Tasks
 
-1. On Mac, clone the repo and validate the iOS path:
-   - `cd app`
-   - `npm install`
-   - `npx cap sync ios`
-   - `npx cap open ios`
-2. Complete Xcode signing, simulator QA, and first TestFlight archive.
-3. Capture real App Store screenshots from the hosted App Store MVP.
-4. Confirm `support@mandysbikefinder.com` is a live monitored mailbox.
-5. Run real-device QA for screenshot selection, OCR, local-storage persistence, and Bike Coach.
+1. Connect a physical iPhone, trust the Mac, enable Developer Mode if prompted, and select the Apple Developer Team in Xcode.
+2. Run the physical-device QA checklist for screenshot selection, HEIC, OCR, local-storage persistence, navigation, and offline behavior.
+3. Increment the iOS build number after physical-device QA and create the first Release archive.
+4. Upload the validated archive to TestFlight and complete an internal TestFlight pass.
+5. Capture App Store screenshots from the hosted App Store MVP.
+6. Confirm `support@mandysbikefinder.com` is a live monitored mailbox.
 
 ## Risks And Blockers
 
-- No macOS/Xcode verification yet.
+- Physical-device and TestFlight verification are not complete.
+- GitHub push from this Mac is blocked until GitHub credentials are configured.
 - App Store Connect metadata, screenshots, and assets still need final manual completion.
 - The repository contains multiple historical tracks; contributors must start from the handoff docs to avoid editing the wrong subsystem.
 - Vercel production behavior depends on environment variables that are not stored in Git.
