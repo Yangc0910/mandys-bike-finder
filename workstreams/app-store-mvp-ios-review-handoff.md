@@ -1,6 +1,6 @@
 # Workstream: App Store MVP iOS Review Handoff
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
 
 ## Objective
 
@@ -71,18 +71,17 @@ Notes:
 - Hosted App Store MVP is live and functionally close to App Review readiness.
 - OCR works server-side when enabled in Vercel.
 - Capacitor dependencies/config and generated iOS project exist.
-- Final continuation work now depends on Mac/Xcode/TestFlight execution.
+- Simulator and physical-device QA have passed.
+- Version `1.0` build `3` has been archived and uploaded to App Store Connect.
+- Final continuation work depends on Apple processing, internal TestFlight QA, screenshots, and App Store metadata.
 
 ## Next Steps
 
-1. Clone this repository on the MacBook Air.
-2. Open the repo with Codex on the Mac.
-3. From `app/`, run:
-   - `npm install`
-   - `npx cap sync ios`
-   - `npx cap open ios`
-4. Continue with signing, simulator QA, and TestFlight per `docs/product/xcode-testflight-preparation.md`.
-5. Capture final App Store screenshots and verify support email flow.
+1. Confirm build `1.0 (3)` has finished processing in App Store Connect.
+2. Add build `1.0 (3)` to the internal TestFlight group.
+3. Install it from TestFlight and complete the short internal QA checklist.
+4. Capture final App Store screenshots and complete the remaining metadata.
+5. Verify the support email flow before App Review submission.
 
 ## Open Questions
 

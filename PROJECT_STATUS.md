@@ -69,6 +69,8 @@ Historical personal automation subsystem:
 - A production-style iOS app icon is installed and verified on the simulator home screen.
 - Physical-device build, signing, installation, launch, and user-led core-flow QA pass on iPhone 17 Pro Max.
 - iOS version `1.0` build `2` was archived and uploaded successfully to App Store Connect on June 6, 2026.
+- Listing title parsing and seller-message punctuation polish passed targeted, production-build, browser, simulator, and archive validation.
+- iOS version `1.0` build `3` was archived and uploaded successfully to App Store Connect on June 6, 2026.
 - Root-level GitHub handoff documentation has been added for cross-device continuation.
 
 ## In Progress
@@ -76,12 +78,12 @@ Historical personal automation subsystem:
 - Preparing the repository for durable GitHub-backed, cross-device continuation.
 - Tightening project-level status/handoff documentation.
 - Making current and legacy workstreams easier to understand without Codex thread history.
-- Waiting for App Store Connect to finish processing iOS version `1.0` build `2`.
+- Waiting for App Store Connect to finish processing iOS version `1.0` build `3`.
 - Preparing internal TestFlight installation and final App Store assets.
 
 ## Known Issues
 
-- TestFlight build `1.0 (2)` still needs an internal install after Apple processing completes.
+- TestFlight build `1.0 (3)` still needs an internal install after Apple processing completes.
 - App Store screenshots are still required.
 - No durable database exists yet for saved reports, waitlist entries, usage counters, or Bike Scout profiles.
 - Rate limits are runtime scoped unless backed by durable storage later.
@@ -111,7 +113,7 @@ Historical personal automation subsystem:
 
 ## Recommended Next Tasks
 
-1. Wait for App Store Connect to finish processing build `1.0 (2)`.
+1. Wait for App Store Connect to finish processing build `1.0 (3)`.
 2. Add the build to an internal TestFlight group and install it from TestFlight.
 3. Complete a short internal TestFlight pass for launch, screenshot selection, OCR, persistence, History, and offline recovery.
 4. Capture App Store screenshots from the hosted App Store MVP.

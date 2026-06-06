@@ -73,10 +73,12 @@ What is now validated on macOS:
 - Physical iPhone 17 Pro Max build, install, launch, and user-led core-flow QA
 - Release archive for iOS version `1.0` build `2`
 - Successful App Store Connect upload of build `1.0 (2)` on June 6, 2026
+- Listing title and seller-message copy polish with targeted regression coverage
+- Release archive and successful App Store Connect upload for build `1.0 (3)` on June 6, 2026
 
 What is not done yet:
 
-- App Store Connect processing confirmation
+- App Store Connect processing confirmation for build `1.0 (3)`
 - internal TestFlight installation and QA
 - App Store screenshot and metadata finalization
 
@@ -102,7 +104,7 @@ If continuing on Windows:
 If continuing on Mac:
 
 1. Pull the latest GitHub `main`.
-2. Confirm build `1.0 (2)` has finished processing in App Store Connect.
+2. Confirm build `1.0 (3)` has finished processing in App Store Connect.
 3. Add it to an internal TestFlight group.
 4. Install from TestFlight and run the short internal QA checklist.
 5. Continue App Store screenshot and metadata preparation.

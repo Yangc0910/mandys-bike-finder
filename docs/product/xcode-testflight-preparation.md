@@ -1,6 +1,6 @@
 # Xcode And TestFlight Preparation
 
-Status: Build 1.0 (2) uploaded; App Store Connect processing and internal TestFlight QA pending
+Status: Build 1.0 (3) uploaded; App Store Connect processing and internal TestFlight QA pending
 Last updated: 2026-06-06
 
 ## Purpose
@@ -25,7 +25,7 @@ Current native settings:
 | Cleartext traffic | `false` |
 | iOS deployment target | `15.0` |
 | Marketing version | `1.0` |
-| Build number | `1` |
+| Build number | `3` |
 | App icon asset catalog | `AppIcon` |
 | Launch screen | `LaunchScreen` storyboard with generated `Splash` asset |
 
@@ -45,7 +45,9 @@ Validation now completed on macOS:
 - Physical iPhone 17 Pro Max signing, installation, launch, and core-flow QA: passed.
 - Branded launch screen matching the app icon: installed and verified in build `2`.
 - Release archive for version `1.0` build `2`: passed.
-- App Store Connect upload: succeeded on June 6, 2026; processing pending.
+- Listing-title parsing and seller-message punctuation regression checks: passed.
+- Release archive for version `1.0` build `3`: passed.
+- App Store Connect upload for build `1.0 (3)`: succeeded on June 6, 2026; processing pending.
 
 GitHub handoff status:
 
@@ -170,7 +172,7 @@ Before uploading:
 - Confirm App Store Connect app record exists for the bundle ID.
 - Confirm Apple Developer account/team is selected in Xcode.
 - Confirm signing is valid on a physical device or simulator as appropriate.
-- Increment the build number from `1` before a second upload attempt; App Store Connect does not accept a reused build number.
+- Increment the build number before every later upload attempt; App Store Connect does not accept a reused build number.
 - Archive with `Any iOS Device` target selected.
 - Validate archive in Xcode Organizer.
 - Upload to App Store Connect.
