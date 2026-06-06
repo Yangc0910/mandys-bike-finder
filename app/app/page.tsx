@@ -2110,13 +2110,13 @@ function AppStoreTabShell({
   onSelectTab: (tab: AppStoreTab) => void;
 }) {
   return (
-    <main className="app-safe-shell min-h-screen bg-slate-50 px-4 pb-28 text-slate-900 md:px-6">
+    <main className="app-safe-shell app-native-shell min-h-[100dvh] bg-[#f5f6f8] px-4 pb-28 text-slate-900 md:px-6">
       {isOffline && (
         <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-2xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 shadow-panel">
           You are offline. Local guidance may remain visible, but screenshot extraction and link analysis need a connection.
         </div>
       )}
-      <section className="mx-auto grid max-w-2xl gap-4">
+      <section className="app-native-content mx-auto grid max-w-2xl gap-4">
         {activeTab === "profile" && <ProfileScreenPlaceholder onEvaluate={() => onSelectTab("evaluate")} />}
         {activeTab === "evaluate" && (
           <EvaluateScreenPlaceholder
@@ -2134,10 +2134,10 @@ function AppStoreTabShell({
 
 function AppScreenHeader({ title, eyebrow, copy }: { title: string; eyebrow: string; copy: string }) {
   return (
-    <header className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{eyebrow}</p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">{title}</h1>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{copy}</p>
+    <header className="px-1 pb-1 pt-2">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">{eyebrow}</p>
+      <h1 className="mt-1 text-[2rem] font-bold tracking-[-0.035em] text-slate-950">{title}</h1>
+      <p className="mt-1 max-w-xl text-sm leading-5 text-slate-600">{copy}</p>
     </header>
   );
 }
@@ -2282,10 +2282,10 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
       <AppScreenHeader
         eyebrow="Mandy's Bike Finder"
         title="Profile"
-        copy="Save your child's bike fit profile so each listing check starts from the right size and riding context."
+        copy="Save the rider details Mandy uses for every bike check."
       />
       {!savedProfile && !isEditing && (
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+        <section className="app-native-card p-5">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
           <h2 className="mt-2 text-xl font-bold text-slate-950">Add your rider</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -2297,7 +2297,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
         </section>
       )}
       {savedProfile && !isEditing && activeRecommendation && (
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+        <section className="app-native-card p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Saved on this device</p>
@@ -2315,6 +2315,9 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
               </button>
             </div>
           </div>
+          <button type="button" onClick={onEvaluate} className="app-native-primary mt-5 w-full px-4 text-sm">
+            Evaluate a bike
+          </button>
           {isConfirmingClear && (
             <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3">
               <p className="text-sm font-semibold text-red-800">Clear this profile from this device?</p>
@@ -2328,7 +2331,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
               </div>
             </div>
           )}
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-2">
             <InfoLine label="Recommended wheel size" value={activeRecommendation.wheelSize} />
             <InfoLine label="Recommended bike type" value={activeRecommendation.category} />
             <InfoLine label="Growth option" value={activeRecommendation.growthOption || "No growth option needed now"} />
@@ -2338,13 +2341,10 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
           <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-slate-700">
             This recommendation is a starting point. Parents should still check fit, brakes, tires, rust, and test-ride comfort before buying.
           </p>
-          <button type="button" onClick={onEvaluate} className="mt-5 min-h-11 w-full rounded-md bg-brand px-4 text-sm font-bold text-white">
-            Evaluate a bike
-          </button>
         </section>
       )}
       {isEditing && (
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+        <section className="app-native-card p-5">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
           <h2 className="mt-2 text-xl font-bold text-slate-950">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
           <div className="mt-4 grid gap-4">
@@ -2352,7 +2352,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
               <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Optional nickname" />
             </Field>
             <Field label="Height" required>
-              <div className="grid grid-cols-[110px_1fr] gap-2">
+              <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={heightUnit} onChange={(event) => setHeightUnit(event.target.value as "cm" | "ft-in")}>
                   <option value="cm">cm</option>
                   <option value="ft-in">ft-in</option>
@@ -2379,7 +2379,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
               </select>
             </Field>
             <Field label="Weight" optional>
-              <div className="grid grid-cols-[110px_1fr] gap-2">
+              <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={weightUnit} onChange={(event) => setWeightUnit(event.target.value as "lb" | "kg")}>
                   <option value="lb">lb</option>
                   <option value="kg">kg</option>
@@ -2413,7 +2413,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
             </p>
           )}
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
-            <button type="button" onClick={saveProfile} className="min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
+            <button type="button" onClick={saveProfile} className="app-native-primary px-4 text-sm">
               {savedProfile ? "Update profile" : "Save profile"}
             </button>
             {savedProfile ? (
@@ -2619,7 +2619,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       <AppScreenHeader
         eyebrow="One listing at a time"
         title="Evaluate"
-        copy="Upload a screenshot, extract listing details with explicit AI help, or enter details manually. Screenshot AI only runs after you tap the AI action."
+        copy="Add a listing, review its details, and check fit, value, and risk."
       />
 
       {!hasProfile && (
@@ -2636,7 +2636,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       )}
 
       {activeProfile && (
-        <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+        <section className="rounded-2xl bg-emerald-50 px-4 py-3">
           <p className="text-sm font-bold text-emerald-950">
             Checking for {activeProfile.nickname?.trim() || "your child"}
           </p>
@@ -2646,28 +2646,28 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
         </section>
       )}
 
-      <section className="grid gap-3">
+      <section className="grid grid-cols-3 gap-2" aria-label="Listing input method">
         <AppStoreInputMethodButton
           active={inputMode === "screenshot"}
-          title="Upload screenshot"
+          title="Screenshot"
           copy="Attach an image for local preview, then tap AI extraction if you want Mandy to read visible listing details."
           onClick={() => setInputMode("screenshot")}
         />
         <AppStoreInputMethodButton
           active={inputMode === "link"}
-          title="Paste link or text"
+          title="Link / text"
           copy="Save the link as a reference and paste readable listing text. No marketplace page is scraped automatically."
           onClick={() => setInputMode("link")}
         />
         <AppStoreInputMethodButton
           active={inputMode === "manual"}
-          title="Manual entry"
+          title="Manual"
           copy="Enter details yourself and use local guidance. No AI is required."
           onClick={() => setInputMode("manual")}
         />
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+      <section className="app-native-card p-5">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Input</p>
         {inputMode === "screenshot" && (
           <div className="mt-4 grid gap-4">
@@ -2747,7 +2747,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
         )}
       </section>
 
-      <section className="rounded-lg border border-blue-100 bg-blue-50/80 p-5 shadow-panel">
+      <section className="app-native-card p-5">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Review first</p>
         <h2 className="mt-2 text-xl font-bold text-slate-950">Listing details</h2>
         <div className="mt-4 grid gap-4">
@@ -2827,7 +2827,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       </section>
 
       {result && (
-        <section className="rounded-lg border border-emerald-200 bg-white p-5 shadow-panel">
+        <section className="app-native-card p-5">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Result</p>
           <h2 className="mt-2 text-2xl font-bold text-slate-950">{result.overall.label}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">{result.overall.reasoning}</p>
@@ -2867,13 +2867,13 @@ function AppStoreInputMethodButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg border p-5 text-left shadow-panel transition ${
-        active ? "border-brand bg-blue-50" : "border-slate-200 bg-white"
+      className={`min-h-14 min-w-0 rounded-xl border px-2 py-3 text-center transition sm:min-h-0 sm:p-4 sm:text-left ${
+        active ? "border-brand bg-blue-50 shadow-[0_6px_18px_rgba(47,111,237,0.10)]" : "border-slate-200/80 bg-white"
       }`}
       aria-pressed={active}
     >
-      <span className="block text-lg font-bold text-slate-950">{title}</span>
-      <span className="mt-2 block text-sm leading-6 text-slate-600">{copy}</span>
+      <span className="block text-xs font-bold text-slate-950 sm:text-base">{title}</span>
+      <span className="mt-1 hidden text-sm leading-5 text-slate-600 sm:block">{copy}</span>
     </button>
   );
 }
@@ -3185,8 +3185,8 @@ function BottomTabNav({
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-12px_30px_-24px_rgba(15,23,42,0.55)] backdrop-blur" aria-label="App Store MVP tabs">
-      <div className="mx-auto grid max-w-2xl grid-cols-4 gap-2">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-white/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl" aria-label="App Store MVP tabs">
+      <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
           return (
@@ -3195,10 +3195,11 @@ function BottomTabNav({
               type="button"
               aria-current={active ? "page" : undefined}
               onClick={() => onSelectTab(tab.id)}
-              className={`min-h-12 rounded-md px-2 text-xs font-bold transition ${
-                active ? "bg-brand text-white shadow-panel" : "bg-slate-50 text-slate-600"
+              className={`relative min-h-12 rounded-xl px-1 pt-2 text-[11px] font-bold transition ${
+                active ? "text-brand" : "text-slate-500"
               }`}
             >
+              <span className={`mx-auto mb-1 block h-1.5 w-1.5 rounded-full ${active ? "bg-brand" : "bg-slate-300"}`} aria-hidden />
               {tab.label}
             </button>
           );
@@ -4150,4 +4151,3 @@ function fileToDataUrl(file: File) {
     reader.readAsDataURL(file);
   });
 }
-
