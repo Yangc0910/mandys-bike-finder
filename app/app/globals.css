@@ -31,13 +31,16 @@
 
 html {
   background: #f4f7f9;
-  max-width: 100%;
+  width: 100%;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   min-width: 320px;
-  max-width: 100%;
+  width: 100%;
+  margin: 0;
   overflow-x: hidden;
   background: var(--color-bg);
   color: var(--color-text);
@@ -49,20 +52,23 @@ button,
 input,
 select,
 textarea {
+  min-width: 0;
   max-width: 100%;
   font: inherit;
+  font-size: 16px;
 }
 
 .app-native-shell {
   width: 100%;
   max-width: 100%;
-  overflow-x: clip;
+  min-height: 100dvh;
   touch-action: pan-y;
 }
 
 .app-native-content {
   width: 100%;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .app-native-card {
@@ -82,18 +88,63 @@ textarea {
   box-shadow: 0 7px 18px rgba(47, 111, 237, 0.22);
 }
 
-@supports (padding: max(0px)) {
-  body {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
+.app-native-nav {
+  position: fixed;
+  z-index: 100;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
 
+.app-native-modebar {
+  position: fixed;
+  z-index: 90;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(4.65rem + env(safe-area-inset-bottom));
+  left: max(1rem, env(safe-area-inset-left));
+  width: auto;
+  max-width: 40rem;
+  margin-inline: auto;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.app-native-group {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.045);
+}
+
+.app-native-row {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.app-native-row + .app-native-row {
+  border-top: 1px solid #edf0f4;
+}
+
+@supports (padding: max(0px)) {
   .app-safe-shell {
     padding-top: max(1.25rem, env(safe-area-inset-top));
-    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
   }
 
   .app-safe-top {
     top: env(safe-area-inset-top);
+  }
+
+  .app-native-content {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+
+  .app-native-content-with-modebar {
+    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }

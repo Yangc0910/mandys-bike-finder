@@ -2109,35 +2109,42 @@ function AppStoreTabShell({
   isOffline: boolean;
   onSelectTab: (tab: AppStoreTab) => void;
 }) {
+  function selectTab(tab: AppStoreTab) {
+    onSelectTab(tab);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }
+
   return (
-    <main className="app-safe-shell app-native-shell min-h-[100dvh] bg-[#f5f6f8] px-4 pb-28 text-slate-900 md:px-6">
-      {isOffline && (
-        <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-2xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 shadow-panel">
-          You are offline. Local guidance may remain visible, but screenshot extraction and link analysis need a connection.
-        </div>
-      )}
-      <section className="app-native-content mx-auto grid max-w-2xl gap-4">
-        {activeTab === "profile" && <ProfileScreenPlaceholder onEvaluate={() => onSelectTab("evaluate")} />}
-        {activeTab === "evaluate" && (
-          <EvaluateScreenPlaceholder
-            onHistory={() => onSelectTab("history")}
-            onProfile={() => onSelectTab("profile")}
-          />
+    <div className="app-native-shell bg-[#f3f4f6] text-slate-900">
+      <main className="app-safe-shell px-4 md:px-6">
+        {isOffline && (
+          <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+            You are offline. Screenshot extraction needs a connection; saved guidance remains available.
+          </div>
         )}
-        {activeTab === "history" && <HistoryScreenPlaceholder onEvaluate={() => onSelectTab("evaluate")} />}
-        {activeTab === "settings" && <SettingsScreenPlaceholder />}
-      </section>
-      <BottomTabNav activeTab={activeTab} onSelectTab={onSelectTab} />
-    </main>
+        <section className={`app-native-content mx-auto grid max-w-2xl gap-5 ${activeTab === "evaluate" ? "app-native-content-with-modebar" : ""}`}>
+          {activeTab === "profile" && <ProfileScreenPlaceholder onEvaluate={() => selectTab("evaluate")} />}
+          {activeTab === "evaluate" && (
+            <EvaluateScreenPlaceholder
+              onHistory={() => selectTab("history")}
+              onProfile={() => selectTab("profile")}
+            />
+          )}
+          {activeTab === "history" && <HistoryScreenPlaceholder onEvaluate={() => selectTab("evaluate")} />}
+          {activeTab === "settings" && <SettingsScreenPlaceholder />}
+        </section>
+      </main>
+      <BottomTabNav activeTab={activeTab} onSelectTab={selectTab} />
+    </div>
   );
 }
 
 function AppScreenHeader({ title, eyebrow, copy }: { title: string; eyebrow: string; copy: string }) {
   return (
-    <header className="px-1 pb-1 pt-2">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">{eyebrow}</p>
-      <h1 className="mt-1 text-[2rem] font-bold tracking-[-0.035em] text-slate-950">{title}</h1>
-      <p className="mt-1 max-w-xl text-sm leading-5 text-slate-600">{copy}</p>
+    <header className="min-w-0 px-1 pb-1 pt-2">
+      <p className="break-words text-[11px] font-bold uppercase tracking-[0.12em] text-brand">{eyebrow}</p>
+      <h1 className="mt-1 break-words text-[1.85rem] font-bold leading-tight tracking-[-0.03em] text-slate-950">{title}</h1>
+      <p className="mt-1 max-w-xl break-words text-[15px] leading-5 text-slate-600">{copy}</p>
     </header>
   );
 }
@@ -2285,7 +2292,8 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
         copy="Save the rider details Mandy uses for every bike check."
       />
       {!savedProfile && !isEditing && (
-        <section className="app-native-card p-5">
+        <section className="app-native-group">
+          <div className="app-native-row">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
           <h2 className="mt-2 text-xl font-bold text-slate-950">Add your rider</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -2294,30 +2302,32 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
           <button type="button" onClick={() => setIsEditing(true)} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
             Create profile
           </button>
+          </div>
         </section>
       )}
       {savedProfile && !isEditing && activeRecommendation && (
-        <section className="app-native-card p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
+        <section className="app-native-group">
+          <div className="app-native-row">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Saved on this device</p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-950">{savedProfile.nickname || "Your child"}</h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <h2 className="mt-2 break-words text-2xl font-bold text-slate-950">{savedProfile.nickname || "Your child"}</h2>
+              <p className="mt-1 break-words text-sm text-slate-600">
                 Age {savedProfile.child.age || "not set"} - {savedProfile.child.heightCm || "unknown"} cm - {savedProfile.child.experience}
               </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={editProfile} className="min-h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700">
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+              <button type="button" onClick={editProfile} className="min-h-10 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700">
                 Edit
               </button>
-              <button type="button" onClick={() => setIsConfirmingClear(true)} className="min-h-10 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-bold text-red-700">
+              <button type="button" onClick={() => setIsConfirmingClear(true)} className="min-h-10 rounded-xl bg-red-50 px-3 text-sm font-bold text-red-700">
                 Clear
               </button>
+              </div>
             </div>
-          </div>
-          <button type="button" onClick={onEvaluate} className="app-native-primary mt-5 w-full px-4 text-sm">
+            <button type="button" onClick={onEvaluate} className="app-native-primary mt-5 w-full px-4 text-sm">
             Evaluate a bike
-          </button>
+            </button>
           {isConfirmingClear && (
             <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3">
               <p className="text-sm font-semibold text-red-800">Clear this profile from this device?</p>
@@ -2331,23 +2341,27 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
               </div>
             </div>
           )}
-          <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-2">
-            <InfoLine label="Recommended wheel size" value={activeRecommendation.wheelSize} />
-            <InfoLine label="Recommended bike type" value={activeRecommendation.category} />
-            <InfoLine label="Growth option" value={activeRecommendation.growthOption || "No growth option needed now"} />
-            <InfoLine label="Style guidance" value={activeRecommendation.styleRecommendation || "Fit-first neutral styling"} />
           </div>
-          <p className="mt-4 text-sm leading-6 text-slate-700">{activeRecommendation.explanation}</p>
-          <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-slate-700">
+          <AppDetailRow label="Recommended size" value={activeRecommendation.wheelSize} emphasized />
+          <AppDetailRow label="Bike type" value={activeRecommendation.category} />
+          <AppDetailRow label="Growth guidance" value={activeRecommendation.growthOption || "No growth option needed now"} />
+          <AppDetailRow label="Style guidance" value={activeRecommendation.styleRecommendation || "Fit-first neutral styling"} />
+          <div className="app-native-row bg-slate-50/70">
+            <p className="break-words text-sm leading-6 text-slate-700">{activeRecommendation.explanation}</p>
+            <p className="mt-3 break-words text-xs leading-5 text-slate-500">
             This recommendation is a starting point. Parents should still check fit, brakes, tires, rust, and test-ride comfort before buying.
-          </p>
+            </p>
+          </div>
         </section>
       )}
       {isEditing && (
-        <section className="app-native-card p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
-          <h2 className="mt-2 text-xl font-bold text-slate-950">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
-          <div className="mt-4 grid gap-4">
+        <section className="app-native-group">
+          <div className="app-native-row">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
+            <h2 className="mt-2 text-xl font-bold text-slate-950">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
+          </div>
+          <div className="app-native-row grid gap-4">
+            <AppFormGroupTitle title="Rider basics" copy="The details used to estimate fit and control." />
             <Field label="Child name / nickname" optional>
               <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Optional nickname" />
             </Field>
@@ -2378,6 +2392,9 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
                 <option value="advanced">Advanced</option>
               </select>
             </Field>
+          </div>
+          <div className="app-native-row grid gap-4">
+            <AppFormGroupTitle title="Preferences" copy="Optional details that help narrow the recommendation." />
             <Field label="Weight" optional>
               <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={weightUnit} onChange={(event) => setWeightUnit(event.target.value as "lb" | "kg")}>
@@ -2408,11 +2425,11 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
             </Field>
           </div>
           {validationMessage && (
-            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+            <p className="mx-4 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
               {validationMessage}
             </p>
           )}
-          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+          <div className="app-native-row grid gap-2 sm:grid-cols-2">
             <button type="button" onClick={saveProfile} className="app-native-primary px-4 text-sm">
               {savedProfile ? "Update profile" : "Save profile"}
             </button>
@@ -2636,17 +2653,22 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       )}
 
       {activeProfile && (
-        <section className="rounded-2xl bg-emerald-50 px-4 py-3">
+        <section className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-emerald-50 px-4 py-3">
+          <div className="min-w-0">
           <p className="text-sm font-bold text-emerald-950">
             Checking for {activeProfile.nickname?.trim() || "your child"}
           </p>
-          <p className="mt-1 text-xs font-semibold text-emerald-800">
+          <p className="mt-1 break-words text-xs font-semibold text-emerald-800">
             {activeProfile.child.heightCm || "Unknown"} cm, {activeProfile.child.experience} rider
           </p>
+          </div>
+          <button type="button" onClick={onProfile} className="shrink-0 rounded-xl bg-white/80 px-3 py-2 text-xs font-bold text-emerald-800">
+            Edit
+          </button>
         </section>
       )}
 
-      <section className="grid grid-cols-3 gap-2" aria-label="Listing input method">
+      <section className="app-native-modebar grid grid-cols-3 gap-1 rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl" aria-label="Listing input method">
         <AppStoreInputMethodButton
           active={inputMode === "screenshot"}
           title="Screenshot"
@@ -2667,12 +2689,14 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
         />
       </section>
 
-      <section className="app-native-card p-5">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Input</p>
+      <section className="app-native-group">
+        <div className="app-native-row">
+          <AppSectionHeading eyebrow="Step 1" title="Add the listing" copy="Choose one input method. Nothing is analyzed until you start it." />
+        </div>
         {inputMode === "screenshot" && (
-          <div className="mt-4 grid gap-4">
+          <div className="app-native-row grid gap-4">
             <label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
-              <span className="text-sm font-bold text-slate-900">{screenshotName || "Choose listing screenshot"}</span>
+              <span className="max-w-full break-words text-sm font-bold text-slate-900">{screenshotName || "Choose listing screenshot"}</span>
               <span className="mt-1 text-xs font-semibold text-slate-500">JPG, PNG, or WEBP from the system picker</span>
               <input
                 className="sr-only"
@@ -2687,8 +2711,8 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
                 <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="max-h-72 w-full object-contain" />
               </div>
             )}
-            <p className="text-xs font-semibold text-slate-600">
-              Choosing a screenshot only creates a local preview. AI starts only when you tap the extraction button below.
+            <p className="text-xs font-semibold leading-5 text-slate-600">
+              The screenshot stays in preview until you tap the AI button.
             </p>
             <button
               type="button"
@@ -2700,14 +2724,14 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
             >
               {isExtractingScreenshot ? "Extracting details..." : "Extract details with AI"}
             </button>
-            <p className="text-xs font-semibold text-slate-600">
-              This sends the selected screenshot to Mandy&apos;s server-side AI extraction service. OpenAI/provider keys stay on the server, and manual entry still works if AI is off or limited.
+            <p className="text-xs font-semibold leading-5 text-slate-600">
+              AI reads the selected image only after this action. Manual entry remains available.
             </p>
           </div>
         )}
 
         {inputMode === "link" && (
-          <div className="mt-4 grid gap-4">
+          <div className="app-native-row grid gap-4">
             <Field label="Listing link" optional>
               <input
                 className={inputClass}
@@ -2741,16 +2765,18 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
         )}
 
         {inputMode === "manual" && (
-          <p className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600">
+          <p className="app-native-row text-sm font-semibold text-slate-600">
             Enter or edit the listing details below, then run local analysis.
           </p>
         )}
       </section>
 
-      <section className="app-native-card p-5">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Review first</p>
-        <h2 className="mt-2 text-xl font-bold text-slate-950">Listing details</h2>
-        <div className="mt-4 grid gap-4">
+      <section className="app-native-group">
+        <div className="app-native-row">
+          <AppSectionHeading eyebrow="Step 2" title="Review the details" copy="Correct anything missing or unclear before checking the bike." />
+        </div>
+        <div className="app-native-row grid gap-4">
+          <AppFormGroupTitle title="Bike basics" copy="The minimum useful information for fit and value." />
           <Field label="Bike title" optional>
             <input className={inputClass} value={draftListing.title} onChange={(event) => updateDraftListingField("title", event.target.value)} placeholder="20 inch Trek kids bike" />
           </Field>
@@ -2770,6 +2796,9 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
               <input className={inputClass} value={draftListing.bikeType || ""} onChange={(event) => updateDraftListingField("bikeType", event.target.value)} placeholder="Hybrid, mountain, cruiser" />
             </Field>
           </div>
+        </div>
+        <div className="app-native-row grid gap-4">
+          <AppFormGroupTitle title="Source and condition" copy="Helpful for pickup context and risk checks." />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Platform/source" optional>
               <input className={inputClass} value={draftListing.platform || ""} onChange={(event) => updateDraftListingField("platform", event.target.value)} placeholder="Facebook Marketplace" />
@@ -2788,12 +2817,12 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
           </Field>
         </div>
         {notice && (
-          <p className="mt-4 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600">
+          <p className="app-native-row bg-slate-50 text-xs font-semibold leading-5 text-slate-600">
             {notice}
           </p>
         )}
         {aiExtractionSummary && (
-          <article className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-3 text-xs font-semibold text-emerald-950">
+          <article className="app-native-row bg-emerald-50 text-xs font-semibold text-emerald-950">
             <p className="font-bold uppercase tracking-[0.12em] text-emerald-700">AI extraction review</p>
             <p className="mt-2">
               Fields were extracted by {aiExtractionSummary.provider === "openai" ? "server-side AI" : aiExtractionSummary.provider}
@@ -2811,44 +2840,93 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
             )}
           </article>
         )}
+        <div className="app-native-row">
         <button
           type="button"
           disabled={!canAnalyze}
           onClick={analyzeListingLocally}
-          className={`mt-5 min-h-11 w-full rounded-md px-4 text-sm font-bold ${
+          className={`min-h-12 w-full rounded-[0.9rem] px-4 text-sm font-bold ${
             canAnalyze ? "bg-brand text-white" : "cursor-not-allowed bg-slate-300 text-slate-600"
           }`}
         >
           Analyze bike locally
         </button>
-        <p className="mt-3 text-xs font-semibold text-slate-600">
-          This button uses the local fallback engine only. It does not send listing text, screenshots, or profile data to OpenAI.
+        <p className="mt-3 text-xs font-semibold leading-5 text-slate-600">
+          Local analysis stays on this device and does not send your profile or listing to AI.
         </p>
+        </div>
       </section>
 
       {result && (
-        <section className="app-native-card p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Result</p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-950">{result.overall.label}</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{result.overall.reasoning}</p>
-          <div className="mt-4 grid gap-3">
+        <section className="app-native-group">
+          <div className="app-native-row">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Recommendation</p>
+            <h2 className="mt-2 break-words text-2xl font-bold text-slate-950">{result.overall.label}</h2>
+            <p className="mt-2 break-words text-sm leading-6 text-slate-700">{result.overall.reasoning}</p>
+          </div>
+          <div className="app-native-row grid gap-3">
             <ResultMeter label="Fit" item={result.dimensions.fit} />
             <ResultMeter label="Deal/value" item={result.dimensions.price} />
             <ResultMeter label="Risk" item={result.dimensions.risk} />
           </div>
-          <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+          <div className="app-native-row bg-slate-50">
             <p className="text-sm font-bold text-slate-900">Seller message</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{sellerMessage}</p>
+            <p className="mt-2 break-words text-sm leading-6 text-slate-700">{sellerMessage}</p>
           </div>
-          <button type="button" onClick={saveResultToHistory} className="mt-4 min-h-11 w-full rounded-md bg-brand px-4 text-sm font-bold text-white">
-            Save to History
-          </button>
-          <p className="mt-3 text-xs font-semibold text-slate-600">
-            Saved history stores this local result on this device and does not re-run AI.
-          </p>
+          <div className="app-native-row">
+            <button type="button" onClick={saveResultToHistory} className="min-h-12 w-full rounded-[0.9rem] bg-brand px-4 text-sm font-bold text-white">
+              Save to History
+            </button>
+          </div>
         </section>
       )}
     </>
+  );
+}
+
+function AppSectionHeading({
+  eyebrow,
+  title,
+  copy,
+}: {
+  eyebrow: string;
+  title: string;
+  copy?: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand">{eyebrow}</p>
+      <h2 className="mt-1 break-words text-lg font-bold leading-tight text-slate-950">{title}</h2>
+      {copy && <p className="mt-1 break-words text-sm leading-5 text-slate-600">{copy}</p>}
+    </div>
+  );
+}
+
+function AppFormGroupTitle({ title, copy }: { title: string; copy: string }) {
+  return (
+    <div className="min-w-0">
+      <h3 className="break-words text-sm font-bold text-slate-950">{title}</h3>
+      <p className="mt-1 break-words text-xs leading-5 text-slate-500">{copy}</p>
+    </div>
+  );
+}
+
+function AppDetailRow({
+  label,
+  value,
+  emphasized = false,
+}: {
+  label: string;
+  value: string;
+  emphasized?: boolean;
+}) {
+  return (
+    <div className="app-native-row grid min-w-0 gap-1 sm:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] sm:items-start sm:gap-3">
+      <p className="break-words text-xs font-bold uppercase tracking-[0.08em] text-slate-500">{label}</p>
+      <p className={`break-words text-left leading-5 sm:text-right ${emphasized ? "text-base font-bold text-brand" : "text-sm font-semibold text-slate-900"}`}>
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -2867,13 +2945,13 @@ function AppStoreInputMethodButton({
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-14 min-w-0 rounded-xl border px-2 py-3 text-center transition sm:min-h-0 sm:p-4 sm:text-left ${
-        active ? "border-brand bg-blue-50 shadow-[0_6px_18px_rgba(47,111,237,0.10)]" : "border-slate-200/80 bg-white"
+      className={`min-h-11 min-w-0 rounded-xl px-1 py-2 text-center transition ${
+        active ? "bg-brand text-white shadow-[0_5px_14px_rgba(47,111,237,0.22)]" : "text-slate-600"
       }`}
       aria-pressed={active}
     >
-      <span className="block text-xs font-bold text-slate-950 sm:text-base">{title}</span>
-      <span className="mt-1 hidden text-sm leading-5 text-slate-600 sm:block">{copy}</span>
+      <span className={`block break-words text-[11px] font-bold leading-tight sm:text-sm ${active ? "text-white" : "text-slate-700"}`}>{title}</span>
+      <span className="sr-only">{copy}</span>
     </button>
   );
 }
@@ -2934,7 +3012,8 @@ function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
       />
 
       {!savedEvaluations.length ? (
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+        <section className="app-native-group">
+          <div className="app-native-row">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Empty state</p>
           <h2 className="mt-2 text-xl font-bold text-slate-950">No saved bike checks yet</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -2943,25 +3022,26 @@ function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
           <button type="button" onClick={onEvaluate} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
             Evaluate a bike
           </button>
+          </div>
         </section>
       ) : (
-        <section className="grid gap-3">
+        <section className="app-native-group">
           {savedEvaluations.map((evaluation) => (
-            <article key={evaluation.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-panel">
-              <div className="flex items-start justify-between gap-3">
-                <div>
+            <article key={evaluation.id} className="app-native-row">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                     {evaluation.listing.platform || sourceLabelFromInputMode(evaluation.inputMode)}
                   </p>
-                  <h2 className="mt-1 text-lg font-bold text-slate-950">{evaluation.listing.title || "Untitled bike listing"}</h2>
-                  <p className="mt-1 text-sm font-semibold text-slate-600">
+                  <h2 className="mt-1 break-words text-lg font-bold text-slate-950">{evaluation.listing.title || "Untitled bike listing"}</h2>
+                  <p className="mt-1 break-words text-sm font-semibold text-slate-600">
                     {evaluation.listing.askingPrice ? `$${evaluation.listing.askingPrice}` : "Price not set"} - {formatAppStoreDate(evaluation.savedAt)}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => toggleFavorite(evaluation.id)}
-                  className={`min-h-10 rounded-md border px-3 text-xs font-bold ${
+                  className={`min-h-10 shrink-0 rounded-xl px-3 text-xs font-bold ${
                     evaluation.favorite ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-300 bg-white text-slate-700"
                   }`}
                   aria-pressed={evaluation.favorite}
@@ -2969,9 +3049,9 @@ function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
                   {evaluation.favorite ? "Favorite" : "Shortlist"}
                 </button>
               </div>
-              <div className="mt-3 grid gap-2 text-sm text-slate-700">
+              <div className="mt-3 grid min-w-0 gap-2 text-sm text-slate-700">
                 <p className="font-bold text-slate-950">{evaluation.analysis.overall.label}</p>
-                <p>
+                <p className="break-words">
                   Fit: {evaluation.analysis.dimensions.fit.label} - Deal: {evaluation.analysis.dimensions.price.label} - Risk: {evaluation.analysis.dimensions.risk.label}
                 </p>
                 {evaluation.screenshotName && (
@@ -3000,14 +3080,16 @@ function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
       )}
 
       {selectedEvaluation && (
-        <section className="rounded-lg border border-blue-100 bg-blue-50/80 p-5 shadow-panel">
+        <section className="app-native-group">
+          <div className="app-native-row">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Saved detail</p>
-          <h2 className="mt-2 text-xl font-bold text-slate-950">{selectedEvaluation.analysis.overall.label}</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{selectedEvaluation.analysis.overall.reasoning}</p>
-          <div className="mt-4 grid gap-2 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+          <h2 className="mt-2 break-words text-xl font-bold text-slate-950">{selectedEvaluation.analysis.overall.label}</h2>
+          <p className="mt-2 break-words text-sm leading-6 text-slate-700">{selectedEvaluation.analysis.overall.reasoning}</p>
+          </div>
+          <div className="app-native-row grid min-w-0 gap-2 text-sm text-slate-700">
             <p className="font-bold text-slate-950">Listing basics</p>
-            <p>{selectedEvaluation.listing.title || "Untitled bike listing"}</p>
-            <p>
+            <p className="break-words">{selectedEvaluation.listing.title || "Untitled bike listing"}</p>
+            <p className="break-words">
               {selectedEvaluation.listing.askingPrice ? `$${selectedEvaluation.listing.askingPrice}` : "Price not set"}
               {selectedEvaluation.listing.wheelSize ? ` - ${selectedEvaluation.listing.wheelSize}` : ""}
               {selectedEvaluation.listing.brand ? ` - ${selectedEvaluation.listing.brand}` : ""}
@@ -3015,22 +3097,22 @@ function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
             <p>{selectedEvaluation.listing.location || selectedEvaluation.listing.platform || sourceLabelFromInputMode(selectedEvaluation.inputMode)}</p>
             {selectedEvaluation.listing.listingLink && <p className="break-words text-xs font-semibold text-slate-500">Reference: {selectedEvaluation.listing.listingLink}</p>}
           </div>
-          <div className="mt-3 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+          <div className="app-native-row text-sm text-slate-700">
             <p className="font-bold text-slate-950">Child snapshot</p>
             <p className="mt-1">
               {selectedEvaluation.childNickname?.trim() || "Your child"} - {selectedEvaluation.childSnapshot.heightCm || "unknown"} cm - {selectedEvaluation.childSnapshot.experience}
             </p>
           </div>
-          <div className="mt-4 grid gap-3">
+          <div className="app-native-row grid gap-3">
             <ResultMeter label="Fit" item={selectedEvaluation.analysis.dimensions.fit} />
             <ResultMeter label="Deal/value" item={selectedEvaluation.analysis.dimensions.price} />
             <ResultMeter label="Risk" item={selectedEvaluation.analysis.dimensions.risk} />
           </div>
-          <div className="mt-4 rounded-md border border-slate-200 bg-white p-3">
+          <div className="app-native-row bg-slate-50">
             <p className="text-sm font-bold text-slate-900">Seller message</p>
             <p className="mt-2 text-sm leading-6 text-slate-700">{selectedEvaluation.sellerMessage}</p>
           </div>
-          <p className="mt-3 text-xs font-semibold text-slate-600">
+          <p className="app-native-row text-xs font-semibold leading-5 text-slate-600">
             Opening this saved item does not re-run AI, re-analyze the listing, or re-fetch marketplace pages.
           </p>
         </section>
@@ -3091,24 +3173,28 @@ function SettingsScreenPlaceholder() {
       <AppScreenHeader
         eyebrow="Privacy and controls"
         title="Settings"
-        copy="The App Store MVP keeps privacy, AI disclosure, local data controls, and app information in one predictable place."
+        copy="Privacy, stored data, and app information."
       />
-      <section className="grid gap-3">
+      <AppSectionHeading eyebrow="Privacy" title="How your data is handled" />
+      <section className="app-native-group">
         <SettingsPlaceholderCard title="Privacy summary" copy="Child profile and saved evaluations are stored on this device for the App Store MVP. No account or cloud sync is required, and you can clear local data at any time." />
         <SettingsPlaceholderCard title="AI disclosure" copy="AI features are optional and must start from a clear user action. Choosing a screenshot or pasting text does not start AI by itself. Local fallback analysis works without AI, provider keys stay server-side, and initial app load does not call OpenAI or an LLM." />
         <SettingsPlaceholderCard title="Marketplace disclosure" copy="Links, text, and screenshots are user-provided references. Mandy's Bike Finder does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages, and saved History does not re-fetch marketplace pages." />
-        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
-          <h2 className="text-lg font-bold text-slate-950">Privacy policy</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Review the public product privacy draft for the App Store MVP.
-          </p>
-          <a className="mt-4 inline-flex min-h-11 items-center rounded-md bg-brand px-4 text-sm font-bold text-white" href="/privacy">
+        <article className="app-native-row flex min-w-0 items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-slate-950">Privacy policy</h2>
+            <p className="mt-1 break-words text-sm leading-5 text-slate-600">Review the full policy.</p>
+          </div>
+          <a className="shrink-0 rounded-xl bg-blue-50 px-3 py-2 text-sm font-bold text-brand" href="/privacy">
             Open privacy policy
           </a>
         </article>
+      </section>
 
-        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
-          <h2 className="text-lg font-bold text-slate-950">Local data controls</h2>
+      <AppSectionHeading eyebrow="On this iPhone" title="Local data controls" />
+      <section className="app-native-group">
+        <article className="app-native-row">
+          <h2 className="text-base font-bold text-slate-950">Stored data</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Current device data: {hasProfile ? "1 child profile" : "no child profile"} and {historyCount} saved {historyCount === 1 ? "evaluation" : "evaluations"}.
           </p>
@@ -3121,29 +3207,32 @@ function SettingsScreenPlaceholder() {
             <button
               type="button"
               onClick={clearProfileFromSettings}
-              className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-800"
+              className="min-h-11 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
             >
               Clear child profile
             </button>
             <button
               type="button"
               onClick={clearHistoryFromSettings}
-              className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-800"
+              className="min-h-11 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
             >
               Clear history
             </button>
             <button
               type="button"
               onClick={clearAllLocalDataFromSettings}
-              className="min-h-11 rounded-md border border-rose-200 bg-rose-50 px-4 text-sm font-bold text-rose-800"
+              className="min-h-11 rounded-xl bg-rose-50 px-4 text-sm font-bold text-rose-800"
             >
               Clear all local data
             </button>
           </div>
         </article>
+      </section>
 
-        <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
-          <h2 className="text-lg font-bold text-slate-950">About</h2>
+      <AppSectionHeading eyebrow="About" title="Mandy's Bike Finder" />
+      <section className="app-native-group">
+        <article className="app-native-row">
+          <h2 className="text-base font-bold text-slate-950">App information</h2>
           <div className="mt-2 grid gap-2 text-sm leading-6 text-slate-600">
             <p><span className="font-bold text-slate-800">App:</span> Mandy&apos;s Bike Finder</p>
             <p><span className="font-bold text-slate-800">Mode:</span> App Store MVP</p>
@@ -3163,9 +3252,9 @@ function SettingsScreenPlaceholder() {
 
 function SettingsPlaceholderCard({ title, copy }: { title: string; copy: string }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
-      <h2 className="text-lg font-bold text-slate-950">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{copy}</p>
+    <article className="app-native-row">
+      <h2 className="text-base font-bold text-slate-950">{title}</h2>
+      <p className="mt-1 break-words text-sm leading-5 text-slate-600">{copy}</p>
     </article>
   );
 }
@@ -3185,7 +3274,7 @@ function BottomTabNav({
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-white/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl" aria-label="App Store MVP tabs">
+    <nav className="app-native-nav border-t border-slate-200/80 bg-white/95 px-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_28px_rgba(15,23,42,0.08)] backdrop-blur-xl" aria-label="App Store MVP tabs">
       <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
@@ -3195,12 +3284,12 @@ function BottomTabNav({
               type="button"
               aria-current={active ? "page" : undefined}
               onClick={() => onSelectTab(tab.id)}
-              className={`relative min-h-12 rounded-xl px-1 pt-2 text-[11px] font-bold transition ${
-                active ? "text-brand" : "text-slate-500"
+              className={`relative min-h-12 min-w-0 rounded-xl px-1 py-1.5 text-[11px] font-bold transition ${
+                active ? "bg-blue-50 text-brand" : "text-slate-500"
               }`}
             >
               <span className={`mx-auto mb-1 block h-1.5 w-1.5 rounded-full ${active ? "bg-brand" : "bg-slate-300"}`} aria-hidden />
-              {tab.label}
+              <span className="block truncate">{tab.label}</span>
             </button>
           );
         })}
