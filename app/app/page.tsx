@@ -2356,9 +2356,18 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
       )}
       {isEditing && (
         <section className="app-native-group">
-          <div className="app-native-row">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
-            <h2 className="mt-2 text-xl font-bold text-slate-950">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
+          <div className="app-native-row flex min-w-0 items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
+              <h2 className="mt-2 break-words text-xl font-bold text-slate-950">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
+            </div>
+            <button
+              type="button"
+              onClick={savedProfile ? cancelEdit : onEvaluate}
+              className="shrink-0 rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700"
+            >
+              {savedProfile ? "Cancel" : "Close"}
+            </button>
           </div>
           <div className="app-native-row grid gap-4">
             <AppFormGroupTitle title="Rider basics" copy="The details used to estimate fit and control." />
