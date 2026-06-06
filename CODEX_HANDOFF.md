@@ -69,13 +69,16 @@ What is now validated on macOS:
 - iPhone 17e cold-launch check
 - Profile persistence, local evaluation, History, and Settings data controls
 - Production-style app icon installation and simulator home-screen rendering
+- Apple Development signing and provisioning
+- Physical iPhone 17 Pro Max build, install, launch, and user-led core-flow QA
+- Release archive for iOS version `1.0` build `2`
+- Successful App Store Connect upload of build `1.0 (2)` on June 6, 2026
 
 What is not done yet:
 
-- physical-iPhone WebView QA
-- Apple Developer Team/signing confirmation
-- App Store asset finalization
-- TestFlight archive/upload
+- App Store Connect processing confirmation
+- internal TestFlight installation and QA
+- App Store screenshot and metadata finalization
 
 ## Important Files
 
@@ -98,12 +101,11 @@ If continuing on Windows:
 
 If continuing on Mac:
 
-1. Pull the latest GitHub state after the local June 6 commits have been pushed.
-2. Connect and trust a physical iPhone.
-3. Open `app/ios/App/App.xcodeproj`.
-4. Select the `App` target and an Apple Developer Team under Signing & Capabilities.
-5. Select the connected iPhone and run the physical-device checklist in `docs/product/xcode-testflight-preparation.md`.
-6. Archive and upload only after the physical-device pass.
+1. Pull the latest GitHub `main`.
+2. Confirm build `1.0 (2)` has finished processing in App Store Connect.
+3. Add it to an internal TestFlight group.
+4. Install from TestFlight and run the short internal QA checklist.
+5. Continue App Store screenshot and metadata preparation.
 
 If continuing the legacy listing monitor:
 

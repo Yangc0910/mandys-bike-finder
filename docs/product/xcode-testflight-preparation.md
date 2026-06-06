@@ -1,6 +1,6 @@
 # Xcode And TestFlight Preparation
 
-Status: Simulator validated; physical iPhone, signing, and TestFlight pending
+Status: Build 1.0 (2) uploaded; App Store Connect processing and internal TestFlight QA pending
 Last updated: 2026-06-06
 
 ## Purpose
@@ -42,6 +42,10 @@ Validation now completed on macOS:
 - Manual local evaluation and History save/detail: passed.
 - Settings clear-history and clear-all controls: passed.
 - Production-style 1024x1024 RGB app icon with no alpha: installed and verified.
+- Physical iPhone 17 Pro Max signing, installation, launch, and core-flow QA: passed.
+- Branded launch screen matching the app icon: installed and verified in build `2`.
+- Release archive for version `1.0` build `2`: passed.
+- App Store Connect upload: succeeded on June 6, 2026; processing pending.
 
 GitHub handoff status:
 

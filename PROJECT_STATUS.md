@@ -67,6 +67,8 @@ Historical personal automation subsystem:
 - Simulator QA has passed on iPhone 17 Pro, with a cold-launch check on iPhone 17e.
 - Profile persistence, local evaluation, History, and Settings data-clearing flows pass in the simulator.
 - A production-style iOS app icon is installed and verified on the simulator home screen.
+- Physical-device build, signing, installation, launch, and user-led core-flow QA pass on iPhone 17 Pro Max.
+- iOS version `1.0` build `2` was archived and uploaded successfully to App Store Connect on June 6, 2026.
 - Root-level GitHub handoff documentation has been added for cross-device continuation.
 
 ## In Progress
@@ -74,14 +76,13 @@ Historical personal automation subsystem:
 - Preparing the repository for durable GitHub-backed, cross-device continuation.
 - Tightening project-level status/handoff documentation.
 - Making current and legacy workstreams easier to understand without Codex thread history.
-- Preparing physical-iPhone QA, Apple signing, archive, and TestFlight upload.
+- Waiting for App Store Connect to finish processing iOS version `1.0` build `2`.
+- Preparing internal TestFlight installation and final App Store assets.
 
 ## Known Issues
 
-- No physical iPhone was connected during the June 6 preparation pass.
-- Apple Developer Team selection and physical-device signing still need confirmation in Xcode.
-- App Store screenshots and final launch-screen polish are still manual follow-up work.
-- HEIC behavior in iOS WebView file selection still needs real-device QA.
+- TestFlight build `1.0 (2)` still needs an internal install after Apple processing completes.
+- App Store screenshots are still required.
 - No durable database exists yet for saved reports, waitlist entries, usage counters, or Bike Scout profiles.
 - Rate limits are runtime scoped unless backed by durable storage later.
 - `docs/current-status.md` contains historical notes and should be treated as secondary to this file plus `CODEX_HANDOFF.md`.
@@ -110,17 +111,15 @@ Historical personal automation subsystem:
 
 ## Recommended Next Tasks
 
-1. Connect a physical iPhone, trust the Mac, enable Developer Mode if prompted, and select the Apple Developer Team in Xcode.
-2. Run the physical-device QA checklist for screenshot selection, HEIC, OCR, local-storage persistence, navigation, and offline behavior.
-3. Increment the iOS build number after physical-device QA and create the first Release archive.
-4. Upload the validated archive to TestFlight and complete an internal TestFlight pass.
-5. Capture App Store screenshots from the hosted App Store MVP.
-6. Confirm `support@mandysbikefinder.com` is a live monitored mailbox.
+1. Wait for App Store Connect to finish processing build `1.0 (2)`.
+2. Add the build to an internal TestFlight group and install it from TestFlight.
+3. Complete a short internal TestFlight pass for launch, screenshot selection, OCR, persistence, History, and offline recovery.
+4. Capture App Store screenshots from the hosted App Store MVP.
+5. Confirm `support@mandysbikefinder.com` is a live monitored mailbox.
 
 ## Risks And Blockers
 
-- Physical-device and TestFlight verification are not complete.
-- GitHub push from this Mac is blocked until GitHub credentials are configured.
+- Internal TestFlight installation and verification are not complete.
 - App Store Connect metadata, screenshots, and assets still need final manual completion.
 - The repository contains multiple historical tracks; contributors must start from the handoff docs to avoid editing the wrong subsystem.
 - Vercel production behavior depends on environment variables that are not stored in Git.
