@@ -2,7 +2,8 @@
 
 set -eu
 
-REPOSITORY_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(pwd)}"
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+REPOSITORY_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(CDPATH= cd -- "$SCRIPT_DIR/../../../.." && pwd)}"
 APP_DIR="$REPOSITORY_ROOT/app"
 
 echo "Preparing Capacitor iOS assets for Xcode Cloud..."
