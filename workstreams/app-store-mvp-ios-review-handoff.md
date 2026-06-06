@@ -73,15 +73,14 @@ Notes:
 - Capacitor dependencies/config and generated iOS project exist.
 - Simulator and physical-device QA have passed.
 - Version `1.0` build `3` has been archived and uploaded to App Store Connect.
-- Final continuation work depends on Apple processing, internal TestFlight QA, screenshots, and App Store metadata.
+- Version `1.0` build `3` is active in the `Internal Testing` TestFlight group.
+- Final continuation work depends on internal TestFlight device QA, screenshots, and App Store metadata.
 
 ## Next Steps
 
-1. Confirm build `1.0 (3)` has finished processing in App Store Connect.
-2. Add build `1.0 (3)` to the internal TestFlight group.
-3. Install it from TestFlight and complete the short internal QA checklist.
-4. Capture final App Store screenshots and complete the remaining metadata.
-5. Verify the support email flow before App Review submission.
+1. Install build `1.0 (3)` from TestFlight and complete the short internal QA checklist.
+2. Capture final App Store screenshots and complete the remaining metadata.
+3. Verify the support email flow before App Review submission.
 
 ## Open Questions
 

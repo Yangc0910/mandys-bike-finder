@@ -71,6 +71,8 @@ Historical personal automation subsystem:
 - iOS version `1.0` build `2` was archived and uploaded successfully to App Store Connect on June 6, 2026.
 - Listing title parsing and seller-message punctuation polish passed targeted, production-build, browser, simulator, and archive validation.
 - iOS version `1.0` build `3` was archived and uploaded successfully to App Store Connect on June 6, 2026.
+- App Store Connect processing and export-compliance confirmation completed for build `1.0 (3)`.
+- Build `1.0 (3)` is active in the `Internal Testing` TestFlight group.
 - Root-level GitHub handoff documentation has been added for cross-device continuation.
 
 ## In Progress
@@ -78,12 +80,11 @@ Historical personal automation subsystem:
 - Preparing the repository for durable GitHub-backed, cross-device continuation.
 - Tightening project-level status/handoff documentation.
 - Making current and legacy workstreams easier to understand without Codex thread history.
-- Waiting for App Store Connect to finish processing iOS version `1.0` build `3`.
-- Preparing internal TestFlight installation and final App Store assets.
+- Preparing the internal TestFlight device pass and final App Store assets.
 
 ## Known Issues
 
-- TestFlight build `1.0 (3)` still needs an internal install after Apple processing completes.
+- TestFlight build `1.0 (3)` is available to the internal tester and still needs the final device pass.
 - App Store screenshots are still required.
 - No durable database exists yet for saved reports, waitlist entries, usage counters, or Bike Scout profiles.
 - Rate limits are runtime scoped unless backed by durable storage later.
@@ -113,11 +114,10 @@ Historical personal automation subsystem:
 
 ## Recommended Next Tasks
 
-1. Wait for App Store Connect to finish processing build `1.0 (3)`.
-2. Add the build to an internal TestFlight group and install it from TestFlight.
-3. Complete a short internal TestFlight pass for launch, screenshot selection, OCR, persistence, History, and offline recovery.
-4. Capture App Store screenshots from the hosted App Store MVP.
-5. Confirm `support@mandysbikefinder.com` is a live monitored mailbox.
+1. Install build `1.0 (3)` from TestFlight on the internal test iPhone.
+2. Complete a short internal TestFlight pass for launch, screenshot selection, OCR, persistence, History, and offline recovery.
+3. Capture App Store screenshots from the hosted App Store MVP.
+4. Confirm `support@mandysbikefinder.com` is a live monitored mailbox.
 
 ## Risks And Blockers
 

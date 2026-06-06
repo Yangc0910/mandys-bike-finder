@@ -75,11 +75,12 @@ What is now validated on macOS:
 - Successful App Store Connect upload of build `1.0 (2)` on June 6, 2026
 - Listing title and seller-message copy polish with targeted regression coverage
 - Release archive and successful App Store Connect upload for build `1.0 (3)` on June 6, 2026
+- App Store Connect processing and export-compliance confirmation for build `1.0 (3)`
+- Build `1.0 (3)` active in the `Internal Testing` TestFlight group
 
 What is not done yet:
 
-- App Store Connect processing confirmation for build `1.0 (3)`
-- internal TestFlight installation and QA
+- internal TestFlight installation and final device QA for build `1.0 (3)`
 - App Store screenshot and metadata finalization
 
 ## Important Files
@@ -104,10 +105,9 @@ If continuing on Windows:
 If continuing on Mac:
 
 1. Pull the latest GitHub `main`.
-2. Confirm build `1.0 (3)` has finished processing in App Store Connect.
-3. Add it to an internal TestFlight group.
-4. Install from TestFlight and run the short internal QA checklist.
-5. Continue App Store screenshot and metadata preparation.
+2. Install build `1.0 (3)` from TestFlight.
+3. Run the short internal QA checklist.
+4. Continue App Store screenshot and metadata preparation.
 
 If continuing the legacy listing monitor:
 

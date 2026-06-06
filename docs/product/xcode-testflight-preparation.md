@@ -1,6 +1,6 @@
 # Xcode And TestFlight Preparation
 
-Status: Build 1.0 (3) uploaded; App Store Connect processing and internal TestFlight QA pending
+Status: Build 1.0 (3) active in Internal Testing; internal TestFlight device QA pending
 Last updated: 2026-06-06
 
 ## Purpose
@@ -47,7 +47,9 @@ Validation now completed on macOS:
 - Release archive for version `1.0` build `2`: passed.
 - Listing-title parsing and seller-message punctuation regression checks: passed.
 - Release archive for version `1.0` build `3`: passed.
-- App Store Connect upload for build `1.0 (3)`: succeeded on June 6, 2026; processing pending.
+- App Store Connect upload for build `1.0 (3)`: succeeded on June 6, 2026.
+- Export-compliance confirmation: completed.
+- Internal TestFlight group assignment: active, status `Testing`.
 
 GitHub handoff status:
 
