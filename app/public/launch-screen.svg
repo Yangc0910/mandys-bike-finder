@@ -1,0 +1,15 @@
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="2732" height="2732" fill="#3157F5"/>
+  <g transform="translate(690 770) scale(1.32)">
+    <path
+      d="M280 680V350L512 600L744 350V680"
+      stroke="#FFFDF8"
+      stroke-width="76"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="280" cy="700" r="112" stroke="#FFFDF8" stroke-width="52"/>
+    <circle cx="744" cy="700" r="112" stroke="#FFFDF8" stroke-width="52"/>
+    <circle cx="512" cy="286" r="48" fill="#FFC83D"/>
+  </g>
+</svg>
