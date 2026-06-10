@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-06-06
+Last updated: 2026-06-10
 
 ## Project
 
@@ -20,9 +20,10 @@ Primary production path:
 
 Primary active product workstream:
 
-- `app-store-mvp-ios-review-handoff`
-- Purpose: keep the App Store MVP close to final, GitHub-backed, and ready to continue on Mac/Xcode/TestFlight
-- Agent-related: indirectly; this workstream touches agent-adjacent features but is not creating a new standalone agent
+- `post-launch-updates`
+- Purpose: deliver controlled version 1.1 and 1.2 improvements from the stable App Store v1.0 production baseline
+- Current version 1.1 theme: GUI polish, mobile interaction, loading/launch quality, and App Store screenshot presentation
+- Workstream: `docs/workstreams/post-launch-updates.md`
 
 Repository continuation workstream:
 
@@ -73,19 +74,21 @@ Historical personal automation subsystem:
 - iOS version `1.0` build `3` was archived and uploaded successfully to App Store Connect on June 6, 2026.
 - App Store Connect processing and export-compliance confirmation completed for build `1.0 (3)`.
 - Build `1.0 (3)` is active in the `Internal Testing` TestFlight group.
+- App Store version `1.0` passed App Review and is live.
+- Production version `1.0` is preserved by tag `v1.0.0-app-store-release`.
+- Version 1.1 planning begins from branch `release/v1.1-ui-polish`.
 - Root-level GitHub handoff documentation has been added for cross-device continuation.
 
 ## In Progress
 
-- Preparing the repository for durable GitHub-backed, cross-device continuation.
-- Tightening project-level status/handoff documentation.
-- Making current and legacy workstreams easier to understand without Codex thread history.
-- Preparing the internal TestFlight device pass and final App Store assets.
+- Defining the version 1.1 UX polish PRD and visual system.
+- Splitting post-launch work into small, reviewable tasks.
+- Planning improved loading/launch states and App Store screenshot assets.
 
 ## Known Issues
 
-- TestFlight build `1.0 (3)` is available to the internal tester and still needs the final device pass.
-- App Store screenshots are still required.
+- Version 1.1 visual and interaction requirements are planned but not yet implemented.
+- App Store screenshots should be upgraded for the version 1.1 presentation.
 - No durable database exists yet for saved reports, waitlist entries, usage counters, or Bike Scout profiles.
 - Rate limits are runtime scoped unless backed by durable storage later.
 - `docs/current-status.md` contains historical notes and should be treated as secondary to this file plus `CODEX_HANDOFF.md`.
@@ -114,15 +117,15 @@ Historical personal automation subsystem:
 
 ## Recommended Next Tasks
 
-1. Install build `1.0 (3)` from TestFlight on the internal test iPhone.
-2. Complete a short internal TestFlight pass for launch, screenshot selection, OCR, persistence, History, and offline recovery.
-3. Capture App Store screenshots from the hosted App Store MVP.
-4. Confirm `support@mandysbikefinder.com` is a live monitored mailbox.
+1. Define the version 1.1 screen-level UX polish PRD.
+2. Define the version 1.1 app visual system.
+3. Implement and verify app shell/navigation polish as the first production UI task.
+4. Prepare the App Store screenshot storyboard and reproducible fictional sample data.
 
 ## Risks And Blockers
 
-- Internal TestFlight installation and verification are not complete.
-- App Store Connect metadata, screenshots, and assets still need final manual completion.
+- UI work must not destabilize the live version 1.0 baseline.
+- Hosted app updates can affect the App Store shell without a new binary, so preview and regression checks are required before production deployment.
 - The repository contains multiple historical tracks; contributors must start from the handoff docs to avoid editing the wrong subsystem.
 - Vercel production behavior depends on environment variables that are not stored in Git.
 - CRM and email flows depend on production environment variables and should remain server-side only.

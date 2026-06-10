@@ -2,6 +2,51 @@
 
 Current PRD: `docs/PRD.md` v0.6
 
+## Post-Launch Version 1.1 Workstream
+
+Mandy's Bike Finder version 1.0 is live on the App Store and is now the stable production baseline.
+
+- Production tag: `v1.0.0-app-store-release`
+- Production branch: `main`
+- Version 1.1 integration branch: `release/v1.1-ui-polish`
+- Detailed workstream: `docs/workstreams/post-launch-updates.md`
+- Release plan: `docs/releases/v1.1.0-plan.md`
+- Post-launch roadmap: `docs/product/post-launch-roadmap.md`
+
+Version 1.1 goals:
+
+- Polish the GUI and mobile interaction.
+- Improve first-time guidance and visual hierarchy.
+- Clarify Profile, Evaluate, Result, History, and Settings.
+- Improve loading, launch, offline, and error states.
+- Upgrade App Store screenshots without overpromising features.
+
+Version control policy:
+
+- Keep `main` deployable and representative of production.
+- Treat the v1.0 release tag as immutable.
+- Build v1.1 through small, reviewable tasks on the release branch.
+- Verify preview and mobile regression behavior before merging to `main`.
+- Create the v1.1 production tag only after deployment and App Store release verification.
+- Do not force-push shared production history or release tags.
+
+Task sequence:
+
+1. `[Build] Tag v1.0.0 App Store Release And Create v1.1 Branch`
+2. `[Product] Define Version 1.1 UX Polish PRD`
+3. `[Design] Define App Visual System v1.1`
+4. `[UX] Polish App Shell And Navigation`
+5. `[UX] Polish Profile Screen`
+6. `[UX] Polish Evaluate Input And Review Flow`
+7. `[UX] Polish Result Card And Seller Message`
+8. `[UX] Polish History Screen`
+9. `[Infra] Improve Loading And Offline States`
+10. `[Design] Prepare App Store Screenshot Storyboard`
+11. `[Build] Generate Screenshot Test Data And Capture Checklist`
+12. `[QA] v1.1 Mobile Regression Pass`
+
+Release readiness requires preserved local Profile/History/Settings behavior, local Evaluate fallback, explicit AI actions, no initial LLM call, server-side-only provider keys, working `/privacy` and `/offline`, unaffected public `www`, verified hosted app changes, mobile regression completion, and finalized release/screenshot assets.
+
 ## Phase 0: Documentation and Repo Setup
 
 - Establish repository structure.
