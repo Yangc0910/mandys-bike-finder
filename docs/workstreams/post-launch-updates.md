@@ -1,8 +1,11 @@
 # Workstream: Post-Launch Updates
 
-Status: Active planning  
-Current release target: Version 1.1  
-Production baseline: `v1.0.0-app-store-release`  
+Status: Active planning
+
+Current release target: Version 1.1
+
+Production baseline: `v1.0.0-app-store-release`
+
 Integration branch: `release/v1.1-ui-polish`
 
 ## Purpose
