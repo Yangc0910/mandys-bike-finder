@@ -8,6 +8,8 @@ Production baseline: `v1.0.0-app-store-release`
 
 Integration branch: `release/v1.1-ui-polish`
 
+Detailed release PRD: `docs/prd/versions/v1.1.md`
+
 ## Purpose
 
 Mandy's Bike Finder post-launch software update workstream focuses on controlled iteration after the App Store v1.0 launch. Version 1.0 remains the stable production baseline. Work should improve the shipped product in small, testable increments without reopening MVP scope or destabilizing the hosted app.
@@ -204,6 +206,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 2. [Product] Define Version 1.1 UX Polish PRD
 
+- Status: Complete on 2026-06-10.
 - Scope: convert this plan into screen-level requirements, priorities, and measurable acceptance criteria.
 - Files likely touched: `docs/prd/versions/v1.1.md`, `docs/prd/history.md`, `docs/releases/v1.1.0-plan.md`.
 - Acceptance criteria: every scoped screen has user problem, behavior, non-goals, edge states, and release criteria.
@@ -292,4 +295,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[Product] Define Version 1.1 UX Polish PRD`. It should turn the broad plan into prioritized screen-level acceptance criteria before production UI code changes begin.
+Start with `[Design] Define App Visual System v1.1`. It should translate the approved PRD into typography, spacing, color, card, button, icon, and state specifications before production UI code changes begin.
