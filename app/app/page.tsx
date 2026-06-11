@@ -3295,10 +3295,10 @@ function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
   useEffect(() => {
     const saved = loadAppStoreSavedEvaluations();
     setSavedEvaluations(saved);
-    setSelectedEvaluationId(saved[0]?.id || "");
   }, []);
 
   const selectedEvaluation = savedEvaluations.find((evaluation) => evaluation.id === selectedEvaluationId) || null;
+  const favoriteCount = savedEvaluations.filter((evaluation) => evaluation.favorite).length;
 
   function refreshHistory(next: AppStoreSavedEvaluation[]) {
     saveAppStoreSavedEvaluations(next);
@@ -3324,117 +3324,214 @@ function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
       <AppScreenHeader
         eyebrow="Saved on this device"
         title="History"
-        copy="Saved evaluations stay on this device for the first App Store MVP. Opening History does not re-run analysis or call AI."
+        copy="Compare the bike checks you saved. These snapshots stay on this device and never re-run analysis when opened."
       />
 
       {!savedEvaluations.length ? (
         <section className="app-native-group">
-          <div className="app-native-row">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Empty state</p>
-          <h2 className="mt-2 text-xl font-bold text-slate-950">No saved bike checks yet</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Save an evaluation to keep title, price, source, recommendation, fit/deal/risk summary, and favorite status on this device.
-          </p>
-          <button type="button" onClick={onEvaluate} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
-            Evaluate a bike
-          </button>
+          <div className="app-native-row grid justify-items-center px-6 py-10 text-center">
+            <span className="grid h-14 w-14 place-items-center rounded-full border border-blue-100 bg-[var(--app-brand-050)] text-brand" aria-hidden="true">
+              <HistoryEmptyIcon />
+            </span>
+            <h2 className="mt-4 text-xl font-bold tracking-[-0.02em] text-[var(--app-text-strong)]">Save bikes you want to remember</h2>
+            <p className="mt-2 max-w-sm text-sm leading-6 text-[var(--app-text-muted)]">
+              After evaluating a listing, save its recommendation here to compare later on this device.
+            </p>
+            <button type="button" onClick={onEvaluate} className="mt-5 min-h-12 rounded-[var(--app-radius-button)] bg-brand px-5 text-sm font-bold text-white">
+              Evaluate a bike
+            </button>
           </div>
         </section>
       ) : (
-        <section className="app-native-group">
-          {savedEvaluations.map((evaluation) => (
-            <article key={evaluation.id} className="app-native-row">
-              <div className="flex min-w-0 items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                    {evaluation.listing.platform || sourceLabelFromInputMode(evaluation.inputMode)}
-                  </p>
-                  <h2 className="mt-1 break-words text-lg font-bold text-slate-950">{evaluation.listing.title || "Untitled bike listing"}</h2>
-                  <p className="mt-1 break-words text-sm font-semibold text-slate-600">
-                    {evaluation.listing.askingPrice ? `$${evaluation.listing.askingPrice}` : "Price not set"} - {formatAppStoreDate(evaluation.savedAt)}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => toggleFavorite(evaluation.id)}
-                  className={`min-h-10 shrink-0 rounded-xl px-3 text-xs font-bold ${
-                    evaluation.favorite ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-300 bg-white text-slate-700"
-                  }`}
-                  aria-pressed={evaluation.favorite}
-                >
-                  {evaluation.favorite ? "Favorite" : "Shortlist"}
-                </button>
-              </div>
-              <div className="mt-3 grid min-w-0 gap-2 text-sm text-slate-700">
-                <p className="font-bold text-slate-950">{evaluation.analysis.overall.label}</p>
-                <p className="break-words">
-                  Fit: {evaluation.analysis.dimensions.fit.label} - Deal: {evaluation.analysis.dimensions.price.label} - Risk: {evaluation.analysis.dimensions.risk.label}
-                </p>
-                {evaluation.screenshotName && (
-                  <p className="text-xs font-semibold text-slate-500">Screenshot reference: {evaluation.screenshotName}</p>
-                )}
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedEvaluationId((current) => current === evaluation.id ? "" : evaluation.id)}
-                  className="min-h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-bold text-slate-800"
-                >
-                  {selectedEvaluationId === evaluation.id ? "Hide details" : "View details"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteEvaluation(evaluation.id)}
-                  className="min-h-10 rounded-md border border-rose-200 bg-rose-50 px-3 text-sm font-bold text-rose-800"
-                >
-                  Delete
-                </button>
-              </div>
-            </article>
-          ))}
-        </section>
+        <>
+          <AppSectionHeading
+            eyebrow={`${savedEvaluations.length} saved ${savedEvaluations.length === 1 ? "decision" : "decisions"}`}
+            title={favoriteCount ? `${favoriteCount} on your shortlist` : "Your saved bikes"}
+            copy="Tap a star to keep promising bikes easy to spot."
+          />
+          <section className="app-native-group">
+            {savedEvaluations.map((evaluation) => {
+              const isSelected = selectedEvaluationId === evaluation.id;
+              return (
+                <article key={evaluation.id} className={`app-native-row ${evaluation.favorite ? "bg-amber-50/60" : ""}`}>
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${historyMeterDotClass(evaluation.analysis.overall.meter)}`} aria-hidden="true" />
+                        <p className="break-words text-sm font-bold text-[var(--app-text-strong)]">{evaluation.analysis.overall.label}</p>
+                      </div>
+                      <h2 className="mt-2 break-words text-lg font-bold tracking-[-0.02em] text-[var(--app-text-strong)]">
+                        {evaluation.listing.title || "Untitled bike listing"}
+                      </h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleFavorite(evaluation.id)}
+                      className={`grid min-h-11 min-w-11 shrink-0 place-items-center rounded-full border ${
+                        evaluation.favorite
+                          ? "border-amber-300 bg-amber-100 text-amber-800"
+                          : "border-[var(--app-border)] bg-white text-[var(--app-text-muted)]"
+                      }`}
+                      aria-label={evaluation.favorite ? `Remove ${evaluation.listing.title || "this bike"} from shortlist` : `Add ${evaluation.listing.title || "this bike"} to shortlist`}
+                      aria-pressed={Boolean(evaluation.favorite)}
+                    >
+                      <FavoriteIcon filled={Boolean(evaluation.favorite)} />
+                    </button>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <HistoryMetadata label="Price" value={evaluation.listing.askingPrice ? `$${evaluation.listing.askingPrice}` : "Not set"} />
+                    <HistoryMetadata label="Wheel size" value={formatHistoryWheelSize(evaluation.listing.wheelSize)} />
+                  </div>
+
+                  <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--app-text-muted)]">
+                    <p>
+                      <span className="font-bold text-[var(--app-text)]">{evaluation.childNickname?.trim() || "Your child"}</span>
+                      {evaluation.childSnapshot?.heightCm ? `, ${evaluation.childSnapshot.heightCm} cm` : ""}
+                      {evaluation.childSnapshot?.experience ? `, ${evaluation.childSnapshot.experience}` : ""}
+                    </p>
+                    <p>
+                      Saved {formatAppStoreDate(evaluation.savedAt)} from {evaluation.listing.platform || sourceLabelFromInputMode(evaluation.inputMode)}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEvaluationId((current) => current === evaluation.id ? "" : evaluation.id)}
+                    className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--app-radius-button)] border border-blue-200 bg-white px-4 text-sm font-bold text-brand"
+                    aria-expanded={isSelected}
+                  >
+                    {isSelected ? "Hide saved details" : "View saved details"}
+                    <DisclosureIcon expanded={isSelected} />
+                  </button>
+                </article>
+              );
+            })}
+          </section>
+        </>
       )}
 
       {selectedEvaluation && (
-        <section className="app-native-group">
-          <div className="app-native-row">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Saved detail</p>
-          <h2 className="mt-2 break-words text-xl font-bold text-slate-950">{selectedEvaluation.analysis.overall.label}</h2>
-          <p className="mt-2 break-words text-sm leading-6 text-slate-700">{selectedEvaluation.analysis.overall.reasoning}</p>
-          </div>
-          <div className="app-native-row grid min-w-0 gap-2 text-sm text-slate-700">
-            <p className="font-bold text-slate-950">Listing basics</p>
-            <p className="break-words">{selectedEvaluation.listing.title || "Untitled bike listing"}</p>
-            <p className="break-words">
-              {selectedEvaluation.listing.askingPrice ? `$${selectedEvaluation.listing.askingPrice}` : "Price not set"}
-              {selectedEvaluation.listing.wheelSize ? ` - ${selectedEvaluation.listing.wheelSize}` : ""}
-              {selectedEvaluation.listing.brand ? ` - ${selectedEvaluation.listing.brand}` : ""}
-            </p>
-            <p>{selectedEvaluation.listing.location || selectedEvaluation.listing.platform || sourceLabelFromInputMode(selectedEvaluation.inputMode)}</p>
-            {selectedEvaluation.listing.listingLink && <p className="break-words text-xs font-semibold text-slate-500">Reference: {selectedEvaluation.listing.listingLink}</p>}
-          </div>
-          <div className="app-native-row text-sm text-slate-700">
-            <p className="font-bold text-slate-950">Child snapshot</p>
-            <p className="mt-1">
-              {selectedEvaluation.childNickname?.trim() || "Your child"} - {selectedEvaluation.childSnapshot.heightCm || "unknown"} cm - {selectedEvaluation.childSnapshot.experience}
-            </p>
-          </div>
-          <div className="app-native-row grid gap-3">
-            <ResultMeter label="Fit" item={selectedEvaluation.analysis.dimensions.fit} />
-            <ResultMeter label="Deal/value" item={selectedEvaluation.analysis.dimensions.price} />
-            <ResultMeter label="Risk" item={selectedEvaluation.analysis.dimensions.risk} />
-          </div>
-          <div className="app-native-row bg-slate-50">
-            <p className="text-sm font-bold text-slate-900">Seller message</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{selectedEvaluation.sellerMessage}</p>
-          </div>
-          <p className="app-native-row text-xs font-semibold leading-5 text-slate-600">
-            Opening this saved item does not re-run AI, re-analyze the listing, or re-fetch marketplace pages.
-          </p>
-        </section>
+        <>
+          <AppSectionHeading
+            eyebrow="Saved snapshot"
+            title={selectedEvaluation.listing.title || "Bike details"}
+            copy={`Saved ${formatAppStoreDate(selectedEvaluation.savedAt)}. Nothing on this screen is re-analyzed or refreshed.`}
+          />
+          <section className="app-native-group">
+            <div className={`app-native-row ${resultSurfaceClass(selectedEvaluation.analysis.overall.meter)}`}>
+              <div className="flex min-w-0 items-start gap-3">
+                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border bg-white/80 ${resultIconClass(selectedEvaluation.analysis.overall.meter)}`} aria-hidden="true">
+                  <RecommendationIcon meter={selectedEvaluation.analysis.overall.meter} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold tracking-[0.04em] opacity-80">Saved recommendation</p>
+                  <h2 className="mt-1 break-words text-xl font-bold text-[var(--app-text-strong)]">{selectedEvaluation.analysis.overall.label}</h2>
+                  <p className="mt-2 break-words text-sm leading-6 text-[var(--app-text)]">{selectedEvaluation.analysis.overall.reasoning}</p>
+                </div>
+              </div>
+            </div>
+            <div className="app-native-row">
+              <AppFormGroupTitle title="Listing snapshot" copy="The listing details saved with this recommendation." />
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <HistoryMetadata label="Price" value={selectedEvaluation.listing.askingPrice ? `$${selectedEvaluation.listing.askingPrice}` : "Not set"} />
+                <HistoryMetadata label="Wheel size" value={formatHistoryWheelSize(selectedEvaluation.listing.wheelSize)} />
+              </div>
+              <div className="mt-4 grid gap-2 text-sm leading-6 text-[var(--app-text)]">
+                {selectedEvaluation.listing.brand && <p><span className="font-bold text-[var(--app-text-strong)]">Brand:</span> {selectedEvaluation.listing.brand}</p>}
+                <p><span className="font-bold text-[var(--app-text-strong)]">Source:</span> {selectedEvaluation.listing.platform || sourceLabelFromInputMode(selectedEvaluation.inputMode)}</p>
+                {selectedEvaluation.listing.location && <p><span className="font-bold text-[var(--app-text-strong)]">Location:</span> {selectedEvaluation.listing.location}</p>}
+                {selectedEvaluation.screenshotName && <p className="break-words"><span className="font-bold text-[var(--app-text-strong)]">Screenshot:</span> {selectedEvaluation.screenshotName}</p>}
+                {selectedEvaluation.listing.listingLink && <p className="break-words"><span className="font-bold text-[var(--app-text-strong)]">Reference:</span> {selectedEvaluation.listing.listingLink}</p>}
+              </div>
+            </div>
+            <div className="app-native-row">
+              <AppFormGroupTitle title="Child snapshot" copy="The profile details used when this bike was evaluated." />
+              <p className="mt-3 text-sm leading-6 text-[var(--app-text)]">
+                <span className="font-bold text-[var(--app-text-strong)]">{selectedEvaluation.childNickname?.trim() || "Your child"}</span>
+                {selectedEvaluation.childSnapshot?.heightCm ? `, ${selectedEvaluation.childSnapshot.heightCm} cm` : ", height not saved"}
+                {selectedEvaluation.childSnapshot?.experience ? `, ${selectedEvaluation.childSnapshot.experience}` : ""}
+              </p>
+            </div>
+            <div className="app-native-row">
+              <AppFormGroupTitle title="Fit, deal, and risk" copy="These are the statuses saved with the original recommendation." />
+              <div className="mt-4 grid gap-3">
+                <ResultMeter label="Fit" item={selectedEvaluation.analysis.dimensions.fit} />
+                <ResultMeter label="Deal/value" item={selectedEvaluation.analysis.dimensions.price} />
+                <ResultMeter label="Risk" item={selectedEvaluation.analysis.dimensions.risk} />
+              </div>
+            </div>
+            {selectedEvaluation.sellerMessage && (
+              <div className="app-native-row bg-[var(--app-surface-subtle)]">
+                <p className="text-sm font-bold text-[var(--app-text-strong)]">Saved seller message</p>
+                <p className="mt-2 select-text break-words text-sm leading-6 text-[var(--app-text)]">{selectedEvaluation.sellerMessage}</p>
+              </div>
+            )}
+            <div className="app-native-row grid gap-3">
+              <p className="text-xs leading-5 text-[var(--app-text-muted)]">
+                Deleting removes only this saved snapshot. It does not change the child profile or other saved bikes.
+              </p>
+              <button
+                type="button"
+                onClick={() => deleteEvaluation(selectedEvaluation.id)}
+                className="min-h-11 rounded-[var(--app-radius-button)] border border-rose-200 bg-white px-4 text-sm font-bold text-rose-700"
+              >
+                Delete this saved bike
+              </button>
+            </div>
+          </section>
+        </>
       )}
     </>
   );
+}
+
+function HistoryMetadata({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[var(--app-radius-button)] bg-[var(--app-surface-subtle)] px-3 py-2.5">
+      <p className="text-[0.6875rem] font-bold tracking-[0.04em] text-[var(--app-text-muted)]">{label}</p>
+      <p className="mt-0.5 break-words text-sm font-bold text-[var(--app-text-strong)]">{value}</p>
+    </div>
+  );
+}
+
+function FavoriteIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg className="h-5 w-5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m12 3.8 2.55 5.17 5.7.83-4.13 4.02.98 5.68L12 16.82 6.9 19.5l.98-5.68L3.65 9.8l5.8-.83L12 3.8Z" />
+    </svg>
+  );
+}
+
+function DisclosureIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m7 10 5 5 5-5" />
+    </svg>
+  );
+}
+
+function HistoryEmptyIcon() {
+  return (
+    <svg className="h-7 w-7" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 8v4l2.5 1.5" />
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M5.7 5.7 4 4" />
+    </svg>
+  );
+}
+
+function historyMeterDotClass(meter: MeterResult["meter"]) {
+  if (meter === "green") return "bg-emerald-500";
+  if (meter === "red") return "bg-rose-500";
+  return "bg-amber-500";
+}
+
+function formatHistoryWheelSize(value?: string) {
+  const wheelSize = String(value || "").trim();
+  if (!wheelSize) return "Not set";
+  if (/inch|in\.?|["”]/i.test(wheelSize)) return wheelSize;
+  return `${wheelSize} inch`;
 }
 
 function SettingsScreenPlaceholder() {

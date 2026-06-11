@@ -66,6 +66,23 @@ Validated on 2026-06-10:
 - Browser console: no warnings or errors during the focused Result pass.
 - Temporary responsive viewport override was reset after testing.
 
+## Version 1.1 History Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- The existing saved `TREK` record rendered without migration and retained its recommendation, `$120` price, `20 inch` wheel size, child snapshot, source, Fit/Deal/Risk statuses, and seller message.
+- Saved-decision cards prioritize the recommendation and listing title, then price, wheel size, child, saved date, and source.
+- Shortlist state uses a star icon, text guidance, an accessible pressed state, and a 44-pixel touch target.
+- Toggling shortlist persisted after a full page reload. The test change was reverted afterward to preserve the existing local record.
+- Details remain collapsed initially and open as an explicitly labeled saved snapshot without calling analysis or marketplace APIs.
+- Delete is visually separated inside the expanded detail, explains its scope, and retains the existing confirmation step.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; detail and delete controls remained `254 x 44` pixels; content cleared the bottom navigation.
+- Browser console: no warnings or errors during the focused History pass.
+- Local server activity showed only page and `/api/status` requests; opening History and details did not call extraction or analysis APIs.
+- Temporary responsive viewport override was reset after testing.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 

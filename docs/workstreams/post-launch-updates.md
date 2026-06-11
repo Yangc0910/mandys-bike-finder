@@ -262,6 +262,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 8. [UX] Polish History Screen
 
+- Status: Complete on 2026-06-10.
 - Scope: improve saved-decision cards, empty state, favorite visibility, details, and destructive actions.
 - Files likely touched: `app/app/page.tsx`, `app/app/globals.css`.
 - Acceptance criteria: existing saved records still render; favorite/delete still work; empty state links to Evaluate; no live re-analysis occurs.
@@ -302,4 +303,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[UX] Polish History Screen`. Improve saved-decision cards, the empty state, favorite visibility, detail hierarchy, and destructive actions while preserving existing local records and avoiding live re-analysis.
+Start with `[Infra] Improve Loading And Offline States`. Align web and native launch visuals, clarify what remains available offline, and provide accurate recovery guidance without adding heavy dependencies or initial AI calls.
