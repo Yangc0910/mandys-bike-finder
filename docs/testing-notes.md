@@ -39,7 +39,7 @@ Validated on 2026-06-11 against Vercel preview deployment `dpl_42ZWzq3BrpNKDQZ64
 - `app.mandysbikefinder.com` and `www.mandysbikefinder.com` continued returning `200`, confirming the preview did not alter production domains.
 - No unresolved Vercel toolbar feedback was present for the release branch.
 
-The remaining release-candidate gate is iPhone-class simulator or physical-device launch/network/destructive-action testing, followed by TestFlight and final App Store capture verification.
+The remaining release-candidate gate is hosted v1.1 deployment followed by physical-device TestFlight acceptance and App Store metadata upload.
 
 ## Version 1.1 iOS Simulator Build And Preview Access
 
@@ -85,7 +85,7 @@ Final marketing-frame composition and visual QA were completed on 2026-06-11:
 - Headline wrapping, supporting copy, source-image scale, margins, active tabs, and visible fixture content were inspected frame by frame.
 - Apple's official screenshot specification was rechecked on 2026-06-11 and continues to list `1320 x 2868` as an accepted 6.9-inch iPhone portrait size.
 
-TestFlight verification, destructive-action completion, App Store Connect upload, and account-holder approval remain pending.
+Hosted v1.1 deployment, physical-device TestFlight verification, screenshot upload to App Store Connect, and account-holder approval remain pending.
 
 ## Version 1.1 Archive And Upload
 
@@ -101,7 +101,28 @@ Validated on 2026-06-11 with Xcode 26.5:
 - Xcode uploaded the package successfully; App Store Connect accepted it and reported that it entered processing.
 - The archive intentionally uses the production hosted URL. Because the v1.1 branch is not yet merged/deployed, TestFlight installation alone cannot verify the v1.1 web UI until that URL serves the accepted release candidate.
 
-Apple processing completion, TestFlight group assignment for build `1.1 (4)`, device installation, destructive-action completion, screenshot upload, and account-holder approval remain pending.
+At the time of upload, device installation, destructive-action completion, screenshot upload, and account-holder approval remained pending.
+
+Apple processing completed on 2026-06-11:
+
+- TestFlight emailed the internal tester that Mandy's Bike Finder `1.1 (4)` is available to test.
+- The paired iPhone 17 Pro Max is visible to Xcode/devicectl and ready for installation.
+- Device installation is intentionally deferred as a v1.1 acceptance result because build `1.1 (4)` loads `https://app.mandysbikefinder.com`, which still serves the production v1.0 web release until the v1.1 branch is accepted and deployed.
+
+## Version 1.1 Destructive Data Controls
+
+Validated locally on 2026-06-11 against the v1.1 App Store-mode release candidate using real browser localStorage:
+
+- Saved a real child Profile through the UI and confirmed the saved recommendation rendered.
+- Deleted one expanded History snapshot; the count changed from three to two and the remaining records stayed available.
+- Cleared only the child Profile; two History records remained, and the `no child profile / 2 saved evaluations` state persisted after reload.
+- Cleared only History; the Profile-absent, zero-History state persisted after reload.
+- Invoking Clear All with no stored data showed the non-destructive empty-state notice.
+- Re-seeded one Profile and two History records, then cleared all local data; both counts reached zero and remained zero after reload.
+- Profile removal's custom confirmation supports both paths: `Keep profile` preserved the Profile, while `Remove` returned to first-time setup.
+- Server activity during this pass contained page and `/api/status` requests only; no extraction, analysis, message, report, email, or marketplace request occurred.
+
+The remaining destructive-action gate is confirmation on the actual TestFlight build after the production hosted URL serves v1.1.
 
 ## Version 1.1 App Shell And Navigation
 

@@ -1,6 +1,6 @@
 # Xcode And TestFlight Preparation
 
-Status: Version 1.1 build 4 uploaded to App Store Connect; Apple processing pending
+Status: Version 1.1 build 4 available in Internal TestFlight; hosted v1.1 deployment and device QA pending
 Last updated: 2026-06-11
 
 ## Purpose
@@ -55,6 +55,7 @@ Validation now completed on macOS:
 - Version `1.1` build `4` automatically signed release archive: passed on June 11, 2026.
 - App Store Connect distribution export and signature verification: passed.
 - App Store Connect upload for build `1.1 (4)`: succeeded on June 11, 2026; Apple reported that the package entered processing.
+- Apple completed processing and made version `1.1 (4)` available to the internal tester on June 11, 2026.
 - The uploaded archive points to `https://app.mandysbikefinder.com`. Do not treat TestFlight installation as v1.1 feature verification until the accepted v1.1 web release is deployed to that hosted URL, or a new build is archived against an approved staging URL.
 
 GitHub handoff status:
