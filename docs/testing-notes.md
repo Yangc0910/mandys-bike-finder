@@ -42,6 +42,18 @@ Validated on 2026-06-11 against Vercel preview deployment `dpl_42ZWzq3BrpNKDQZ64
 
 The remaining release-candidate gate is iPhone-class simulator or physical-device launch/network/destructive-action testing, followed by TestFlight and final App Store capture verification.
 
+## Version 1.1 iOS Simulator Build And Preview Access
+
+Validated on 2026-06-11 with Xcode 26.5 and an iOS 26.5 iPhone 17 Pro simulator:
+
+- The Capacitor iOS project resolved its Swift Package dependencies and completed a Debug simulator build successfully.
+- The app installed and launched with the release-candidate preview URL temporarily supplied through `CAPACITOR_SERVER_URL`.
+- Vercel Authentication redirected the protected preview session to Vercel login in Safari instead of keeping the release candidate inside the Capacitor WebView.
+- The app log reported interrupted provisional WebView navigation after that redirect.
+- The temporary preview URL was removed immediately afterward; `cap:sync` restored `https://app.mandysbikefinder.com` in the generated iOS configuration and the Git worktree remained clean.
+
+The native release-candidate flow therefore needs a stable Capacitor-accessible staging URL that does not require Vercel interactive authentication. Once available, repeat cold launch, warm launch, slow/no-network recovery, destructive-action confirmations, and the core flow before TestFlight.
+
 ## Version 1.1 App Shell And Navigation
 
 Validated on 2026-06-10:

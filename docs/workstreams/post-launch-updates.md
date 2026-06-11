@@ -300,7 +300,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 12. [QA] v1.1 Mobile Regression Pass
 
-- Status: Local and protected-preview passes complete on 2026-06-11; physical/simulator launch and TestFlight verification pending.
+- Status: Local and protected-preview passes complete on 2026-06-11; simulator build passes, but native flow verification awaits a Capacitor-accessible staging URL before TestFlight.
 - Scope: validate core flows, accessibility basics, launch/offline states, storage compatibility, APIs, and deployment isolation.
 - Files likely touched: `docs/testing-notes.md`, `docs/releases/v1.1.0-plan.md`, issue records.
 - Acceptance criteria: Profile, Evaluate fallback/AI trigger, History, Settings, `/privacy`, `/offline`, small/large iPhone, no-initial-LLM, and both domains pass.
@@ -309,4 +309,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Run the release-candidate build through cold/warm launch, slow/no-network recovery, destructive-action confirmations, the core flow, and TestFlight on an iPhone-class simulator or physical device.
+Provide a stable release-candidate staging URL that does not require interactive Vercel authentication inside Capacitor. Then rerun cold/warm launch, slow/no-network recovery, destructive-action confirmations, the core flow, and TestFlight on an iPhone-class simulator or physical device.
