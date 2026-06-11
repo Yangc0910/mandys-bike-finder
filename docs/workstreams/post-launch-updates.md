@@ -226,6 +226,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 4. [UX] Polish App Shell And Navigation
 
+- Status: Complete on 2026-06-10.
 - Scope: improve header consistency, tab icons/states, touch targets, safe areas, and lightweight transitions.
 - Files likely touched: `app/app/page.tsx`, `app/app/globals.css`.
 - Acceptance criteria: all four tabs remain reachable; active state is unambiguous; no content is hidden behind safe areas; reduced motion is respected.
@@ -298,4 +299,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[UX] Polish App Shell And Navigation`. Implement the approved App Store-specific tokens, compact screen header, tab icons/states, safe-area behavior, focus states, and reduced-motion support without changing app behavior or API boundaries.
+Start with `[UX] Polish Profile Screen`. Improve first-time guidance, required/optional input hierarchy, saved rider summary, and wheel-size recommendation presentation while preserving v1.0 local storage and recommendation behavior.

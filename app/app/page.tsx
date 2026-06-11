@@ -2116,10 +2116,10 @@ function AppStoreTabShell({
   }
 
   return (
-    <div className="app-native-shell bg-[#f3f4f6] text-slate-900">
+    <div className="app-native-shell">
       <main className="app-safe-shell px-4 md:px-6">
         {isOffline && (
-          <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+          <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-2xl rounded-[var(--app-radius-card)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950 shadow-[var(--app-shadow-card)]">
             You are offline. Screenshot extraction needs a connection; saved guidance remains available.
           </div>
         )}
@@ -2142,10 +2142,10 @@ function AppStoreTabShell({
 
 function AppScreenHeader({ title, eyebrow, copy }: { title: string; eyebrow: string; copy: string }) {
   return (
-    <header className="min-w-0 px-1 pb-1 pt-2">
-      <p className="break-words text-[11px] font-bold uppercase tracking-[0.12em] text-brand">{eyebrow}</p>
-      <h1 className="mt-1 break-words text-[1.85rem] font-bold leading-tight tracking-[-0.03em] text-slate-950">{title}</h1>
-      <p className="mt-1 max-w-xl break-words text-[15px] leading-5 text-slate-600">{copy}</p>
+    <header className="min-w-0 px-1 pb-1 pt-1">
+      <p className="break-words text-xs font-bold tracking-[0.04em] text-brand">{eyebrow}</p>
+      <h1 className="mt-1 break-words text-[1.75rem] font-bold leading-[2.125rem] tracking-[-0.025em] text-[var(--app-text-strong)]">{title}</h1>
+      <p className="mt-1 max-w-xl break-words text-[15px] leading-[1.375rem] text-[var(--app-text-muted)]">{copy}</p>
     </header>
   );
 }
@@ -3284,7 +3284,7 @@ function BottomTabNav({
   ];
 
   return (
-    <nav className="app-native-nav border-t border-slate-200/80 bg-white/95 px-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_28px_rgba(15,23,42,0.08)] backdrop-blur-xl" aria-label="App Store MVP tabs">
+    <nav className="app-native-nav px-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5" aria-label="App Store MVP tabs">
       <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
@@ -3293,18 +3293,65 @@ function BottomTabNav({
               key={tab.id}
               type="button"
               aria-current={active ? "page" : undefined}
+              aria-label={tab.label}
               onClick={() => onSelectTab(tab.id)}
-              className={`relative min-h-12 min-w-0 rounded-xl px-1 py-1.5 text-[11px] font-bold transition ${
-                active ? "bg-blue-50 text-brand" : "text-slate-500"
-              }`}
+              className="app-native-tab px-1 py-1"
             >
-              <span className={`mx-auto mb-1 block h-1.5 w-1.5 rounded-full ${active ? "bg-brand" : "bg-slate-300"}`} aria-hidden />
-              <span className="block truncate">{tab.label}</span>
+              <span className="app-native-tab-icon" aria-hidden="true">
+                <AppTabIcon tab={tab.id} />
+              </span>
+              <span className="app-native-tab-label">{tab.label}</span>
+              <span className="app-native-tab-indicator" aria-hidden="true" />
             </button>
           );
         })}
       </div>
     </nav>
+  );
+}
+
+function AppTabIcon({ tab }: { tab: AppStoreTab }) {
+  const commonProps = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    strokeWidth: 1.9,
+    viewBox: "0 0 24 24",
+  };
+
+  if (tab === "profile") {
+    return (
+      <svg {...commonProps}>
+        <circle cx="12" cy="8" r="3.25" />
+        <path d="M5.75 19c.55-3.2 2.75-5 6.25-5s5.7 1.8 6.25 5" />
+      </svg>
+    );
+  }
+
+  if (tab === "evaluate") {
+    return (
+      <svg {...commonProps}>
+        <circle cx="10.5" cy="10.5" r="5.75" />
+        <path d="m15 15 4.25 4.25M8.25 10.5l1.5 1.5 3-3.25" />
+      </svg>
+    );
+  }
+
+  if (tab === "history") {
+    return (
+      <svg {...commonProps}>
+        <path d="M4.5 8.25V4.5m0 0h3.75M4.75 4.75A8 8 0 1 1 4 14" />
+        <path d="M12 7.75v4.5l3 1.75" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...commonProps}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3.75v1.5m0 13.5v1.5m8.25-8.25h-1.5M5.25 12h-1.5m14.08-5.83-1.06 1.06M7.23 16.77l-1.06 1.06m11.66 0-1.06-1.06M7.23 7.23 6.17 6.17" />
+    </svg>
   );
 }
 

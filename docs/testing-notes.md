@@ -1,5 +1,17 @@
 # Testing Notes
 
+## Version 1.1 App Shell And Navigation
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; all four bottom tabs remain readable; each tab target is 56 pixels high; content bottom padding clears the fixed navigation.
+- App Store mode browser check at `430 x 932`: no horizontal overflow; tab targets remain evenly sized; page header and grouped content preserve intended spacing.
+- Tab interaction: selecting `Evaluate` updates `aria-current`, screen heading, and scroll position without triggering an AI action.
+- Browser console: no warnings or errors during the focused shell/navigation pass.
+- Temporary responsive viewport override was reset after testing.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 

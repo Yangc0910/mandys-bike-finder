@@ -60,10 +60,33 @@ textarea {
 }
 
 .app-native-shell {
+  --app-brand-600: #2f6fed;
+  --app-brand-700: #245bd1;
+  --app-brand-050: #eef5ff;
+  --app-canvas: #f5f7fa;
+  --app-surface: #ffffff;
+  --app-surface-subtle: #f8fafc;
+  --app-text-strong: #0f172a;
+  --app-text: #334155;
+  --app-text-muted: #64748b;
+  --app-border: #e2e8f0;
+  --app-border-strong: #cbd5e1;
+  --app-radius-button: 14px;
+  --app-radius-card: 18px;
+  --app-shadow-card: 0 6px 20px rgba(15, 23, 42, 0.06);
+  --app-shadow-floating: 0 12px 32px rgba(15, 23, 42, 0.14);
   width: 100%;
   max-width: 100%;
   min-height: 100dvh;
+  background: var(--app-canvas);
+  color: var(--app-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
   touch-action: pan-y;
+}
+
+.app-native-shell :focus-visible {
+  outline: 3px solid rgba(47, 111, 237, 0.32);
+  outline-offset: 2px;
 }
 
 .app-native-content {
@@ -95,8 +118,71 @@ textarea {
   right: 0;
   bottom: 0;
   left: 0;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--app-shadow-floating);
+  backdrop-filter: blur(18px);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+}
+
+.app-native-tab {
+  display: grid;
+  min-width: 0;
+  min-height: 3.5rem;
+  place-items: center;
+  gap: 0.125rem;
+  border-radius: var(--app-radius-button);
+  color: var(--app-text-muted);
+  font-size: 0.6875rem !important;
+  font-weight: 700;
+  line-height: 1rem;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.app-native-tab:active {
+  transform: translateY(1px);
+}
+
+.app-native-tab[aria-current="page"] {
+  background: var(--app-brand-050);
+  color: var(--app-brand-700);
+  box-shadow: inset 0 0 0 1px rgba(47, 111, 237, 0.1);
+}
+
+.app-native-tab-icon {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+}
+
+.app-native-tab-icon svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.app-native-tab-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-native-tab-indicator {
+  width: 1rem;
+  height: 0.1875rem;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.app-native-tab[aria-current="page"] .app-native-tab-indicator {
+  background: var(--app-brand-600);
 }
 
 .app-native-modebar {
@@ -115,10 +201,10 @@ textarea {
 .app-native-group {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  border-radius: 1.25rem;
-  background: #ffffff;
-  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.045);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-card);
 }
 
 .app-native-row {
@@ -128,6 +214,17 @@ textarea {
 
 .app-native-row + .app-native-row {
   border-top: 1px solid #edf0f4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-native-shell *,
+  .app-native-shell *::before,
+  .app-native-shell *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 @supports (padding: max(0px)) {
@@ -142,10 +239,10 @@ textarea {
   .app-native-content {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
   }
 
   .app-native-content-with-modebar {
-    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(10.5rem + env(safe-area-inset-bottom));
   }
 }
