@@ -185,19 +185,6 @@ textarea {
   background: var(--app-brand-600);
 }
 
-.app-native-modebar {
-  position: fixed;
-  z-index: 90;
-  right: max(1rem, env(safe-area-inset-right));
-  bottom: calc(4.65rem + env(safe-area-inset-bottom));
-  left: max(1rem, env(safe-area-inset-left));
-  width: auto;
-  max-width: 40rem;
-  margin-inline: auto;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-}
-
 .app-native-group {
   min-width: 0;
   overflow: hidden;
@@ -242,7 +229,4 @@ textarea {
     padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
   }
 
-  .app-native-content-with-modebar {
-    padding-bottom: calc(10.5rem + env(safe-area-inset-bottom));
-  }
 }

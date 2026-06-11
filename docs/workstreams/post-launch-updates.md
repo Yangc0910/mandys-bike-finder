@@ -244,6 +244,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 6. [UX] Polish Evaluate Input And Review Flow
 
+- Status: Complete on 2026-06-10.
 - Scope: clarify input-method selection, screenshot upload, review/edit stage, optional AI explanation, and primary CTA.
 - Files likely touched: `app/app/page.tsx`, `app/app/globals.css`; API routes only if a UI defect requires no behavior change.
 - Acceptance criteria: screenshot selection never starts AI; review remains editable; manual/local fallback remains available; one primary action is clear at each stage.
@@ -300,4 +301,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[UX] Polish Evaluate Input And Review Flow`. Clarify input-method selection, screenshot upload, AI disclosure, editable review, stage progression, and the primary analysis action without changing API behavior.
+Start with `[UX] Polish Result Card And Seller Message`. Improve recommendation hierarchy, fit/deal/risk presentation, practical next steps, seller-message copy interaction, and History save presentation without changing analysis semantics.

@@ -2123,7 +2123,7 @@ function AppStoreTabShell({
             You are offline. Screenshot extraction needs a connection; saved guidance remains available.
           </div>
         )}
-        <section className={`app-native-content mx-auto grid max-w-2xl gap-5 ${activeTab === "evaluate" ? "app-native-content-with-modebar" : ""}`}>
+        <section className="app-native-content mx-auto grid max-w-2xl gap-5">
           {activeTab === "profile" && <ProfileScreenPlaceholder onEvaluate={() => selectTab("evaluate")} />}
           {activeTab === "evaluate" && (
             <EvaluateScreenPlaceholder
@@ -2533,6 +2533,21 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       screenshotName,
   );
   const canAnalyze = hasProfile && hasListingDetails;
+  const evaluateStage = result ? 3 : hasListingDetails ? 2 : 1;
+  const inputModeGuidance: Record<AppStoreEvaluateInputMode, { title: string; copy: string }> = {
+    screenshot: {
+      title: "Best when the listing is easiest to capture",
+      copy: "Choose an image for local preview. AI reads it only after you explicitly request extraction.",
+    },
+    link: {
+      title: "Best when you can copy the listing text",
+      copy: "Keep the URL as a reference and paste readable details. Marketplace pages are not scraped automatically.",
+    },
+    manual: {
+      title: "Best when you already know the key details",
+      copy: "Enter the price, wheel size, and condition yourself. No AI is needed.",
+    },
+  };
 
   useEffect(() => {
     setActiveProfile(loadAppStoreActiveChildProfile());
@@ -2696,97 +2711,130 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
       <AppScreenHeader
         eyebrow="One listing at a time"
         title="Evaluate"
-        copy="Add a listing, review its details, and check fit, value, and risk."
+        copy="Add a used-bike listing, confirm the details, then get local fit, value, and risk guidance."
       />
 
+      <EvaluateProgress currentStage={evaluateStage} />
+
       {!hasProfile && (
-        <section className="rounded-lg border border-amber-200 bg-amber-50 p-5 shadow-panel">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-700">Profile needed</p>
-          <h2 className="mt-2 text-xl font-bold text-slate-950">Save a child profile first</h2>
+        <section className="rounded-[var(--app-radius-card)] border border-amber-200 bg-amber-50 p-5 shadow-[var(--app-shadow-card)]">
+          <p className="text-xs font-bold tracking-[0.04em] text-amber-800">Profile needed for fit</p>
+          <h2 className="mt-1 text-xl font-bold text-[var(--app-text-strong)]">Save a rider profile first</h2>
           <p className="mt-2 text-sm leading-6 text-amber-900">
-            Bike fit depends on height and riding experience. Your profile stays on this device.
+            Height, age, and riding experience power the fit recommendation. Listing details you add here will stay available while you switch tabs.
           </p>
-          <button type="button" onClick={onProfile} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
-            Go to Profile
+          <button type="button" onClick={onProfile} className="app-native-primary mt-5 w-full px-4 text-sm">
+            Set up rider profile
           </button>
         </section>
       )}
 
       {activeProfile && (
-        <section className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-emerald-50 px-4 py-3">
+        <section className="flex min-w-0 items-center justify-between gap-3 rounded-[var(--app-radius-card)] border border-blue-100 bg-[var(--app-brand-050)] px-4 py-3">
           <div className="min-w-0">
-          <p className="text-sm font-bold text-emerald-950">
-            Checking for {activeProfile.nickname?.trim() || "your child"}
-          </p>
-          <p className="mt-1 break-words text-xs font-semibold text-emerald-800">
-            {activeProfile.child.heightCm || "Unknown"} cm, {activeProfile.child.experience} rider
-          </p>
+            <p className="text-xs font-bold tracking-[0.04em] text-brand">Rider confirmed</p>
+            <p className="mt-1 text-sm font-bold text-[var(--app-text-strong)]">
+              Checking for {activeProfile.nickname?.trim() || "your child"}
+            </p>
+            <p className="mt-0.5 break-words text-xs font-semibold text-[var(--app-text-muted)]">
+              {activeProfile.child.heightCm || "Unknown"} cm · {formatRidingExperience(activeProfile.child.experience)}
+            </p>
           </div>
-          <button type="button" onClick={onProfile} className="shrink-0 rounded-xl bg-white/80 px-3 py-2 text-xs font-bold text-emerald-800">
+          <button type="button" onClick={onProfile} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-blue-100 bg-white px-3 text-xs font-bold text-brand">
             Edit
           </button>
         </section>
       )}
 
-      <section className="app-native-modebar grid grid-cols-3 gap-1 rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl" aria-label="Listing input method">
-        <AppStoreInputMethodButton
-          active={inputMode === "screenshot"}
-          title="Screenshot"
-          copy="Attach an image for local preview, then tap AI extraction if you want Mandy to read visible listing details."
-          onClick={() => setInputMode("screenshot")}
-        />
-        <AppStoreInputMethodButton
-          active={inputMode === "link"}
-          title="Link / text"
-          copy="Save the link as a reference and paste readable listing text. No marketplace page is scraped automatically."
-          onClick={() => setInputMode("link")}
-        />
-        <AppStoreInputMethodButton
-          active={inputMode === "manual"}
-          title="Manual"
-          copy="Enter details yourself and use local guidance. No AI is required."
-          onClick={() => setInputMode("manual")}
-        />
+      <section className="app-native-group">
+        <div className="app-native-row">
+          <AppSectionHeading eyebrow="Step 1" title="Choose how to add the listing" copy="Start with the information you already have. You can edit every field before analysis." />
+        </div>
+        <div className="app-native-row">
+          <div className="grid grid-cols-3 gap-1 rounded-[var(--app-radius-card)] border border-[var(--app-border)] bg-[var(--app-surface-subtle)] p-1.5" aria-label="Listing input method">
+            <AppStoreInputMethodButton
+              active={inputMode === "screenshot"}
+              mode="screenshot"
+              title="Screenshot"
+              copy="Attach an image for local preview, then tap AI extraction if you want Mandy to read visible listing details."
+              onClick={() => setInputMode("screenshot")}
+            />
+            <AppStoreInputMethodButton
+              active={inputMode === "link"}
+              mode="link"
+              title="Text / link"
+              copy="Save the link as a reference and paste readable listing text. No marketplace page is scraped automatically."
+              onClick={() => setInputMode("link")}
+            />
+            <AppStoreInputMethodButton
+              active={inputMode === "manual"}
+              mode="manual"
+              title="Manual"
+              copy="Enter details yourself and use local guidance. No AI is required."
+              onClick={() => setInputMode("manual")}
+            />
+          </div>
+          <div className="mt-3 rounded-[var(--app-radius-button)] border border-blue-100 bg-[var(--app-brand-050)] p-3">
+            <p className="text-sm font-bold text-[var(--app-text-strong)]">{inputModeGuidance[inputMode].title}</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--app-text)]">{inputModeGuidance[inputMode].copy}</p>
+          </div>
+        </div>
       </section>
 
       <section className="app-native-group">
         <div className="app-native-row">
-          <AppSectionHeading eyebrow="Step 1" title="Add the listing" copy="Choose one input method. Nothing is analyzed until you start it." />
+          <AppSectionHeading eyebrow="Add listing" title={
+            inputMode === "screenshot" ? "Choose a listing screenshot" : inputMode === "link" ? "Add listing text or a reference link" : "Enter the listing details yourself"
+          } copy="Nothing is analyzed or sent to AI just by adding information." />
         </div>
         {inputMode === "screenshot" && (
           <div className="app-native-row grid gap-4">
-            <label className="grid min-h-28 cursor-pointer place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
-              <span className="max-w-full break-words text-sm font-bold text-slate-900">{screenshotName || "Choose listing screenshot"}</span>
-              <span className="mt-1 text-xs font-semibold text-slate-500">JPG, PNG, or WEBP from the system picker</span>
+            <label className="grid min-h-36 cursor-pointer place-items-center rounded-[var(--app-radius-card)] border border-dashed border-[var(--app-border-strong)] bg-[var(--app-surface-subtle)] px-4 py-6 text-center">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-brand shadow-sm" aria-hidden="true">
+                <UploadIcon />
+              </span>
+              <span className="mt-3 max-w-full break-words text-sm font-bold text-[var(--app-text-strong)]">{screenshotName ? "Replace listing screenshot" : "Choose listing screenshot"}</span>
+              <span className="mt-1 text-xs font-semibold text-[var(--app-text-muted)]">JPG, PNG, or WEBP · Maximum 5 MB</span>
               <input
                 className="sr-only"
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={(event) => handleScreenshotUpload(event.target.files?.[0] || null)}
               />
             </label>
             {screenshotPreviewUrl && (
-              <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="max-h-72 w-full object-contain" />
+              <div className="grid gap-3">
+                <div className="overflow-hidden rounded-[var(--app-radius-card)] border border-[var(--app-border)] bg-slate-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="max-h-72 w-full object-contain" />
+                </div>
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <p className="min-w-0 truncate text-xs font-semibold text-[var(--app-text-muted)]">{screenshotName}</p>
+                  <button type="button" onClick={() => handleScreenshotUpload(null)} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] px-3 text-xs font-bold text-red-700">
+                    Remove
+                  </button>
+                </div>
               </div>
             )}
-            <p className="text-xs font-semibold leading-5 text-slate-600">
-              The screenshot stays in preview until you tap the AI button.
-            </p>
+            <div className="rounded-[var(--app-radius-button)] border border-blue-100 bg-[var(--app-brand-050)] p-3">
+              <p className="text-xs font-bold text-brand">Optional AI extraction</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--app-text)]">
+                The image stays in local preview until you tap the extraction button. Then the selected screenshot is sent to the server-side AI service and returned as editable fields.
+              </p>
+            </div>
             <button
               type="button"
               disabled={!screenshotFile || isExtractingScreenshot}
               onClick={extractScreenshotWithAI}
-              className={`min-h-11 rounded-md px-4 text-sm font-bold ${
-                screenshotFile && !isExtractingScreenshot ? "bg-brand text-white" : "cursor-not-allowed bg-slate-300 text-slate-600"
+              className={`min-h-12 rounded-[var(--app-radius-button)] border px-4 text-sm font-bold ${
+                screenshotFile && !isExtractingScreenshot
+                  ? "border-blue-200 bg-white text-brand"
+                  : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
               }`}
             >
               {isExtractingScreenshot ? "Extracting details..." : "Extract details with AI"}
             </button>
-            <p className="text-xs font-semibold leading-5 text-slate-600">
-              AI reads the selected image only after this action. Manual entry remains available.
-            </p>
+            {!screenshotFile && <p className="text-xs font-semibold leading-5 text-[var(--app-text-muted)]">Choose a screenshot to enable optional AI extraction.</p>}
           </div>
         )}
 
@@ -2806,6 +2854,9 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
                 }}
               />
             </Field>
+            <p className="rounded-[var(--app-radius-button)] border border-slate-200 bg-[var(--app-surface-subtle)] p-3 text-xs leading-5 text-[var(--app-text)]">
+              The link is saved only as reference information. Paste the visible listing text below because marketplace pages may be private, login-gated, or unreadable.
+            </p>
             <Field label="Listing text" optional>
               <textarea
                 className={`${inputClass} min-h-32`}
@@ -2818,25 +2869,27 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
                 }}
               />
             </Field>
-            <button type="button" onClick={applyPastedTextLocally} className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-800">
+            <button type="button" onClick={applyPastedTextLocally} className="min-h-12 rounded-[var(--app-radius-button)] border border-[var(--app-border-strong)] bg-white px-4 text-sm font-bold text-[var(--app-text-strong)]">
               Apply pasted text locally
             </button>
+            <p className="text-xs leading-5 text-[var(--app-text-muted)]">This parser runs locally and fills the review fields below. It does not call AI.</p>
           </div>
         )}
 
         {inputMode === "manual" && (
-          <p className="app-native-row text-sm font-semibold text-slate-600">
-            Enter or edit the listing details below, then run local analysis.
-          </p>
+          <div className="app-native-row">
+            <p className="text-sm font-semibold text-[var(--app-text-strong)]">Start with price, wheel size, and condition if known.</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">More detail can improve the usefulness of the recommendation, but every field remains editable and optional.</p>
+          </div>
         )}
       </section>
 
       <section className="app-native-group">
         <div className="app-native-row">
-          <AppSectionHeading eyebrow="Step 2" title="Review the details" copy="Correct anything missing or unclear before checking the bike." />
+          <AppSectionHeading eyebrow="Step 2" title="Review the listing details" copy="Confirm what you know and correct anything extracted or parsed incorrectly." />
         </div>
         <div className="app-native-row grid gap-4">
-          <AppFormGroupTitle title="Bike basics" copy="The minimum useful information for fit and value." />
+          <AppFormGroupTitle title="Bike basics" copy="Price and wheel size are especially useful for fit and value guidance." />
           <Field label="Bike title" optional>
             <input className={inputClass} value={draftListing.title} onChange={(event) => updateDraftListingField("title", event.target.value)} placeholder="20 inch Trek kids bike" />
           </Field>
@@ -2852,8 +2905,16 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
             <Field label="Brand" optional>
               <input className={inputClass} value={draftListing.brand || ""} onChange={(event) => updateDraftListingField("brand", event.target.value)} placeholder="Trek, Woom, Schwinn" />
             </Field>
+            <Field label="Model" optional>
+              <input className={inputClass} value={draftListing.model || ""} onChange={(event) => updateDraftListingField("model", event.target.value)} placeholder="Precaliber, REV, Koen" />
+            </Field>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Bike type" optional>
               <input className={inputClass} value={draftListing.bikeType || ""} onChange={(event) => updateDraftListingField("bikeType", event.target.value)} placeholder="Hybrid, mountain, cruiser" />
+            </Field>
+            <Field label="Color / style" optional>
+              <input className={inputClass} value={draftListing.colorStyle || ""} onChange={(event) => updateDraftListingField("colorStyle", event.target.value)} placeholder="Blue, step-through, sporty" />
             </Field>
           </div>
         </div>
@@ -2875,11 +2936,15 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
               placeholder="Brakes work, tires hold air, light rust, needs tube..."
             />
           </Field>
+          <Field label="Condition summary" optional>
+            <input className={inputClass} value={draftListing.condition || ""} onChange={(event) => updateDraftListingField("condition", event.target.value)} placeholder="Good, fair, needs repair" />
+          </Field>
         </div>
         {notice && (
-          <p className="app-native-row bg-slate-50 text-xs font-semibold leading-5 text-slate-600">
-            {notice}
-          </p>
+          <div className="app-native-row bg-[var(--app-surface-subtle)]" aria-live="polite">
+            <p className="text-xs font-bold text-[var(--app-text-strong)]">Current status</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">{notice}</p>
+          </div>
         )}
         {aiExtractionSummary && (
           <article className="app-native-row bg-emerald-50 text-xs font-semibold text-emerald-950">
@@ -2901,19 +2966,24 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
           </article>
         )}
         <div className="app-native-row">
-        <button
-          type="button"
-          disabled={!canAnalyze}
-          onClick={analyzeListingLocally}
-          className={`min-h-12 w-full rounded-[0.9rem] px-4 text-sm font-bold ${
-            canAnalyze ? "bg-brand text-white" : "cursor-not-allowed bg-slate-300 text-slate-600"
-          }`}
-        >
-          Analyze bike locally
-        </button>
-        <p className="mt-3 text-xs font-semibold leading-5 text-slate-600">
-          Local analysis stays on this device and does not send your profile or listing to AI.
-        </p>
+          <p className="mb-3 text-xs font-bold tracking-[0.04em] text-brand">Step 3 · Get recommendation</p>
+          <button
+            type="button"
+            disabled={!canAnalyze}
+            onClick={analyzeListingLocally}
+            className={`min-h-12 w-full rounded-[var(--app-radius-button)] px-4 text-sm font-bold ${
+              canAnalyze ? "bg-brand text-white shadow-[0_7px_18px_rgba(47,111,237,0.22)]" : "cursor-not-allowed bg-slate-200 text-slate-500"
+            }`}
+          >
+            Analyze bike locally
+          </button>
+          {!hasProfile ? (
+            <p className="mt-3 text-xs font-semibold leading-5 text-amber-800">Save a rider Profile to unlock fit analysis.</p>
+          ) : !hasListingDetails ? (
+            <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">Add a screenshot, pasted text, or a few manual listing details first.</p>
+          ) : (
+            <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">Local analysis stays on this device and does not send your profile or listing to AI.</p>
+          )}
         </div>
       </section>
 
@@ -2992,11 +3062,13 @@ function AppDetailRow({
 
 function AppStoreInputMethodButton({
   active,
+  mode,
   title,
   copy,
   onClick,
 }: {
   active: boolean;
+  mode: AppStoreEvaluateInputMode;
   title: string;
   copy: string;
   onClick: () => void;
@@ -3005,14 +3077,85 @@ function AppStoreInputMethodButton({
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-11 min-w-0 rounded-xl px-1 py-2 text-center transition ${
-        active ? "bg-brand text-white shadow-[0_5px_14px_rgba(47,111,237,0.22)]" : "text-slate-600"
+      aria-label={title}
+      className={`grid min-h-14 min-w-0 place-items-center gap-1 rounded-[var(--app-radius-button)] px-1 py-2 text-center transition ${
+        active ? "bg-white text-brand shadow-sm" : "text-[var(--app-text-muted)]"
       }`}
       aria-pressed={active}
     >
-      <span className={`block break-words text-[11px] font-bold leading-tight sm:text-sm ${active ? "text-white" : "text-slate-700"}`}>{title}</span>
+      <span className="grid h-5 w-5 place-items-center" aria-hidden="true"><InputMethodIcon mode={mode} /></span>
+      <span className={`block break-words text-[11px] font-bold leading-tight sm:text-xs ${active ? "text-brand" : "text-[var(--app-text)]"}`}>{title}</span>
       <span className="sr-only">{copy}</span>
     </button>
+  );
+}
+
+function InputMethodIcon({ mode }: { mode: AppStoreEvaluateInputMode }) {
+  const commonProps = {
+    className: "h-5 w-5",
+    fill: "none",
+    stroke: "currentColor",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    strokeWidth: 1.9,
+    viewBox: "0 0 24 24",
+  };
+
+  if (mode === "screenshot") {
+    return (
+      <svg {...commonProps}>
+        <rect x="4" y="5" width="16" height="14" rx="2" />
+        <circle cx="9" cy="10" r="1.5" />
+        <path d="m6.5 17 4-4 2.75 2.75 2-2L18 16.5" />
+      </svg>
+    );
+  }
+
+  if (mode === "link") {
+    return (
+      <svg {...commonProps}>
+        <path d="M9.5 14.5 14.5 9.5M8 16H6.75a3.75 3.75 0 0 1 0-7.5H9M16 8h1.25a3.75 3.75 0 0 1 0 7.5H15" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...commonProps}>
+      <path d="M5 5.5h14M5 10h14M5 14.5h8M5 19h6" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+      <path d="M12 16V5m0 0L8 9m4-4 4 4M5 15.5V18a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 18v-2.5" />
+    </svg>
+  );
+}
+
+function EvaluateProgress({ currentStage }: { currentStage: 1 | 2 | 3 }) {
+  const stages = [
+    { id: 1, label: "Add listing" },
+    { id: 2, label: "Review" },
+    { id: 3, label: "Result" },
+  ] as const;
+
+  return (
+    <ol className="grid grid-cols-3 gap-2 px-1" aria-label="Evaluation progress">
+      {stages.map((stage) => {
+        const isCurrent = currentStage === stage.id;
+        const isComplete = currentStage > stage.id;
+        return (
+          <li key={stage.id} className="min-w-0">
+            <div className={`h-1 rounded-full ${isCurrent || isComplete ? "bg-brand" : "bg-slate-200"}`} aria-hidden="true" />
+            <p className={`mt-2 truncate text-[11px] font-bold ${isCurrent ? "text-brand" : isComplete ? "text-[var(--app-text)]" : "text-[var(--app-text-muted)]"}`}>
+              {stage.id}. {stage.label}
+            </p>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

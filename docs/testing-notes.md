@@ -30,6 +30,26 @@ Validated on 2026-06-10:
 - Browser console: no warnings or errors during the focused Profile pass.
 - Temporary responsive viewport override was reset after testing.
 
+## Version 1.1 Evaluate Input And Review Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; progress labels `Add listing`, `Review`, and `Result` remained readable.
+- The previous fixed Evaluate mode bar was removed; the App Store bottom navigation is the only app-owned fixed navigation element.
+- Screenshot is still the default method and the optional AI extraction button is disabled until a screenshot exists.
+- Initial load, input-method switching, and Manual/local analysis produced no `/api/extract` request; only the existing `/api/status` request appeared in the local server log.
+- Screenshot copy states that selection remains local preview until the explicit AI extraction action.
+- Text/link copy states that the URL is reference-only and marketplace pages are not automatically scraped.
+- Manual Review exposed title, price, wheel size, brand, model, bike type, color/style, source, location, condition summary, and description fields.
+- Manual sample values `TREK`, `$120`, and `20` enabled local analysis and produced a result without AI.
+- Switching from Manual to Screenshot and back preserved the existing Review field values.
+- Editing a Review field after analysis removed the stale result and returned progress to the Review stage.
+- Browser console: no warnings or errors during the focused Evaluate pass.
+- Long text entry through the in-app browser automation was limited by the browser's unavailable virtual clipboard; short keyboard-driven input and all relevant state transitions were still verified.
+- Temporary responsive viewport override was reset after testing.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 
