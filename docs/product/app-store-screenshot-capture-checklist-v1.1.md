@@ -1,6 +1,6 @@
 # App Store Screenshot Capture Checklist v1.1
 
-Status: Native source capture complete; marketing export and approval pending
+Status: Native source capture and marketing export complete; App Store Connect upload pending
 
 Storyboard: `docs/product/app-store-screenshot-storyboard-v1.1.md`
 
@@ -258,6 +258,12 @@ Do not use browser screenshots as final App Store source images.
 
 Place the six native captures into the approved shared template from the storyboard.
 
+Generate the approved English set from `app/`:
+
+```bash
+npm run export:app-store-screenshots
+```
+
 - Final canvas: `1320 x 2868`
 - Format: PNG
 - Color: sRGB
@@ -305,4 +311,14 @@ Completed on June 11, 2026 with the iOS 26.5 iPhone 17 Pro Max simulator:
 - Restored the generated Capacitor configuration to `https://app.mandysbikefinder.com` after capture.
 - Stored the local source files under `artifacts/app-store/v1.1/source/` using the approved filenames.
 
-The protected Vercel preview could not be used inside Capacitor because Vercel Authentication redirected to Safari. Capture therefore used a local App Store-mode release build served only to the simulator. Final marketing composition, visual approval, and App Store Connect upload remain pending.
+The protected Vercel preview could not be used inside Capacitor because Vercel Authentication redirected to Safari. Capture therefore used a local App Store-mode release build served only to the simulator.
+
+Marketing composition and visual QA were completed on June 11, 2026:
+
+- Exported all six final PNG files under `artifacts/app-store/v1.1/final/`.
+- Verified every export is `1320 x 2868`, RGB, portrait, and has no title overflow.
+- Verified the exact approved headline and supporting copy on every frame.
+- Verified consistent background, screenshot scale, margins, status bar, and bottom navigation.
+- Rechecked Apple's official screenshot specification on June 11, 2026; `1320 x 2868` remains accepted for the 6.9-inch iPhone display class.
+
+App Store Connect upload and final account-holder approval remain pending.

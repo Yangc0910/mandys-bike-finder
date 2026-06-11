@@ -78,7 +78,14 @@ Validated on 2026-06-11 with the iOS 26.5 iPhone 17 Pro Max simulator:
 - The generated Capacitor configuration was restored to `https://app.mandysbikefinder.com`; the status-bar override was cleared and the simulator was shut down.
 - Source images are stored locally under `artifacts/app-store/v1.1/source/` and intentionally excluded from Git.
 
-Final marketing-frame composition, visual approval, TestFlight verification, and App Store Connect upload remain pending.
+Final marketing-frame composition and visual QA were completed on 2026-06-11:
+
+- `npm run export:app-store-screenshots` generated six reproducible PNG exports from the native source captures.
+- All six files report `1320 x 2868` and RGB color.
+- Headline wrapping, supporting copy, source-image scale, margins, active tabs, and visible fixture content were inspected frame by frame.
+- Apple's official screenshot specification was rechecked on 2026-06-11 and continues to list `1320 x 2868` as an accepted 6.9-inch iPhone portrait size.
+
+TestFlight verification, destructive-action completion, App Store Connect upload, and account-holder approval remain pending.
 
 ## Version 1.1 App Shell And Navigation
 
