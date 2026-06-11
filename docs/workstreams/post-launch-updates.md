@@ -12,6 +12,8 @@ Detailed release PRD: `docs/prd/versions/v1.1.md`
 
 Visual system: `docs/product/app-visual-system-v1.1.md`
 
+Screenshot storyboard: `docs/product/app-store-screenshot-storyboard-v1.1.md`
+
 ## Purpose
 
 Mandy's Bike Finder post-launch software update workstream focuses on controlled iteration after the App Store v1.0 launch. Version 1.0 remains the stable production baseline. Work should improve the shipped product in small, testable increments without reopening MVP scope or destabilizing the hosted app.
@@ -280,6 +282,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 10. [Design] Prepare App Store Screenshot Storyboard
 
+- Status: Complete on 2026-06-11.
 - Scope: finalize sequence, copy, composition, sample state, and visual frame template.
 - Files likely touched: `docs/product/app-store-screenshot-storyboard-v1.1.md`, design source assets.
 - Acceptance criteria: six frames tell one coherent story, use only shipped features, and have approved headline/subheadline copy.
@@ -304,4 +307,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[Design] Prepare App Store Screenshot Storyboard`. Finalize the six-frame sequence, approved marketing copy, composition rules, and fictional sample states using only shipped v1.1 behavior.
+Start with `[Build] Generate Screenshot Test Data And Capture Checklist`. Define reproducible fictional Profile, listing, result, and History states plus simulator and export steps for all six approved frames.
