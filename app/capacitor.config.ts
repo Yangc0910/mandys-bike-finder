@@ -7,6 +7,7 @@ const config: CapacitorConfig = {
   server: {
     url: process.env.CAPACITOR_SERVER_URL || "https://app.mandysbikefinder.com",
     cleartext: false,
+    errorPath: "native-offline.html",
   },
 };
 

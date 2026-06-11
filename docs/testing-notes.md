@@ -52,7 +52,17 @@ Validated on 2026-06-11 with Xcode 26.5 and an iOS 26.5 iPhone 17 Pro simulator:
 - The app log reported interrupted provisional WebView navigation after that redirect.
 - The temporary preview URL was removed immediately afterward; `cap:sync` restored `https://app.mandysbikefinder.com` in the generated iOS configuration and the Git worktree remained clean.
 
-The native release-candidate flow therefore needs a stable Capacitor-accessible staging URL that does not require Vercel interactive authentication. Once available, repeat cold launch, warm launch, slow/no-network recovery, destructive-action confirmations, and the core flow before TestFlight.
+Follow-up simulator validation used a local App Store-mode staging server without changing production:
+
+- Cold launch and warm launch both loaded the v1.1 Profile screen inside the Capacitor WebView with correct safe-area spacing and bottom navigation.
+- Stopping the staging server exposed a release-blocking blank white screen during disconnected cold launch.
+- Added Capacitor `server.errorPath` support and a bundled, dependency-free `native-offline.html` fallback.
+- The disconnected cold launch then displayed branded offline guidance, accurate AI/network disclosure, and a 48-pixel-plus retry action instead of a blank screen.
+- Restarting the staging server and relaunching the app restored the v1.1 Profile screen.
+- `npm run lint`, `npm run build`, the iOS simulator build, `npm run cap:sync`, and `npm run cap:doctor` passed after the fix.
+- The generated native configuration was restored to `https://app.mandysbikefinder.com`, and the simulator was shut down after testing.
+
+A stable Capacitor-accessible staging URL is still required for TestFlight verification. Destructive-action completion remains a physical-device or interactive simulator acceptance item.
 
 ## Version 1.1 App Shell And Navigation
 
