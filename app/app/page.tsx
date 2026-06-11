@@ -2152,7 +2152,7 @@ function AppScreenHeader({ title, eyebrow, copy }: { title: string; eyebrow: str
 
 function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
   const [savedProfile, setSavedProfile] = useState<AppStoreActiveChildProfile | null>(null);
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [nickname, setNickname] = useState("");
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft-in">("cm");
   const [heightCmInput, setHeightCmInput] = useState("");
@@ -2228,7 +2228,8 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
     const parsedAge = Number(age);
     if (!height) return "Enter height to estimate bike size.";
     if (height < 80 || height > 190) return "Check height. Use a child-height value.";
-    if (age && (!Number.isFinite(parsedAge) || parsedAge < 2 || parsedAge > 18)) return "Check age. Use a value from 2 to 18.";
+    if (!age) return "Enter age to improve the fit recommendation.";
+    if (!Number.isFinite(parsedAge) || parsedAge < 2 || parsedAge > 18) return "Check age. Use a value from 2 to 18.";
     if (!experience) return "Choose riding experience.";
     return "";
   }
@@ -2274,7 +2275,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
     setColorPreferences(defaultChild.colorPreferences);
     setValidationMessage("");
     setIsConfirmingClear(false);
-    setIsEditing(true);
+    setIsEditing(false);
   }
 
   function cancelEdit() {
@@ -2290,68 +2291,83 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
       <AppScreenHeader
         eyebrow="Mandy's Bike Finder"
         title="Profile"
-        copy="Save the rider details Mandy uses for every bike check."
+        copy="Build a reusable rider profile for clearer fit guidance on every bike check."
       />
       {!savedProfile && !isEditing && (
         <section className="app-native-group">
-          <div className="app-native-row">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
-          <h2 className="mt-2 text-xl font-bold text-slate-950">Add your rider</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Height, age, and riding experience help Mandy estimate the right bike size. Stored locally. No account needed.
-          </p>
-          <button type="button" onClick={() => setIsEditing(true)} className="mt-5 min-h-11 rounded-md bg-brand px-4 text-sm font-bold text-white">
-            Create profile
-          </button>
+          <div className="app-native-row bg-[linear-gradient(145deg,var(--app-brand-050),#ffffff_72%)]">
+            <span className="inline-flex min-h-8 items-center rounded-full border border-blue-200 bg-white px-3 text-xs font-bold text-brand">
+              Your fit starting point
+            </span>
+            <h2 className="mt-4 text-[1.375rem] font-bold leading-7 text-[var(--app-text-strong)]">Find a bike size that feels manageable now</h2>
+            <p className="mt-2 text-[15px] leading-6 text-[var(--app-text)]">
+              Height, age, and riding confidence help Mandy suggest a practical wheel size before you evaluate a listing.
+            </p>
+            <div className="mt-5 grid gap-3">
+              <ProfileBenefitRow number="1" title="Add three rider basics" copy="Height, age, and riding experience are required." />
+              <ProfileBenefitRow number="2" title="See a fit-first recommendation" copy="Get a starting wheel size, bike type, and growth caution." />
+              <ProfileBenefitRow number="3" title="Reuse it for every check" copy="The profile stays on this device. No account or cloud sync." />
+            </div>
+            <button type="button" onClick={() => setIsEditing(true)} className="app-native-primary mt-6 w-full px-4 text-sm">
+              Set up rider profile
+            </button>
           </div>
         </section>
       )}
       {savedProfile && !isEditing && activeRecommendation && (
         <section className="app-native-group">
           <div className="app-native-row">
-            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Saved on this device</p>
-              <h2 className="mt-2 break-words text-2xl font-bold text-slate-950">{savedProfile.nickname || "Your child"}</h2>
-              <p className="mt-1 break-words text-sm text-slate-600">
-                Age {savedProfile.child.age || "not set"} - {savedProfile.child.heightCm || "unknown"} cm - {savedProfile.child.experience}
-              </p>
+                <p className="text-xs font-bold tracking-[0.04em] text-brand">Saved on this device</p>
+                <h2 className="mt-1 break-words text-[1.375rem] font-bold leading-7 text-[var(--app-text-strong)]">{savedProfile.nickname || "Your child"}</h2>
+                <p className="mt-1 break-words text-sm leading-5 text-[var(--app-text-muted)]">
+                  Age {savedProfile.child.age || "not set"} · {savedProfile.child.heightCm || "unknown"} cm · {formatRidingExperience(savedProfile.child.experience)}
+                </p>
               </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
-              <button type="button" onClick={editProfile} className="min-h-10 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-700">
+              <button type="button" onClick={editProfile} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-[var(--app-border)] bg-white px-4 text-sm font-bold text-[var(--app-text)]">
                 Edit
               </button>
-              <button type="button" onClick={() => setIsConfirmingClear(true)} className="min-h-10 rounded-xl bg-red-50 px-3 text-sm font-bold text-red-700">
-                Clear
-              </button>
-              </div>
             </div>
-            <button type="button" onClick={onEvaluate} className="app-native-primary mt-5 w-full px-4 text-sm">
-            Evaluate a bike
-            </button>
-          {isConfirmingClear && (
-            <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3">
-              <p className="text-sm font-semibold text-red-800">Clear this profile from this device?</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" onClick={clearProfile} className="min-h-10 rounded-md bg-red-700 px-3 text-sm font-bold text-white">
-                  Confirm clear
-                </button>
-                <button type="button" onClick={() => setIsConfirmingClear(false)} className="min-h-10 rounded-md border border-red-200 bg-white px-3 text-sm font-bold text-red-700">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
           </div>
-          <AppDetailRow label="Recommended size" value={activeRecommendation.wheelSize} emphasized />
-          <AppDetailRow label="Bike type" value={activeRecommendation.category} />
-          <AppDetailRow label="Growth guidance" value={activeRecommendation.growthOption || "No growth option needed now"} />
-          <AppDetailRow label="Style guidance" value={activeRecommendation.styleRecommendation || "Fit-first neutral styling"} />
-          <div className="app-native-row bg-slate-50/70">
-            <p className="break-words text-sm leading-6 text-slate-700">{activeRecommendation.explanation}</p>
-            <p className="mt-3 break-words text-xs leading-5 text-slate-500">
-            This recommendation is a starting point. Parents should still check fit, brakes, tires, rust, and test-ride comfort before buying.
+          <div className="app-native-row bg-[var(--app-brand-050)]">
+            <p className="text-xs font-bold tracking-[0.04em] text-brand">Best size to start with</p>
+            <div className="mt-2 flex min-w-0 items-end justify-between gap-4">
+              <p className="break-words text-[2.25rem] font-bold leading-10 tracking-[-0.04em] text-[var(--app-text-strong)]">{activeRecommendation.wheelSize}</p>
+              <span className="mb-1 shrink-0 rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-brand">Fit first</span>
+            </div>
+            <p className="mt-2 text-sm leading-5 text-[var(--app-text)]">{activeRecommendation.category}</p>
+          </div>
+          <div className="app-native-row grid gap-4">
+            <ProfileGuidanceBlock label="Why this size" copy={activeRecommendation.explanation} />
+            <ProfileGuidanceBlock label="Growth caution" copy={activeRecommendation.growthOption || "No larger growth option is recommended now."} tone="caution" />
+            <ProfileGuidanceBlock label="Style guidance" copy={activeRecommendation.styleRecommendation || "Prioritize fit and manageable controls first."} />
+            <button type="button" onClick={onEvaluate} className="app-native-primary w-full px-4 text-sm">
+              Evaluate a bike for {savedProfile.nickname?.trim() || "this rider"}
+            </button>
+            <p className="text-xs leading-[1.125rem] text-[var(--app-text-muted)]">
+              This is a starting point, not a safety guarantee. Confirm standover height, brakes, tires, frame condition, and test-ride comfort before buying.
             </p>
+          </div>
+          <div className="app-native-row bg-[var(--app-surface-subtle)]">
+            {!isConfirmingClear ? (
+              <button type="button" onClick={() => setIsConfirmingClear(true)} className="min-h-11 rounded-[var(--app-radius-button)] px-2 text-sm font-bold text-red-700">
+                Remove rider profile
+              </button>
+            ) : (
+              <div className="rounded-[var(--app-radius-button)] border border-red-200 bg-red-50 p-3">
+                <p className="text-sm font-bold text-red-900">Remove this profile from this device?</p>
+                <p className="mt-1 text-xs leading-5 text-red-800">Saved History will stay available.</p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button type="button" onClick={clearProfile} className="min-h-11 rounded-[var(--app-radius-button)] bg-red-700 px-3 text-sm font-bold text-white">
+                    Remove
+                  </button>
+                  <button type="button" onClick={() => setIsConfirmingClear(false)} className="min-h-11 rounded-[var(--app-radius-button)] border border-red-200 bg-white px-3 text-sm font-bold text-red-700">
+                    Keep profile
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -2359,22 +2375,22 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
         <section className="app-native-group">
           <div className="app-native-row flex min-w-0 items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">Child profile</p>
-              <h2 className="mt-2 break-words text-xl font-bold text-slate-950">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
+              <p className="text-xs font-bold tracking-[0.04em] text-brand">{savedProfile ? "Update profile" : "Three required details"}</p>
+              <h2 className="mt-1 break-words text-xl font-bold text-[var(--app-text-strong)]">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
+              <p className="mt-1 text-sm leading-5 text-[var(--app-text-muted)]">Saved locally on this device. No account needed.</p>
             </div>
-            <button
-              type="button"
-              onClick={savedProfile ? cancelEdit : onEvaluate}
-              className="shrink-0 rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700"
-            >
-              {savedProfile ? "Cancel" : "Close"}
-            </button>
+            {savedProfile && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-[var(--app-border)] bg-white px-3 text-sm font-bold text-[var(--app-text)]"
+              >
+                Cancel
+              </button>
+            )}
           </div>
           <div className="app-native-row grid gap-4">
-            <AppFormGroupTitle title="Rider basics" copy="The details used to estimate fit and control." />
-            <Field label="Child name / nickname" optional>
-              <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Optional nickname" />
-            </Field>
+            <AppFormGroupTitle title="Rider basics" copy="Height, age, and riding experience shape the fit recommendation." />
             <Field label="Height" required>
               <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={heightUnit} onChange={(event) => setHeightUnit(event.target.value as "cm" | "ft-in")}>
@@ -2404,7 +2420,10 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
             </Field>
           </div>
           <div className="app-native-row grid gap-4">
-            <AppFormGroupTitle title="Preferences" copy="Optional details that help narrow the recommendation." />
+            <AppFormGroupTitle title="Optional personalization" copy="These details can refine presentation but never block fit guidance." />
+            <Field label="Child name / nickname" optional>
+              <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Optional nickname" />
+            </Field>
             <Field label="Weight" optional>
               <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={weightUnit} onChange={(event) => setWeightUnit(event.target.value as "lb" | "kg")}>
@@ -2435,7 +2454,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
             </Field>
           </div>
           {validationMessage && (
-            <p className="mx-4 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+            <p className="mx-4 mt-4 rounded-[var(--app-radius-button)] border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950" role="alert">
               {validationMessage}
             </p>
           )}
@@ -2444,18 +2463,49 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
               {savedProfile ? "Update profile" : "Save profile"}
             </button>
             {savedProfile ? (
-              <button type="button" onClick={cancelEdit} className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700">
+              <button type="button" onClick={cancelEdit} className="min-h-11 rounded-[var(--app-radius-button)] border border-[var(--app-border-strong)] bg-white px-4 text-sm font-bold text-[var(--app-text)]">
                 Cancel
               </button>
             ) : (
-              <button type="button" onClick={onEvaluate} className="min-h-11 rounded-md border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700">
-                Evaluate a bike
-              </button>
+              <p className="px-1 text-center text-xs leading-5 text-[var(--app-text-muted)] sm:col-span-2">Save the profile first, then continue to Evaluate.</p>
             )}
           </div>
         </section>
       )}
     </>
+  );
+}
+
+function ProfileBenefitRow({ number, title, copy }: { number: string; title: string; copy: string }) {
+  return (
+    <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3">
+      <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-sm font-bold text-brand shadow-sm" aria-hidden="true">{number}</span>
+      <div className="min-w-0">
+        <p className="text-sm font-bold text-[var(--app-text-strong)]">{title}</p>
+        <p className="mt-0.5 text-xs leading-[1.125rem] text-[var(--app-text-muted)]">{copy}</p>
+      </div>
+    </div>
+  );
+}
+
+function ProfileGuidanceBlock({
+  label,
+  copy,
+  tone = "neutral",
+}: {
+  label: string;
+  copy: string;
+  tone?: "neutral" | "caution";
+}) {
+  return (
+    <div className={`rounded-[var(--app-radius-button)] border p-3 ${
+      tone === "caution"
+        ? "border-amber-200 bg-amber-50"
+        : "border-[var(--app-border)] bg-[var(--app-surface-subtle)]"
+    }`}>
+      <p className={`text-xs font-bold tracking-[0.04em] ${tone === "caution" ? "text-amber-800" : "text-[var(--app-text-muted)]"}`}>{label}</p>
+      <p className={`mt-1 text-sm leading-5 ${tone === "caution" ? "text-amber-950" : "text-[var(--app-text)]"}`}>{copy}</p>
+    </div>
   );
 }
 
@@ -3782,6 +3832,8 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
   }
 
   const wheelSize = `${baseWheel} inch`;
+  const wheelSizeAsAdjective = `${baseWheel}-inch`;
+  const wheelSizeArticle = baseWheel === 18 ? "an" : "a";
   const growthOption = baseWheel >= 24
     ? "Consider 26 inch only if the child is confident and can test ride safely."
     : `Consider ${Math.min(baseWheel + 2, 26)} inch only after control and stopping confidence improve.`;
@@ -3790,16 +3842,16 @@ function buildChildBikeRecommendation(child: ChildProfile): ChildBikeRecommendat
     ? `${category} with practical geometry and neutral long-term style.`
     : `${category} that matches ${stylePreference} while still prioritizing fit and control.`;
   const explanation = category === "Kids mountain bike"
-    ? `Given the child's height, age, and riding experience, a ${wheelSize} kids mountain bike is a practical and versatile option for neighborhood riding, parks, gravel, and light trails.`
+    ? `Given the child's height, age, and riding experience, ${wheelSizeArticle} ${wheelSizeAsAdjective} kids mountain bike is a practical and versatile option for neighborhood riding, parks, gravel, and light trails.`
     : category === "Hybrid / neighborhood bike"
       ? `A youth hybrid or neighborhood bike is a good all-around option when the child mainly rides on paved paths, driveway, and neighborhood roads. ${wheelSize} is the current fit-first size target.`
       : category === "Kids cruiser bike"
         ? `Cruiser bikes are best for relaxed flat neighborhood riding and style/comfort preference, but they can be heavier and less versatile than mountain or hybrid bikes. ${wheelSize} should still be confirmed with fit and control checks.`
         : category === "Training wheels bike"
-          ? `Based on height, age, and riding confidence, a ${wheelSize} training-wheels setup can support stable early riding while control skills improve.`
+          ? `Based on height, age, and riding confidence, ${wheelSizeArticle} ${wheelSizeAsAdjective} training-wheels setup can support stable early riding while control skills improve.`
           : category === "Balance bike"
             ? `A balance bike is the best early option for this height/age stage to build steering, balance, and braking confidence before moving to pedals.`
-            : `Based on height ${height || "unknown"} cm, age ${age || "unknown"}, and ${experience} riding experience, a ${wheelSize} standard kids bike is a practical and safe starting point now.`;
+            : `Based on height ${height || "unknown"} cm, age ${age || "unknown"}, and ${experience} riding experience, ${wheelSizeArticle} ${wheelSizeAsAdjective} standard kids bike is a practical and safe starting point now.`;
   const optionalNotes: string[] = [];
 
   if (weightKg > 0) {
@@ -4243,6 +4295,10 @@ function sourceLabelFromInputMode(inputMode: AppStoreEvaluateInputMode) {
   if (inputMode === "screenshot") return "Screenshot";
   if (inputMode === "link") return "Link/text";
   return "Manual entry";
+}
+
+function formatRidingExperience(experience: ChildProfile["experience"]) {
+  return experience ? `${experience.charAt(0).toUpperCase()}${experience.slice(1)} rider` : "Riding experience not set";
 }
 
 function feetInchesToCm(feet: string, inches: string) {

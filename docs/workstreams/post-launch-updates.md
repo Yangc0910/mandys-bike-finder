@@ -235,6 +235,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 5. [UX] Polish Profile Screen
 
+- Status: Complete on 2026-06-10.
 - Scope: improve first-time guidance, input grouping, saved profile summary, and wheel-size recommendation hierarchy.
 - Files likely touched: `app/app/page.tsx`, `app/app/globals.css`.
 - Acceptance criteria: required fields are obvious; local-save messaging is clear; existing profile persistence remains compatible; Evaluate is the obvious next step.
@@ -299,4 +300,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[UX] Polish Profile Screen`. Improve first-time guidance, required/optional input hierarchy, saved rider summary, and wheel-size recommendation presentation while preserving v1.0 local storage and recommendation behavior.
+Start with `[UX] Polish Evaluate Input And Review Flow`. Clarify input-method selection, screenshot upload, AI disclosure, editable review, stage progression, and the primary analysis action without changing API behavior.

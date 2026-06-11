@@ -12,6 +12,24 @@ Validated on 2026-06-10:
 - Browser console: no warnings or errors during the focused shell/navigation pass.
 - Temporary responsive viewport override was reset after testing.
 
+## Version 1.1 Profile Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- Existing version 1.0 local Profile data hydrated into the redesigned saved-profile state.
+- First-time Profile state explains the three required inputs, fit recommendation, local storage, and no-account behavior.
+- Clearing a Profile requires confirmation, states that History remains available, and returns to first-time guidance.
+- Empty Height and Age each produce a clear required-field alert.
+- Saving height `122 cm`, age `7`, beginner experience, and nickname `Mandy` preserved the existing recommendation output: `18 inch`, `Standard kids bike`.
+- Recommendation copy formatting was corrected to `an 18-inch standard kids bike` without changing recommendation semantics.
+- Edit then Cancel restored the saved Profile rather than overwriting it.
+- `Evaluate a bike for Mandy` switched to the Evaluate tab, updated active navigation, and reset scroll position.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; recommendation CTA remained `254 x 48` pixels; content cleared the bottom navigation.
+- Browser console: no warnings or errors during the focused Profile pass.
+- Temporary responsive viewport override was reset after testing.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 
