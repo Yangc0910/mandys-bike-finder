@@ -1,7 +1,7 @@
 # Xcode And TestFlight Preparation
 
-Status: Build 1.0 (3) active in Internal Testing; internal TestFlight device QA pending
-Last updated: 2026-06-06
+Status: Version 1.1 build 4 uploaded to App Store Connect; Apple processing pending
+Last updated: 2026-06-11
 
 ## Purpose
 
@@ -24,8 +24,9 @@ Current native settings:
 | Hosted URL | `https://app.mandysbikefinder.com` |
 | Cleartext traffic | `false` |
 | iOS deployment target | `15.0` |
-| Marketing version | `1.0` |
-| Build number | `3` |
+| Marketing version | `1.1` |
+| Build number | `4` |
+| Apple Developer Team | `H23DM6J89F` |
 | App icon asset catalog | `AppIcon` |
 | Launch screen | `LaunchScreen` storyboard with generated `Splash` asset |
 
@@ -50,6 +51,11 @@ Validation now completed on macOS:
 - App Store Connect upload for build `1.0 (3)`: succeeded on June 6, 2026.
 - Export-compliance confirmation: completed.
 - Internal TestFlight group assignment: active, status `Testing`.
+- Version `1.1` build `4` unsigned release archive: passed on June 11, 2026.
+- Version `1.1` build `4` automatically signed release archive: passed on June 11, 2026.
+- App Store Connect distribution export and signature verification: passed.
+- App Store Connect upload for build `1.1 (4)`: succeeded on June 11, 2026; Apple reported that the package entered processing.
+- The uploaded archive points to `https://app.mandysbikefinder.com`. Do not treat TestFlight installation as v1.1 feature verification until the accepted v1.1 web release is deployed to that hosted URL, or a new build is archived against an approved staging URL.
 
 GitHub handoff status:
 
@@ -89,12 +95,12 @@ Expected result:
 In Xcode:
 
 - Confirm the project opens without missing package/plugin errors.
-- Set the Apple Developer Team under Signing & Capabilities. The team is not currently stored in the project.
+- Confirm the stored Apple Developer Team remains `H23DM6J89F`.
 - Confirm bundle identifier: `com.mandysbikefinder.app`.
 - Confirm display name: `Mandy's Bike Finder`.
 - Confirm version/build:
-  - Version: `1.0`
-  - Build: `1`
+  - Version: `1.1`
+  - Build: `4`
 - Confirm iOS deployment target is acceptable for first TestFlight. Current target is `15.0`.
 - Confirm App Transport Security allows the HTTPS hosted URL without adding broad exceptions.
 - Confirm no unnecessary native capabilities are enabled.
@@ -195,3 +201,4 @@ Before uploading:
 - Confirm `support@mandysbikefinder.com` is receiving mail before App Store submission.
 - Capture App Store screenshots from the four-tab app shell.
 - Confirm Vercel app project deployment commit/state in dashboard before the first external TestFlight.
+- Keep build `1.1 (4)` in internal testing only until its hosted URL serves the accepted v1.1 release candidate.

@@ -87,6 +87,22 @@ Final marketing-frame composition and visual QA were completed on 2026-06-11:
 
 TestFlight verification, destructive-action completion, App Store Connect upload, and account-holder approval remain pending.
 
+## Version 1.1 Archive And Upload
+
+Validated on 2026-06-11 with Xcode 26.5:
+
+- Advanced the native target to marketing version `1.1`, build `4`.
+- Stored Apple Developer Team `H23DM6J89F` with automatic signing for reproducible archives.
+- Generic iOS Release archive with signing disabled passed.
+- Automatically signed generic iOS Release archive passed.
+- App Store Connect export produced a 12 MB IPA signed by `Apple Distribution: Cheng Yang (H23DM6J89F)`.
+- Package inspection confirmed bundle ID `com.mandysbikefinder.app`, version `1.1`, and build `4`.
+- Strict code-sign verification passed.
+- Xcode uploaded the package successfully; App Store Connect accepted it and reported that it entered processing.
+- The archive intentionally uses the production hosted URL. Because the v1.1 branch is not yet merged/deployed, TestFlight installation alone cannot verify the v1.1 web UI until that URL serves the accepted release candidate.
+
+Apple processing completion, TestFlight group assignment for build `1.1 (4)`, device installation, destructive-action completion, screenshot upload, and account-holder approval remain pending.
+
 ## Version 1.1 App Shell And Navigation
 
 Validated on 2026-06-10:
