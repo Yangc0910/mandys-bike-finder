@@ -316,7 +316,7 @@ The protected Vercel preview could not be used inside Capacitor because Vercel A
 Marketing composition and visual QA were completed on June 11, 2026:
 
 - Exported all six final PNG files under `artifacts/app-store/v1.1/final/`.
-- Verified every export is `1320 x 2868`, RGB, portrait, and has no title overflow.
+- Verified every export is `1320 x 2868`, RGB, portrait, has no alpha channel, and has no title overflow.
 - Verified the exact approved headline and supporting copy on every frame.
 - Verified consistent background, screenshot scale, margins, status bar, and bottom navigation.
 - Rechecked Apple's official screenshot specification on June 11, 2026; `1320 x 2868` remains accepted for the 6.9-inch iPhone display class.
