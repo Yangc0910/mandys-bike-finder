@@ -1,6 +1,6 @@
 # Xcode And TestFlight Preparation
 
-Status: Version 1.1 build 4 available in Internal TestFlight; hosted v1.1 deployment and device QA pending
+Status: Version 1.1 build 4 installed and launched from Internal TestFlight against the production v1.1 host; interactive device QA remains
 Last updated: 2026-06-11
 
 ## Purpose
@@ -56,7 +56,10 @@ Validation now completed on macOS:
 - App Store Connect distribution export and signature verification: passed.
 - App Store Connect upload for build `1.1 (4)`: succeeded on June 11, 2026; Apple reported that the package entered processing.
 - Apple completed processing and made version `1.1 (4)` available to the internal tester on June 11, 2026.
-- The uploaded archive points to `https://app.mandysbikefinder.com`. Do not treat TestFlight installation as v1.1 feature verification until the accepted v1.1 web release is deployed to that hosted URL, or a new build is archived against an approved staging URL.
+- The v1.1 release-candidate deployment was promoted to `app.mandysbikefinder.com` on June 11, 2026.
+- The paired iPhone 17 Pro Max reports Mandy's Bike Finder version `1.1`, build `4`, installed.
+- The TestFlight app launched successfully; production logs recorded `200` responses for `/` and `/api/status` with no AI request.
+- The uploaded archive points to `https://app.mandysbikefinder.com`, which now serves the accepted v1.1 release candidate.
 
 GitHub handoff status:
 
@@ -202,4 +205,4 @@ Before uploading:
 - Confirm `support@mandysbikefinder.com` is receiving mail before App Store submission.
 - Capture App Store screenshots from the four-tab app shell.
 - Confirm Vercel app project deployment commit/state in dashboard before the first external TestFlight.
-- Keep build `1.1 (4)` in internal testing only until its hosted URL serves the accepted v1.1 release candidate.
+- Complete the remaining interactive touch-flow acceptance before App Store submission.

@@ -124,6 +124,22 @@ Validated locally on 2026-06-11 against the v1.1 App Store-mode release candidat
 
 The remaining destructive-action gate is confirmation on the actual TestFlight build after the production hosted URL serves v1.1.
 
+## Version 1.1 Production Promotion And TestFlight Launch
+
+Validated on 2026-06-11:
+
+- Promoted Vercel deployment `dpl_2cK1bLUgB5pkkd11PG3JYzNNCkrD` for commit `2d44b4c` to production.
+- Production deployment `dpl_rAk55mSN6H6yyzpVTtoBvh1uDxF3` reached `READY` and received aliases including `app.mandysbikefinder.com`.
+- Production `/`, `/privacy`, `/offline`, and `/api/status` returned `200`.
+- Settings on the production host reports `Mode: App Store MVP` and `Version: 1.1`.
+- Existing browser Profile data survived the deployment and rendered correctly in the redesigned v1.1 Profile screen.
+- `www.mandysbikefinder.com` continued returning `200`.
+- The paired physical iPhone 17 Pro Max reports installed bundle `com.mandysbikefinder.app`, version `1.1`, build `4`.
+- The TestFlight build launched successfully and remained running.
+- Production runtime logs recorded the device launch requests to `/` and `/api/status`, both `200`; no extraction, analysis, message, report, or email request appeared.
+
+Interactive TestFlight touch-flow confirmation and App Store Connect screenshot/metadata upload remain.
+
 ## Version 1.1 App Shell And Navigation
 
 Validated on 2026-06-10:

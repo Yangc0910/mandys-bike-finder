@@ -300,7 +300,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 12. [QA] v1.1 Mobile Regression Pass
 
-- Status: Local, protected-preview, simulator launch/recovery, screenshot production, archive/upload, Apple processing, Internal TestFlight availability, and local destructive-control passes complete on 2026-06-11; hosted v1.1 deployment and TestFlight device verification remain.
+- Status: Production v1.1 promotion and TestFlight install/launch complete on 2026-06-11; interactive device acceptance and App Store metadata remain.
 - Scope: validate core flows, accessibility basics, launch/offline states, storage compatibility, APIs, and deployment isolation.
 - Files likely touched: `docs/testing-notes.md`, `docs/releases/v1.1.0-plan.md`, issue records.
 - Acceptance criteria: Profile, Evaluate fallback/AI trigger, History, Settings, `/privacy`, `/offline`, small/large iPhone, no-initial-LLM, and both domains pass.
@@ -309,4 +309,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Deploy the accepted v1.1 web release to `app.mandysbikefinder.com`, install Internal TestFlight build `1.1 (4)` on the paired iPhone, repeat the core and destructive-action acceptance pass, and upload the completed `1320 x 2868` screenshot set to App Store Connect.
+Complete the interactive TestFlight core/destructive-action pass, upload the completed `1320 x 2868` screenshot set and metadata to App Store Connect, and finalize the v1.1 release record and tag.
