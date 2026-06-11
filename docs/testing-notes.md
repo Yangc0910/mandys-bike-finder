@@ -23,6 +23,25 @@ Release-candidate checks still required outside this local pass:
 - Run cold launch, warm launch, slow/no-network recovery, clear/delete confirmation completion, and the core flow on a physical iPhone or release-candidate simulator.
 - Verify the TestFlight build and final App Store screenshot captures before creating the v1.1 release tag.
 
+## Version 1.1 Protected Preview Verification
+
+Validated on 2026-06-11 against Vercel preview deployment `dpl_42ZWzq3BrpNKDQZ642cjaSqhnDLS` for commit `3cd1707`:
+
+- Vercel reported the deployment `READY`, with target `null`, for branch `release/v1.1-ui-polish`; it was not promoted to production.
+- The preview requires Vercel access protection: the deployment URL returned `401` without an authorized preview session.
+- The authorized preview opened directly into App Store MVP mode and rendered all four tabs.
+- At `320 x 700`, the page had no horizontal overflow and all four bottom navigation targets measured 56 pixels high.
+- At `430 x 932`, the Profile page had no horizontal overflow.
+- Settings displayed `Mode: App Store MVP` and `Version: 1.1`.
+- `/privacy`, `/offline`, and `/api/status` loaded successfully. The API status response reported `ok: true`.
+- Adding `?screenshotFrame=4` did not activate deterministic screenshot data, confirming fixture mode is disabled in the ordinary preview environment.
+- The browser console contained no warnings or errors during the focused pass.
+- Vercel runtime logs showed successful page, privacy, offline, and status requests only; no AI or extraction request occurred during preview verification.
+- `app.mandysbikefinder.com` and `www.mandysbikefinder.com` continued returning `200`, confirming the preview did not alter production domains.
+- No unresolved Vercel toolbar feedback was present for the release branch.
+
+The remaining release-candidate gate is iPhone-class simulator or physical-device launch/network/destructive-action testing, followed by TestFlight and final App Store capture verification.
+
 ## Version 1.1 App Shell And Navigation
 
 Validated on 2026-06-10:
