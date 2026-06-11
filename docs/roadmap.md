@@ -12,6 +12,7 @@ Mandy's Bike Finder version 1.0 is live on the App Store and is now the stable p
 - Detailed workstream: `docs/workstreams/post-launch-updates.md`
 - Release plan: `docs/releases/v1.1.0-plan.md`
 - UX polish PRD: `docs/prd/versions/v1.1.md`
+- App visual system: `docs/product/app-visual-system-v1.1.md`
 - Post-launch roadmap: `docs/product/post-launch-roadmap.md`
 
 Version 1.1 goals:

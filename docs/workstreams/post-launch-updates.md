@@ -10,6 +10,8 @@ Integration branch: `release/v1.1-ui-polish`
 
 Detailed release PRD: `docs/prd/versions/v1.1.md`
 
+Visual system: `docs/product/app-visual-system-v1.1.md`
+
 ## Purpose
 
 Mandy's Bike Finder post-launch software update workstream focuses on controlled iteration after the App Store v1.0 launch. Version 1.0 remains the stable production baseline. Work should improve the shipped product in small, testable increments without reopening MVP scope or destabilizing the hosted app.
@@ -215,6 +217,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 3. [Design] Define App Visual System v1.1
 
+- Status: Complete on 2026-06-10.
 - Scope: specify type, spacing, color, card, button, icon, and state tokens using the existing brand direction.
 - Files likely touched: `docs/product/app-visual-system-v1.1.md`, later `app/app/globals.css`, `app/tailwind.config.ts`.
 - Acceptance criteria: token table and component examples cover normal, pressed, disabled, loading, error, and empty states.
@@ -295,4 +298,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[Design] Define App Visual System v1.1`. It should translate the approved PRD into typography, spacing, color, card, button, icon, and state specifications before production UI code changes begin.
+Start with `[UX] Polish App Shell And Navigation`. Implement the approved App Store-specific tokens, compact screen header, tab icons/states, safe-area behavior, focus states, and reduced-motion support without changing app behavior or API boundaries.
