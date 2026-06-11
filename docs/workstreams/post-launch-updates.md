@@ -300,6 +300,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 12. [QA] v1.1 Mobile Regression Pass
 
+- Status: Local pass complete on 2026-06-11; protected preview, physical/simulator launch, and TestFlight verification pending.
 - Scope: validate core flows, accessibility basics, launch/offline states, storage compatibility, APIs, and deployment isolation.
 - Files likely touched: `docs/testing-notes.md`, `docs/releases/v1.1.0-plan.md`, issue records.
 - Acceptance criteria: Profile, Evaluate fallback/AI trigger, History, Settings, `/privacy`, `/offline`, small/large iPhone, no-initial-LLM, and both domains pass.
@@ -308,4 +309,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[QA] v1.1 Mobile Regression Pass`. Validate the release candidate across core flows, local storage compatibility, loading/offline behavior, accessibility basics, small and large iPhones, API guardrails, and deployment isolation.
+Verify the protected preview deployment, then run the release-candidate build through cold/warm launch, slow/no-network recovery, destructive-action confirmations, the core flow, and TestFlight on an iPhone-class simulator or physical device.

@@ -1,5 +1,28 @@
 # Testing Notes
 
+## Version 1.1 Mobile Regression Pass
+
+Validated locally on 2026-06-11:
+
+- `npm run lint`, `npm run build`, `npm run build:screenshots`, and `npm run cap:doctor`: passed.
+- `npm run test:copy`: all three listing-copy tests passed.
+- Fresh Profile setup, version 1.0 local-data hydration, edit, recommendation, and Evaluate handoff passed at `320 x 700` without horizontal overflow.
+- Manual listing entry produced the expected local Fit, Deal, Risk, next-step, and seller-message result without calling extraction or analysis APIs.
+- Saving the same evaluation twice retained one History record; favorite state, expanded saved detail, and all saved snapshots persisted after reload.
+- Settings reported the correct local Profile and History counts. Destructive controls still open confirmation before changing local data.
+- `/privacy` and `/offline` returned `200`; the focused mobile checks found no horizontal overflow and retained usable recovery/navigation controls.
+- `www.mandysbikefinder.com`, `app.mandysbikefinder.com`, `/privacy`, and `/offline` all returned `200` on 2026-06-11.
+- Initial and local-flow server activity contained only page and `/api/status` requests. A controlled explicit `/api/extract` screenshot request returned the expected disabled-provider manual-entry fallback.
+- No OpenAI, Resend, or provider credential was found in client-facing source; sensitive provider configuration remains server-side.
+- The Settings version label was corrected from `1.0` to `1.1` and the full build matrix passed afterward.
+- Representative small and large iPhone shell/layout checks are covered by this pass and the focused `320 x 700` and `430 x 932` v1.1 checks recorded below.
+
+Release-candidate checks still required outside this local pass:
+
+- Verify the final protected preview deployment before merging to `main`.
+- Run cold launch, warm launch, slow/no-network recovery, clear/delete confirmation completion, and the core flow on a physical iPhone or release-candidate simulator.
+- Verify the TestFlight build and final App Store screenshot captures before creating the v1.1 release tag.
+
 ## Version 1.1 App Shell And Navigation
 
 Validated on 2026-06-10:
