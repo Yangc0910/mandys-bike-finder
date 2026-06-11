@@ -83,6 +83,26 @@ Validated on 2026-06-10:
 - Local server activity showed only page and `/api/status` requests; opening History and details did not call extraction or analysis APIs.
 - Temporary responsive viewport override was reset after testing.
 
+## Version 1.1 Loading, Launch, And Offline Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- Added a dependency-free Next.js loading state using the production mark, app name, parent-facing tagline, and a subtle CSS-only progress treatment.
+- Reduced-motion mode disables the loading animation while preserving a visible progress state.
+- Updated the web launch SVG and all three iOS `Splash.imageset` PNGs to the same light canvas, blue mark, and product message.
+- The generated iOS splash assets remain `2732 x 2732`, RGB, and retain the existing asset catalog filenames and storyboard reference.
+- `/offline` clearly distinguishes saved Profile/History/local guidance from AI screenshot extraction and server actions that require a connection.
+- The recovery control updates from `Try again` to `Connection restored - try again` when connectivity returns.
+- App Store mode includes concise offline and connection-restored status notices without blocking local tab access.
+- Browser check at `320 x 700`: `/offline` had no horizontal overflow; retry measured `254 x 48` pixels and the saved-data route measured `254 x 44` pixels.
+- Returning from `/offline` reopened the saved local Profile successfully.
+- Browser console: no warnings or errors during the focused offline/recovery pass.
+- Local server activity showed only page and `/api/status` requests; no AI or extraction request was added to launch.
+- Temporary responsive viewport override was reset after testing.
+- Native splash composition was visually inspected from the generated PNG; cold and warm launch timing still requires the release-candidate simulator/device QA pass.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 

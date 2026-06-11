@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import type { BikeCoachIntent } from "@/lib/assistant";
 import { analyzeBike, generateSellerMessage, localPriceReference, recommendWheelSize } from "@/lib/analysis";
@@ -2110,6 +2110,20 @@ function AppStoreTabShell({
   isOffline: boolean;
   onSelectTab: (tab: AppStoreTab) => void;
 }) {
+  const wasOffline = useRef(isOffline);
+  const [showRestoredNotice, setShowRestoredNotice] = useState(false);
+
+  useEffect(() => {
+    if (wasOffline.current && !isOffline) {
+      setShowRestoredNotice(true);
+      const timer = window.setTimeout(() => setShowRestoredNotice(false), 3500);
+      wasOffline.current = isOffline;
+      return () => window.clearTimeout(timer);
+    }
+    if (isOffline) setShowRestoredNotice(false);
+    wasOffline.current = isOffline;
+  }, [isOffline]);
+
   function selectTab(tab: AppStoreTab) {
     onSelectTab(tab);
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -2119,8 +2133,21 @@ function AppStoreTabShell({
     <div className="app-native-shell">
       <main className="app-safe-shell px-4 md:px-6">
         {isOffline && (
-          <div className="app-safe-top sticky z-40 mx-auto mb-4 max-w-2xl rounded-[var(--app-radius-card)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950 shadow-[var(--app-shadow-card)]">
-            You are offline. Screenshot extraction needs a connection; saved guidance remains available.
+          <div className="app-safe-top sticky z-40 mx-auto mb-4 flex max-w-2xl items-start gap-3 rounded-[var(--app-radius-card)] border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 shadow-[var(--app-shadow-card)]" role="status">
+            <ConnectionStatusIcon />
+            <div className="min-w-0">
+              <p className="text-sm font-bold">You&apos;re offline</p>
+              <p className="mt-0.5 text-xs leading-5">Saved Profile, History, and local guidance remain available. AI screenshot extraction waits for a connection.</p>
+            </div>
+          </div>
+        )}
+        {showRestoredNotice && (
+          <div className="app-safe-top sticky z-40 mx-auto mb-4 flex max-w-2xl items-start gap-3 rounded-[var(--app-radius-card)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-950 shadow-[var(--app-shadow-card)]" role="status">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700" aria-hidden="true">✓</span>
+            <div className="min-w-0">
+              <p className="text-sm font-bold">Back online</p>
+              <p className="mt-0.5 text-xs leading-5">AI extraction and other server actions are available again.</p>
+            </div>
           </div>
         )}
         <section className="app-native-content mx-auto grid max-w-2xl gap-5">
@@ -2137,6 +2164,16 @@ function AppStoreTabShell({
       </main>
       <BottomTabNav activeTab={activeTab} onSelectTab={selectTab} />
     </div>
+  );
+}
+
+function ConnectionStatusIcon() {
+  return (
+    <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-amber-100 text-amber-700" aria-hidden="true">
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+        <path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01M4 4l16 16" />
+      </svg>
+    </span>
   );
 }
 

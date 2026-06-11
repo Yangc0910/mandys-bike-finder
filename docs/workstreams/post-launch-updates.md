@@ -271,6 +271,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 9. [Infra] Improve Loading And Offline States
 
+- Status: Complete on 2026-06-10.
 - Scope: align native launch and web loading visuals, improve offline banner/page, and define recovery behavior.
 - Files likely touched: `app/public/launch-screen.svg`, `app/app/offline/page.tsx`, `app/app/globals.css`, `app/ios/App/App/Base.lproj/LaunchScreen.storyboard`, splash assets if approved.
 - Acceptance criteria: cold/warm/slow/offline launches are coherent; no heavy dependency; no initial LLM call; offline copy is accurate.
@@ -303,4 +304,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[Infra] Improve Loading And Offline States`. Align web and native launch visuals, clarify what remains available offline, and provide accurate recovery guidance without adding heavy dependencies or initial AI calls.
+Start with `[Design] Prepare App Store Screenshot Storyboard`. Finalize the six-frame sequence, approved marketing copy, composition rules, and fictional sample states using only shipped v1.1 behavior.
