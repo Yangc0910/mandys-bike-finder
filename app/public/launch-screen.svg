@@ -1,6 +1,8 @@
 <svg width="2732" height="2732" viewBox="0 0 2732 2732" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="2732" height="2732" fill="#3157F5"/>
-  <g transform="translate(690 770) scale(1.32)">
+  <rect width="2732" height="2732" fill="#F5F7FA"/>
+  <circle cx="1366" cy="1180" r="620" fill="#EEF5FF"/>
+  <rect x="1046" y="765" width="640" height="640" rx="176" fill="#2F6FED"/>
+  <g transform="translate(1071 795) scale(.57)">
     <path
       d="M280 680V350L512 600L744 350V680"
       stroke="#FFFDF8"
@@ -12,4 +14,7 @@
     <circle cx="744" cy="700" r="112" stroke="#FFFDF8" stroke-width="52"/>
     <circle cx="512" cy="286" r="48" fill="#FFC83D"/>
   </g>
+  <text x="1366" y="1575" text-anchor="middle" fill="#245BD1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="76" font-weight="700" letter-spacing="2">Mandy's Bike Finder</text>
+  <text x="1366" y="1695" text-anchor="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="64" font-weight="650">Confident used-bike decisions</text>
+  <text x="1366" y="1780" text-anchor="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="64" font-weight="650">for parents.</text>
 </svg>

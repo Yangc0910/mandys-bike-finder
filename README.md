@@ -16,6 +16,23 @@ This repository currently contains two tracks:
 - The active product track in `app/`: Next.js App Store MVP, hosted on Vercel and prepared for Capacitor/Xcode/TestFlight work.
 - A historical agent-style track in `src/listing_monitor/`: a personal listing monitor CLI kept for reference and separate documentation.
 
+## Post-Launch Version 1.1
+
+Mandy's Bike Finder version 1.0 is live on the App Store and is the stable production baseline.
+
+- Stable tag: `v1.0.0-app-store-release`
+- Production line: `main`
+- Version 1.1 integration branch: `release/v1.1-ui-polish`
+- Version 1.1 focus: GUI polish, mobile interaction, user guidance, loading/launch quality, and App Store screenshot presentation.
+- Version 1.1 does not add accounts, payments, subscriptions, marketplace scraping, Bike Scout automation, major AI changes, or risky API changes.
+
+Start post-launch work with:
+
+- [docs/workstreams/post-launch-updates.md](docs/workstreams/post-launch-updates.md)
+- [docs/releases/v1.0.0.md](docs/releases/v1.0.0.md)
+- [docs/releases/v1.1.0-plan.md](docs/releases/v1.1.0-plan.md)
+- [docs/product/post-launch-roadmap.md](docs/product/post-launch-roadmap.md)
+
 ## Cross-Device Notes
 
 - GitHub `main` is the source of truth for continuation between Windows and Mac.
@@ -208,6 +225,14 @@ Then open:
 The App Store MVP surface is hidden by default so the existing web MVP remains unchanged. The mode flag is:
 
 - `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`
+
+Development-only App Store screenshot fixture:
+
+- `NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE=true`
+- Requires App Store MVP mode and a `?screenshotFrame=1` through `?screenshotFrame=6` query.
+- Use only on a temporary protected preview or local development server.
+- Never enable on `app.mandysbikefinder.com` or `www.mandysbikefinder.com`.
+- Capture workflow: `docs/product/app-store-screenshot-capture-checklist-v1.1.md`.
 
 #### Local Preview
 

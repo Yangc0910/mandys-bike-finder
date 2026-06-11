@@ -1,5 +1,269 @@
 # Testing Notes
 
+## Version 1.1 Mobile Regression Pass
+
+Validated locally on 2026-06-11:
+
+- `npm run lint`, `npm run build`, `npm run build:screenshots`, and `npm run cap:doctor`: passed.
+- `npm run test:copy`: all three listing-copy tests passed.
+- Fresh Profile setup, version 1.0 local-data hydration, edit, recommendation, and Evaluate handoff passed at `320 x 700` without horizontal overflow.
+- Manual listing entry produced the expected local Fit, Deal, Risk, next-step, and seller-message result without calling extraction or analysis APIs.
+- Saving the same evaluation twice retained one History record; favorite state, expanded saved detail, and all saved snapshots persisted after reload.
+- Settings reported the correct local Profile and History counts. Destructive controls still open confirmation before changing local data.
+- `/privacy` and `/offline` returned `200`; the focused mobile checks found no horizontal overflow and retained usable recovery/navigation controls.
+- `www.mandysbikefinder.com`, `app.mandysbikefinder.com`, `/privacy`, and `/offline` all returned `200` on 2026-06-11.
+- Initial and local-flow server activity contained only page and `/api/status` requests. A controlled explicit `/api/extract` screenshot request returned the expected disabled-provider manual-entry fallback.
+- No OpenAI, Resend, or provider credential was found in client-facing source; sensitive provider configuration remains server-side.
+- The Settings version label was corrected from `1.0` to `1.1` and the full build matrix passed afterward.
+- Representative small and large iPhone shell/layout checks are covered by this pass and the focused `320 x 700` and `430 x 932` v1.1 checks recorded below.
+
+Release-candidate checks still required outside this local pass:
+
+- Complete clear/delete confirmation actions on a physical iPhone or release-candidate simulator.
+- Verify the TestFlight build and final marketing screenshot exports before creating the v1.1 release tag.
+
+## Version 1.1 Protected Preview Verification
+
+Validated on 2026-06-11 against Vercel preview deployment `dpl_42ZWzq3BrpNKDQZ642cjaSqhnDLS` for commit `3cd1707`:
+
+- Vercel reported the deployment `READY`, with target `null`, for branch `release/v1.1-ui-polish`; it was not promoted to production.
+- The preview requires Vercel access protection: the deployment URL returned `401` without an authorized preview session.
+- The authorized preview opened directly into App Store MVP mode and rendered all four tabs.
+- At `320 x 700`, the page had no horizontal overflow and all four bottom navigation targets measured 56 pixels high.
+- At `430 x 932`, the Profile page had no horizontal overflow.
+- Settings displayed `Mode: App Store MVP` and `Version: 1.1`.
+- `/privacy`, `/offline`, and `/api/status` loaded successfully. The API status response reported `ok: true`.
+- Adding `?screenshotFrame=4` did not activate deterministic screenshot data, confirming fixture mode is disabled in the ordinary preview environment.
+- The browser console contained no warnings or errors during the focused pass.
+- Vercel runtime logs showed successful page, privacy, offline, and status requests only; no AI or extraction request occurred during preview verification.
+- `app.mandysbikefinder.com` and `www.mandysbikefinder.com` continued returning `200`, confirming the preview did not alter production domains.
+- No unresolved Vercel toolbar feedback was present for the release branch.
+
+The remaining release-candidate gate is hosted v1.1 deployment followed by physical-device TestFlight acceptance and App Store metadata upload.
+
+## Version 1.1 iOS Simulator Build And Preview Access
+
+Validated on 2026-06-11 with Xcode 26.5 and an iOS 26.5 iPhone 17 Pro simulator:
+
+- The Capacitor iOS project resolved its Swift Package dependencies and completed a Debug simulator build successfully.
+- The app installed and launched with the release-candidate preview URL temporarily supplied through `CAPACITOR_SERVER_URL`.
+- Vercel Authentication redirected the protected preview session to Vercel login in Safari instead of keeping the release candidate inside the Capacitor WebView.
+- The app log reported interrupted provisional WebView navigation after that redirect.
+- The temporary preview URL was removed immediately afterward; `cap:sync` restored `https://app.mandysbikefinder.com` in the generated iOS configuration and the Git worktree remained clean.
+
+Follow-up simulator validation used a local App Store-mode staging server without changing production:
+
+- Cold launch and warm launch both loaded the v1.1 Profile screen inside the Capacitor WebView with correct safe-area spacing and bottom navigation.
+- Stopping the staging server exposed a release-blocking blank white screen during disconnected cold launch.
+- Added Capacitor `server.errorPath` support and a bundled, dependency-free `native-offline.html` fallback.
+- The disconnected cold launch then displayed branded offline guidance, accurate AI/network disclosure, and a 48-pixel-plus retry action instead of a blank screen.
+- Restarting the staging server and relaunching the app restored the v1.1 Profile screen.
+- `npm run lint`, `npm run build`, the iOS simulator build, `npm run cap:sync`, and `npm run cap:doctor` passed after the fix.
+- The generated native configuration was restored to `https://app.mandysbikefinder.com`, and the simulator was shut down after testing.
+
+A stable Capacitor-accessible staging URL is still required for TestFlight verification. Destructive-action completion remains a physical-device or interactive simulator acceptance item.
+
+## Version 1.1 App Store Source Capture
+
+Validated on 2026-06-11 with the iOS 26.5 iPhone 17 Pro Max simulator:
+
+- Captured all six approved native source frames at exactly `1320 x 2868` pixels.
+- Controlled the status bar at `9:41`, charged battery, and full Wi-Fi/cellular signal.
+- Frame 3 shows the repository-owned fictional listing graphic, `NO REAL SELLER DATA`, and the optional AI disclosure.
+- Frame 4 shows `Worth contacting` with current Fit, Deal/value, Risk, and next-step guidance.
+- Frame 5 shows three saved decisions and exactly one shortlist star.
+- Frame 6 shows one child Profile, three saved evaluations, privacy access, and local-data controls.
+- The screenshot fixture populates state locally and does not call extraction, analysis, message, report, email, or marketplace APIs.
+- `npm run lint` and `npm run build:screenshots` passed before final capture.
+- The generated Capacitor configuration was restored to `https://app.mandysbikefinder.com`; the status-bar override was cleared and the simulator was shut down.
+- Source images are stored locally under `artifacts/app-store/v1.1/source/` and intentionally excluded from Git.
+
+Final marketing-frame composition and visual QA were completed on 2026-06-11:
+
+- `npm run export:app-store-screenshots` generated six reproducible PNG exports from the native source captures.
+- All six files report `1320 x 2868` and RGB color.
+- Headline wrapping, supporting copy, source-image scale, margins, active tabs, and visible fixture content were inspected frame by frame.
+- Apple's official screenshot specification was rechecked on 2026-06-11 and continues to list `1320 x 2868` as an accepted 6.9-inch iPhone portrait size.
+
+Hosted v1.1 deployment, physical-device TestFlight verification, screenshot upload to App Store Connect, and account-holder approval remain pending.
+
+## Version 1.1 Archive And Upload
+
+Validated on 2026-06-11 with Xcode 26.5:
+
+- Advanced the native target to marketing version `1.1`, build `4`.
+- Stored Apple Developer Team `H23DM6J89F` with automatic signing for reproducible archives.
+- Generic iOS Release archive with signing disabled passed.
+- Automatically signed generic iOS Release archive passed.
+- App Store Connect export produced a 12 MB IPA signed by `Apple Distribution: Cheng Yang (H23DM6J89F)`.
+- Package inspection confirmed bundle ID `com.mandysbikefinder.app`, version `1.1`, and build `4`.
+- Strict code-sign verification passed.
+- Xcode uploaded the package successfully; App Store Connect accepted it and reported that it entered processing.
+- The archive intentionally uses the production hosted URL. Because the v1.1 branch is not yet merged/deployed, TestFlight installation alone cannot verify the v1.1 web UI until that URL serves the accepted release candidate.
+
+At the time of upload, device installation, destructive-action completion, screenshot upload, and account-holder approval remained pending.
+
+Apple processing completed on 2026-06-11:
+
+- TestFlight emailed the internal tester that Mandy's Bike Finder `1.1 (4)` is available to test.
+- The paired iPhone 17 Pro Max is visible to Xcode/devicectl and ready for installation.
+- Device installation is intentionally deferred as a v1.1 acceptance result because build `1.1 (4)` loads `https://app.mandysbikefinder.com`, which still serves the production v1.0 web release until the v1.1 branch is accepted and deployed.
+
+## Version 1.1 Destructive Data Controls
+
+Validated locally on 2026-06-11 against the v1.1 App Store-mode release candidate using real browser localStorage:
+
+- Saved a real child Profile through the UI and confirmed the saved recommendation rendered.
+- Deleted one expanded History snapshot; the count changed from three to two and the remaining records stayed available.
+- Cleared only the child Profile; two History records remained, and the `no child profile / 2 saved evaluations` state persisted after reload.
+- Cleared only History; the Profile-absent, zero-History state persisted after reload.
+- Invoking Clear All with no stored data showed the non-destructive empty-state notice.
+- Re-seeded one Profile and two History records, then cleared all local data; both counts reached zero and remained zero after reload.
+- Profile removal's custom confirmation supports both paths: `Keep profile` preserved the Profile, while `Remove` returned to first-time setup.
+- Server activity during this pass contained page and `/api/status` requests only; no extraction, analysis, message, report, email, or marketplace request occurred.
+
+The remaining destructive-action gate is confirmation on the actual TestFlight build after the production hosted URL serves v1.1.
+
+## Version 1.1 Production Promotion And TestFlight Launch
+
+Validated on 2026-06-11:
+
+- Promoted Vercel deployment `dpl_2cK1bLUgB5pkkd11PG3JYzNNCkrD` for commit `2d44b4c` to production.
+- Production deployment `dpl_rAk55mSN6H6yyzpVTtoBvh1uDxF3` reached `READY` and received aliases including `app.mandysbikefinder.com`.
+- Production `/`, `/privacy`, `/offline`, and `/api/status` returned `200`.
+- Settings on the production host reports `Mode: App Store MVP` and `Version: 1.1`.
+- Existing browser Profile data survived the deployment and rendered correctly in the redesigned v1.1 Profile screen.
+- `www.mandysbikefinder.com` continued returning `200`.
+- The paired physical iPhone 17 Pro Max reports installed bundle `com.mandysbikefinder.app`, version `1.1`, build `4`.
+- The TestFlight build launched successfully and remained running.
+- Production runtime logs recorded the device launch requests to `/` and `/api/status`, both `200`; no extraction, analysis, message, report, or email request appeared.
+
+Interactive TestFlight touch-flow confirmation and App Store Connect screenshot/metadata upload remain.
+
+## Version 1.1 App Shell And Navigation
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; all four bottom tabs remain readable; each tab target is 56 pixels high; content bottom padding clears the fixed navigation.
+- App Store mode browser check at `430 x 932`: no horizontal overflow; tab targets remain evenly sized; page header and grouped content preserve intended spacing.
+- Tab interaction: selecting `Evaluate` updates `aria-current`, screen heading, and scroll position without triggering an AI action.
+- Browser console: no warnings or errors during the focused shell/navigation pass.
+- Temporary responsive viewport override was reset after testing.
+
+## Version 1.1 Profile Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- Existing version 1.0 local Profile data hydrated into the redesigned saved-profile state.
+- First-time Profile state explains the three required inputs, fit recommendation, local storage, and no-account behavior.
+- Clearing a Profile requires confirmation, states that History remains available, and returns to first-time guidance.
+- Empty Height and Age each produce a clear required-field alert.
+- Saving height `122 cm`, age `7`, beginner experience, and nickname `Mandy` preserved the existing recommendation output: `18 inch`, `Standard kids bike`.
+- Recommendation copy formatting was corrected to `an 18-inch standard kids bike` without changing recommendation semantics.
+- Edit then Cancel restored the saved Profile rather than overwriting it.
+- `Evaluate a bike for Mandy` switched to the Evaluate tab, updated active navigation, and reset scroll position.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; recommendation CTA remained `254 x 48` pixels; content cleared the bottom navigation.
+- Browser console: no warnings or errors during the focused Profile pass.
+- Temporary responsive viewport override was reset after testing.
+
+## Version 1.1 Evaluate Input And Review Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; progress labels `Add listing`, `Review`, and `Result` remained readable.
+- The previous fixed Evaluate mode bar was removed; the App Store bottom navigation is the only app-owned fixed navigation element.
+- Screenshot is still the default method and the optional AI extraction button is disabled until a screenshot exists.
+- Initial load, input-method switching, and Manual/local analysis produced no `/api/extract` request; only the existing `/api/status` request appeared in the local server log.
+- Screenshot copy states that selection remains local preview until the explicit AI extraction action.
+- Text/link copy states that the URL is reference-only and marketplace pages are not automatically scraped.
+- Manual Review exposed title, price, wheel size, brand, model, bike type, color/style, source, location, condition summary, and description fields.
+- Manual sample values `TREK`, `$120`, and `20` enabled local analysis and produced a result without AI.
+- Switching from Manual to Screenshot and back preserved the existing Review field values.
+- Editing a Review field after analysis removed the stale result and returned progress to the Review stage.
+- Browser console: no warnings or errors during the focused Evaluate pass.
+- Long text entry through the in-app browser automation was limited by the browser's unavailable virtual clipboard; short keyboard-driven input and all relevant state transitions were still verified.
+- Temporary responsive viewport override was reset after testing.
+
+## Version 1.1 Result Card And Seller Message Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- Manual sample values `TREK`, `$120`, and `20` produced `Ask more before deciding` using the existing local analysis.
+- The result leads with the overall recommendation and rationale, followed by comparable Fit, Deal, and Risk blocks with text and icons in addition to color.
+- `What to do next` displayed three practical steps derived from the existing result and seller questions.
+- The seller message remained selectable and exposed a 44-pixel-high Copy action. When the browser's virtual clipboard was unavailable, the UI showed manual-selection guidance instead of failing silently.
+- `Save to History` preserved the existing local snapshot behavior. The saved detail retained the listing, price, child profile, recommendation, Fit/Deal/Risk statuses, and seller message without re-analysis.
+- The existing result disclaimer remains visible below the save action.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; status cards remained readable; the result content cleared the bottom navigation.
+- Browser console: no warnings or errors during the focused Result pass.
+- Temporary responsive viewport override was reset after testing.
+
+## Version 1.1 History Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- The existing saved `TREK` record rendered without migration and retained its recommendation, `$120` price, `20 inch` wheel size, child snapshot, source, Fit/Deal/Risk statuses, and seller message.
+- Saved-decision cards prioritize the recommendation and listing title, then price, wheel size, child, saved date, and source.
+- Shortlist state uses a star icon, text guidance, an accessible pressed state, and a 44-pixel touch target.
+- Toggling shortlist persisted after a full page reload. The test change was reverted afterward to preserve the existing local record.
+- Details remain collapsed initially and open as an explicitly labeled saved snapshot without calling analysis or marketplace APIs.
+- Delete is visually separated inside the expanded detail, explains its scope, and retains the existing confirmation step.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; detail and delete controls remained `254 x 44` pixels; content cleared the bottom navigation.
+- Browser console: no warnings or errors during the focused History pass.
+- Local server activity showed only page and `/api/status` requests; opening History and details did not call extraction or analysis APIs.
+- Temporary responsive viewport override was reset after testing.
+
+## Version 1.1 Loading, Launch, And Offline Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- Added a dependency-free Next.js loading state using the production mark, app name, parent-facing tagline, and a subtle CSS-only progress treatment.
+- Reduced-motion mode disables the loading animation while preserving a visible progress state.
+- Updated the web launch SVG and all three iOS `Splash.imageset` PNGs to the same light canvas, blue mark, and product message.
+- The generated iOS splash assets remain `2732 x 2732`, RGB, and retain the existing asset catalog filenames and storyboard reference.
+- `/offline` clearly distinguishes saved Profile/History/local guidance from AI screenshot extraction and server actions that require a connection.
+- The recovery control updates from `Try again` to `Connection restored - try again` when connectivity returns.
+- App Store mode includes concise offline and connection-restored status notices without blocking local tab access.
+- Browser check at `320 x 700`: `/offline` had no horizontal overflow; retry measured `254 x 48` pixels and the saved-data route measured `254 x 44` pixels.
+- Returning from `/offline` reopened the saved local Profile successfully.
+- Browser console: no warnings or errors during the focused offline/recovery pass.
+- Local server activity showed only page and `/api/status` requests; no AI or extraction request was added to launch.
+- Temporary responsive viewport override was reset after testing.
+- Native splash composition was visually inspected from the generated PNG; cold and warm launch timing still requires the release-candidate simulator/device QA pass.
+
+## Version 1.1 Screenshot Fixture And Capture Preparation
+
+Validated on 2026-06-11:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- `npm run build:screenshots`: passed with App Store and screenshot fixture flags enabled.
+- `npm run test:copy`: all three listing-copy tests passed.
+- `npm run cap:doctor`: passed with the existing iOS Capacitor project reported healthy.
+- Screenshot fixture mode requires the separate `NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE=true` build flag and a valid `screenshotFrame` query value.
+- Without that flag, screenshot query parameters do not activate fixture data.
+- Frames 1 through 6 rendered the intended Profile, Profile edit, Evaluate review, Result, History, and Settings states.
+- Fixture Profile rendered Mandy, age 7, 122 cm, Beginner, an `18 inch` recommendation, and `Standard kids bike`.
+- Fixture Result was generated through the current local analysis: `Worth contacting`, `Good size match`, `Looks reasonable`, and `Lower price confidence`.
+- Fixture History rendered three deterministic fictional records with recommendations green/yellow/green and exactly one shortlisted record.
+- Fixture Settings reported one child Profile and three saved evaluations.
+- The fictional listing preview is a repository-owned `900 x 1200` RGB PNG with no marketplace branding or real seller data.
+- Fixture mode did not write to or clear localStorage and made no AI/extraction request during focused browser verification.
+- Browser console: no warnings or errors during the six-frame pass.
+- Capture instructions document protected preview deployment, Capacitor URL override, simulator status bar, exact frame URLs, positioning, source capture, and `1320 x 2868` export verification.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 

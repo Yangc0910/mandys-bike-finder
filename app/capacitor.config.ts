@@ -5,8 +5,9 @@ const config: CapacitorConfig = {
   appName: "Mandy's Bike Finder",
   webDir: "public",
   server: {
-    url: "https://app.mandysbikefinder.com",
+    url: process.env.CAPACITOR_SERVER_URL || "https://app.mandysbikefinder.com",
     cleartext: false,
+    errorPath: "native-offline.html",
   },
 };
 
