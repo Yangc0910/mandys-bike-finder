@@ -6,6 +6,15 @@ import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "reac
 import type { BikeCoachIntent } from "@/lib/assistant";
 import { analyzeBike, generateSellerMessage, localPriceReference, recommendWheelSize } from "@/lib/analysis";
 import {
+  getScreenshotFixtureFrame,
+  screenshotFixtureHistory,
+  screenshotFixturePrimaryAnalysis,
+  screenshotFixturePrimaryListing,
+  screenshotFixtureProfile,
+  screenshotFixtureTab,
+} from "@/lib/app-store-screenshot-fixtures";
+import type { ScreenshotFixtureFrame } from "@/lib/app-store-screenshot-fixtures";
+import {
   BIKE_SCOUT_PICKUP_CHECKLIST,
   BIKE_SCOUT_SOURCE_OPTIONS,
   bikeScoutProfileSummary,
@@ -51,6 +60,7 @@ const defaultListing: Listing = {
 
 const RIDER_PROFILE_STORAGE_KEY = "mandy-free-bike-check-rider-profile";
 const APP_STORE_MVP_MODE = process.env.NEXT_PUBLIC_APP_STORE_MVP_MODE === "true";
+const APP_STORE_SCREENSHOT_FIXTURE_MODE = process.env.NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE === "true";
 const APP_STORE_ACTIVE_CHILD_PROFILE_KEY = "mbf.appStore.activeChildProfile";
 const APP_STORE_SAVED_EVALUATIONS_KEY = "mbf.appStore.savedEvaluations";
 const APP_STORE_MVP_VERSION = "1.0";
@@ -183,6 +193,7 @@ export default function Home() {
   const [bikeCoachMessages, setBikeCoachMessages] = useState<BikeCoachMessage[]>([]);
   const [isBikeCoachLoading, setIsBikeCoachLoading] = useState(false);
   const [activeAppStoreTab, setActiveAppStoreTab] = useState<AppStoreTab>("profile");
+  const [screenshotFixtureFrame, setScreenshotFixtureFrame] = useState<ScreenshotFixtureFrame | null>(null);
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -263,6 +274,14 @@ export default function Home() {
         setStatus(providerStatusText(result.providers));
       }
     });
+  }, []);
+
+  useEffect(() => {
+    if (!APP_STORE_SCREENSHOT_FIXTURE_MODE) return;
+    const frame = getScreenshotFixtureFrame();
+    if (!frame) return;
+    setScreenshotFixtureFrame(frame);
+    setActiveAppStoreTab(screenshotFixtureTab(frame));
   }, []);
 
   useEffect(() => {
@@ -781,6 +800,7 @@ export default function Home() {
     return (
       <AppStoreTabShell
         activeTab={activeAppStoreTab}
+        screenshotFixtureFrame={screenshotFixtureFrame}
         isOffline={isOffline}
         onSelectTab={setActiveAppStoreTab}
       />
@@ -2103,10 +2123,12 @@ export default function Home() {
 
 function AppStoreTabShell({
   activeTab,
+  screenshotFixtureFrame,
   isOffline,
   onSelectTab,
 }: {
   activeTab: AppStoreTab;
+  screenshotFixtureFrame: ScreenshotFixtureFrame | null;
   isOffline: boolean;
   onSelectTab: (tab: AppStoreTab) => void;
 }) {
@@ -2151,15 +2173,16 @@ function AppStoreTabShell({
           </div>
         )}
         <section className="app-native-content mx-auto grid max-w-2xl gap-5">
-          {activeTab === "profile" && <ProfileScreenPlaceholder onEvaluate={() => selectTab("evaluate")} />}
+          {activeTab === "profile" && <ProfileScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} onEvaluate={() => selectTab("evaluate")} />}
           {activeTab === "evaluate" && (
             <EvaluateScreenPlaceholder
+              screenshotFixtureFrame={screenshotFixtureFrame}
               onHistory={() => selectTab("history")}
               onProfile={() => selectTab("profile")}
             />
           )}
-          {activeTab === "history" && <HistoryScreenPlaceholder onEvaluate={() => selectTab("evaluate")} />}
-          {activeTab === "settings" && <SettingsScreenPlaceholder />}
+          {activeTab === "history" && <HistoryScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} onEvaluate={() => selectTab("evaluate")} />}
+          {activeTab === "settings" && <SettingsScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} />}
         </section>
       </main>
       <BottomTabNav activeTab={activeTab} onSelectTab={selectTab} />
@@ -2187,7 +2210,13 @@ function AppScreenHeader({ title, eyebrow, copy }: { title: string; eyebrow: str
   );
 }
 
-function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
+function ProfileScreenPlaceholder({
+  screenshotFixtureFrame,
+  onEvaluate,
+}: {
+  screenshotFixtureFrame: ScreenshotFixtureFrame | null;
+  onEvaluate: () => void;
+}) {
   const [savedProfile, setSavedProfile] = useState<AppStoreActiveChildProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [nickname, setNickname] = useState("");
@@ -2205,6 +2234,12 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
   useEffect(() => {
+    if (screenshotFixtureFrame === "1" || screenshotFixtureFrame === "2") {
+      setSavedProfile(screenshotFixtureProfile);
+      hydrateAppStoreProfileForm(screenshotFixtureProfile);
+      setIsEditing(screenshotFixtureFrame === "2");
+      return;
+    }
     const storedProfile = loadAppStoreActiveChildProfile();
     if (!storedProfile) return;
     setSavedProfile(storedProfile);
@@ -2212,7 +2247,7 @@ function ProfileScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
     setIsEditing(false);
     // Profile hydration should run once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [screenshotFixtureFrame]);
 
   const normalizedChild = useMemo<ChildProfile>(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -2546,7 +2581,15 @@ function ProfileGuidanceBlock({
   );
 }
 
-function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => void; onProfile: () => void }) {
+function EvaluateScreenPlaceholder({
+  screenshotFixtureFrame,
+  onHistory,
+  onProfile,
+}: {
+  screenshotFixtureFrame: ScreenshotFixtureFrame | null;
+  onHistory: () => void;
+  onProfile: () => void;
+}) {
   const [activeProfile, setActiveProfile] = useState<AppStoreActiveChildProfile | null>(null);
   const [inputMode, setInputMode] = useState<AppStoreEvaluateInputMode>("screenshot");
   const [draftListing, setDraftListing] = useState<Listing>(defaultListing);
@@ -2588,8 +2631,25 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
   };
 
   useEffect(() => {
+    if (screenshotFixtureFrame === "3" || screenshotFixtureFrame === "4") {
+      setActiveProfile(screenshotFixtureProfile);
+      setInputMode("screenshot");
+      setDraftListing(screenshotFixturePrimaryListing);
+      setScreenshotName("trek-kids-bike-sample.png");
+      setScreenshotPreviewUrl("/images/trek-kids-bike-sample.png");
+      setScreenshotFile(new File(["fictional screenshot fixture"], "trek-kids-bike-sample.png", { type: "image/png" }));
+      setNotice("Screenshot fixture loaded for App Store capture. No AI or server processing started.");
+      if (screenshotFixtureFrame === "4") {
+        setResult(screenshotFixturePrimaryAnalysis);
+        setSellerMessage(generateSellerMessage("askQuestions", "friendly", screenshotFixturePrimaryListing, {}));
+      } else {
+        setResult(null);
+        setSellerMessage("");
+      }
+      return;
+    }
     setActiveProfile(loadAppStoreActiveChildProfile());
-  }, []);
+  }, [screenshotFixtureFrame]);
 
   useEffect(() => {
     return () => {
@@ -3325,14 +3385,25 @@ function buildResultNextSteps(result: AnalysisResult) {
   ];
 }
 
-function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
+function HistoryScreenPlaceholder({
+  screenshotFixtureFrame,
+  onEvaluate,
+}: {
+  screenshotFixtureFrame: ScreenshotFixtureFrame | null;
+  onEvaluate: () => void;
+}) {
   const [savedEvaluations, setSavedEvaluations] = useState<AppStoreSavedEvaluation[]>([]);
   const [selectedEvaluationId, setSelectedEvaluationId] = useState("");
 
   useEffect(() => {
+    if (screenshotFixtureFrame === "5") {
+      setSavedEvaluations(screenshotFixtureHistory);
+      setSelectedEvaluationId("");
+      return;
+    }
     const saved = loadAppStoreSavedEvaluations();
     setSavedEvaluations(saved);
-  }, []);
+  }, [screenshotFixtureFrame]);
 
   const selectedEvaluation = savedEvaluations.find((evaluation) => evaluation.id === selectedEvaluationId) || null;
   const favoriteCount = savedEvaluations.filter((evaluation) => evaluation.favorite).length;
@@ -3571,14 +3642,19 @@ function formatHistoryWheelSize(value?: string) {
   return `${wheelSize} inch`;
 }
 
-function SettingsScreenPlaceholder() {
+function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtureFrame: ScreenshotFixtureFrame | null }) {
   const [hasProfile, setHasProfile] = useState(false);
   const [historyCount, setHistoryCount] = useState(0);
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
+    if (screenshotFixtureFrame === "6") {
+      setHasProfile(true);
+      setHistoryCount(screenshotFixtureHistory.length);
+      return;
+    }
     refreshSettingsDataSummary();
-  }, []);
+  }, [screenshotFixtureFrame]);
 
   function refreshSettingsDataSummary() {
     setHasProfile(Boolean(loadAppStoreActiveChildProfile()));

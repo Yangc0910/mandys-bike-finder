@@ -226,6 +226,14 @@ The App Store MVP surface is hidden by default so the existing web MVP remains u
 
 - `NEXT_PUBLIC_APP_STORE_MVP_MODE=true`
 
+Development-only App Store screenshot fixture:
+
+- `NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE=true`
+- Requires App Store MVP mode and a `?screenshotFrame=1` through `?screenshotFrame=6` query.
+- Use only on a temporary protected preview or local development server.
+- Never enable on `app.mandysbikefinder.com` or `www.mandysbikefinder.com`.
+- Capture workflow: `docs/product/app-store-screenshot-capture-checklist-v1.1.md`.
+
 #### Local Preview
 
 Windows PowerShell:

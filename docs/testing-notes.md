@@ -103,6 +103,27 @@ Validated on 2026-06-10:
 - Temporary responsive viewport override was reset after testing.
 - Native splash composition was visually inspected from the generated PNG; cold and warm launch timing still requires the release-candidate simulator/device QA pass.
 
+## Version 1.1 Screenshot Fixture And Capture Preparation
+
+Validated on 2026-06-11:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- `npm run build:screenshots`: passed with App Store and screenshot fixture flags enabled.
+- `npm run test:copy`: all three listing-copy tests passed.
+- `npm run cap:doctor`: passed with the existing iOS Capacitor project reported healthy.
+- Screenshot fixture mode requires the separate `NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE=true` build flag and a valid `screenshotFrame` query value.
+- Without that flag, screenshot query parameters do not activate fixture data.
+- Frames 1 through 6 rendered the intended Profile, Profile edit, Evaluate review, Result, History, and Settings states.
+- Fixture Profile rendered Mandy, age 7, 122 cm, Beginner, an `18 inch` recommendation, and `Standard kids bike`.
+- Fixture Result was generated through the current local analysis: `Worth contacting`, `Good size match`, `Looks reasonable`, and `Lower price confidence`.
+- Fixture History rendered three deterministic fictional records with recommendations green/yellow/green and exactly one shortlisted record.
+- Fixture Settings reported one child Profile and three saved evaluations.
+- The fictional listing preview is a repository-owned `900 x 1200` RGB PNG with no marketplace branding or real seller data.
+- Fixture mode did not write to or clear localStorage and made no AI/extraction request during focused browser verification.
+- Browser console: no warnings or errors during the six-frame pass.
+- Capture instructions document protected preview deployment, Capacitor URL override, simulator status bar, exact frame URLs, positioning, source capture, and `1320 x 2868` export verification.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 

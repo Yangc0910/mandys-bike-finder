@@ -291,6 +291,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 11. [Build] Generate Screenshot Test Data And Capture Checklist
 
+- Status: Complete on 2026-06-11.
 - Scope: define reproducible fictional profile, listings, results, History records, device setup, and capture steps.
 - Files likely touched: `docs/product/app-store-screenshot-capture-checklist-v1.1.md`; optional development-only fixture isolated from production.
 - Acceptance criteria: another contributor can recreate every screenshot without real personal data; status bar and device state are controlled.
@@ -307,4 +308,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[Build] Generate Screenshot Test Data And Capture Checklist`. Define reproducible fictional Profile, listing, result, and History states plus simulator and export steps for all six approved frames.
+Start with `[QA] v1.1 Mobile Regression Pass`. Validate the release candidate across core flows, local storage compatibility, loading/offline behavior, accessibility basics, small and large iPhones, API guardrails, and deployment isolation.
