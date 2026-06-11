@@ -23,6 +23,7 @@ out/
 app/out/
 dist/
 coverage/
+artifacts/
 *.tsbuildinfo
 
 # Logs and local caches

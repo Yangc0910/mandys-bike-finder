@@ -1,6 +1,6 @@
 # App Store Screenshot Capture Checklist v1.1
 
-Status: Ready for release-candidate capture
+Status: Native source capture complete; marketing export and approval pending
 
 Storyboard: `docs/product/app-store-screenshot-storyboard-v1.1.md`
 
@@ -289,3 +289,20 @@ Every final file must report `1320 x 2868` and sRGB.
 - Files are reviewed at 100% and as small App Store thumbnails.
 - The preview deployment is removed or has fixture mode disabled after approval.
 - Capacitor is synced back to the production server URL before archive or submission.
+
+## 12. Capture Record
+
+Completed on June 11, 2026 with the iOS 26.5 iPhone 17 Pro Max simulator:
+
+- Captured all six native portrait source images at `1320 x 2868`.
+- Used the controlled `9:41`, full-signal, charged-battery status bar.
+- Used only the approved fictional Profile, listing, recommendation, and History fixtures.
+- Verified Frame 3 identifies the listing as fictional and contains no real seller data.
+- Verified Frame 4 shows the release-candidate `Worth contacting` result and current Fit, Deal/value, and Risk labels.
+- Verified Frame 5 contains three saved decisions and one shortlist star.
+- Verified Frame 6 reports one child Profile and three saved evaluations.
+- Verified fixture hydration does not invoke extraction, analysis, message, report, email, or marketplace APIs.
+- Restored the generated Capacitor configuration to `https://app.mandysbikefinder.com` after capture.
+- Stored the local source files under `artifacts/app-store/v1.1/source/` using the approved filenames.
+
+The protected Vercel preview could not be used inside Capacitor because Vercel Authentication redirected to Safari. Capture therefore used a local App Store-mode release build served only to the simulator. Final marketing composition, visual approval, and App Store Connect upload remain pending.

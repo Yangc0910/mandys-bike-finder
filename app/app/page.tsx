@@ -285,6 +285,29 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!APP_STORE_SCREENSHOT_FIXTURE_MODE || !screenshotFixtureFrame) return;
+    const fixtureTargets: Partial<Record<ScreenshotFixtureFrame, string>> = {
+      "3": "app-store-fixture-listing",
+      "4": "app-store-fixture-result",
+      "6": "app-store-fixture-local-data",
+    };
+    const targetId = fixtureTargets[screenshotFixtureFrame];
+    if (!targetId) return;
+    let attempts = 0;
+    const intervalId = window.setInterval(() => {
+      const target = document.getElementById(targetId);
+      attempts += 1;
+      if (target) {
+        target.scrollIntoView({ block: "start" });
+        window.clearInterval(intervalId);
+      } else if (attempts >= 20) {
+        window.clearInterval(intervalId);
+      }
+    }, 100);
+    return () => window.clearInterval(intervalId);
+  }, [screenshotFixtureFrame]);
+
+  useEffect(() => {
     const updateOnlineStatus = () => setIsOffline(!navigator.onLine);
     window.addEventListener("online", updateOnlineStatus);
     window.addEventListener("offline", updateOnlineStatus);
@@ -2897,7 +2920,7 @@ function EvaluateScreenPlaceholder({
         </div>
       </section>
 
-      <section className="app-native-group">
+      <section id="app-store-fixture-listing" className="app-native-group scroll-mt-4">
         <div className="app-native-row">
           <AppSectionHeading eyebrow="Add listing" title={
             inputMode === "screenshot" ? "Choose a listing screenshot" : inputMode === "link" ? "Add listing text or a reference link" : "Enter the listing details yourself"
@@ -3104,7 +3127,7 @@ function EvaluateScreenPlaceholder({
       </section>
 
       {result && (
-        <section className="app-native-group">
+        <section id="app-store-fixture-result" className="app-native-group scroll-mt-4">
           <div className={`app-native-row ${resultSurfaceClass(result.overall.meter)}`}>
             <div className="flex min-w-0 items-start gap-3">
               <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border bg-white/80 ${resultIconClass(result.overall.meter)}`} aria-hidden="true">
@@ -3717,7 +3740,9 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
         </article>
       </section>
 
-      <AppSectionHeading eyebrow="On this iPhone" title="Local data controls" />
+      <div id="app-store-fixture-local-data" className="scroll-mt-4">
+        <AppSectionHeading eyebrow="On this iPhone" title="Local data controls" />
+      </div>
       <section className="app-native-group">
         <article className="app-native-row">
           <h2 className="text-base font-bold text-slate-950">Stored data</h2>

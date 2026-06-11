@@ -19,9 +19,8 @@ Validated locally on 2026-06-11:
 
 Release-candidate checks still required outside this local pass:
 
-- Verify the final protected preview deployment before merging to `main`.
-- Run cold launch, warm launch, slow/no-network recovery, clear/delete confirmation completion, and the core flow on a physical iPhone or release-candidate simulator.
-- Verify the TestFlight build and final App Store screenshot captures before creating the v1.1 release tag.
+- Complete clear/delete confirmation actions on a physical iPhone or release-candidate simulator.
+- Verify the TestFlight build and final marketing screenshot exports before creating the v1.1 release tag.
 
 ## Version 1.1 Protected Preview Verification
 
@@ -63,6 +62,23 @@ Follow-up simulator validation used a local App Store-mode staging server withou
 - The generated native configuration was restored to `https://app.mandysbikefinder.com`, and the simulator was shut down after testing.
 
 A stable Capacitor-accessible staging URL is still required for TestFlight verification. Destructive-action completion remains a physical-device or interactive simulator acceptance item.
+
+## Version 1.1 App Store Source Capture
+
+Validated on 2026-06-11 with the iOS 26.5 iPhone 17 Pro Max simulator:
+
+- Captured all six approved native source frames at exactly `1320 x 2868` pixels.
+- Controlled the status bar at `9:41`, charged battery, and full Wi-Fi/cellular signal.
+- Frame 3 shows the repository-owned fictional listing graphic, `NO REAL SELLER DATA`, and the optional AI disclosure.
+- Frame 4 shows `Worth contacting` with current Fit, Deal/value, Risk, and next-step guidance.
+- Frame 5 shows three saved decisions and exactly one shortlist star.
+- Frame 6 shows one child Profile, three saved evaluations, privacy access, and local-data controls.
+- The screenshot fixture populates state locally and does not call extraction, analysis, message, report, email, or marketplace APIs.
+- `npm run lint` and `npm run build:screenshots` passed before final capture.
+- The generated Capacitor configuration was restored to `https://app.mandysbikefinder.com`; the status-bar override was cleared and the simulator was shut down.
+- Source images are stored locally under `artifacts/app-store/v1.1/source/` and intentionally excluded from Git.
+
+Final marketing-frame composition, visual approval, TestFlight verification, and App Store Connect upload remain pending.
 
 ## Version 1.1 App Shell And Navigation
 
