@@ -253,6 +253,7 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ### 7. [UX] Polish Result Card And Seller Message
 
+- Status: Complete on 2026-06-10.
 - Scope: improve recommendation hierarchy, fit/deal/risk layout, next-step guidance, seller message, copy action, and save CTA.
 - Files likely touched: `app/app/page.tsx`, `app/app/globals.css`, focused tests for display/helper logic if extracted.
 - Acceptance criteria: recommendation is understandable at a glance; statuses are not color-only; message is easy to copy; save behavior is unchanged.
@@ -301,4 +302,4 @@ Official reference: https://developer.apple.com/help/app-store-connect/reference
 
 ## Immediate Next Task
 
-Start with `[UX] Polish Result Card And Seller Message`. Improve recommendation hierarchy, fit/deal/risk presentation, practical next steps, seller-message copy interaction, and History save presentation without changing analysis semantics.
+Start with `[UX] Polish History Screen`. Improve saved-decision cards, the empty state, favorite visibility, detail hierarchy, and destructive actions while preserving existing local records and avoiding live re-analysis.

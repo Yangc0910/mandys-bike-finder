@@ -50,6 +50,22 @@ Validated on 2026-06-10:
 - Long text entry through the in-app browser automation was limited by the browser's unavailable virtual clipboard; short keyboard-driven input and all relevant state transitions were still verified.
 - Temporary responsive viewport override was reset after testing.
 
+## Version 1.1 Result Card And Seller Message Polish
+
+Validated on 2026-06-10:
+
+- `npm run lint`: passed with no ESLint warnings or errors.
+- `npm run build`: passed with Next.js production compilation and type checking.
+- Manual sample values `TREK`, `$120`, and `20` produced `Ask more before deciding` using the existing local analysis.
+- The result leads with the overall recommendation and rationale, followed by comparable Fit, Deal, and Risk blocks with text and icons in addition to color.
+- `What to do next` displayed three practical steps derived from the existing result and seller questions.
+- The seller message remained selectable and exposed a 44-pixel-high Copy action. When the browser's virtual clipboard was unavailable, the UI showed manual-selection guidance instead of failing silently.
+- `Save to History` preserved the existing local snapshot behavior. The saved detail retained the listing, price, child profile, recommendation, Fit/Deal/Risk statuses, and seller message without re-analysis.
+- The existing result disclaimer remains visible below the save action.
+- App Store mode browser check at `320 x 700`: no horizontal overflow; status cards remained readable; the result content cleared the bottom navigation.
+- Browser console: no warnings or errors during the focused Result pass.
+- Temporary responsive viewport override was reset after testing.
+
 Current PRD: `docs/PRD.md` v0.4  
 Current implementation approach: Phase 1.5 controlled real API beta
 

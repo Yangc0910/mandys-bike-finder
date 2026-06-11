@@ -2522,6 +2522,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
   const [aiExtractionSummary, setAiExtractionSummary] = useState<AppStoreAiExtractionSummary | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [sellerMessage, setSellerMessage] = useState("");
+  const [sellerMessageCopyNotice, setSellerMessageCopyNotice] = useState("");
 
   const hasProfile = Boolean(activeProfile);
   const hasListingDetails = Boolean(
@@ -2563,12 +2564,14 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
     setDraftListing((current) => ({ ...current, [field]: value }));
     setResult(null);
     setSellerMessage("");
+    setSellerMessageCopyNotice("");
   }
 
   function handleScreenshotUpload(file: File | null) {
     if (screenshotPreviewUrl) URL.revokeObjectURL(screenshotPreviewUrl);
     setResult(null);
     setSellerMessage("");
+    setSellerMessageCopyNotice("");
     if (!file) {
       setScreenshotFile(null);
       setScreenshotName("");
@@ -2615,6 +2618,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
         setDraftListing((current) => ({ ...current, ...compactFields(fields) }));
         setResult(null);
         setSellerMessage("");
+        setSellerMessageCopyNotice("");
         setAiExtractionSummary({
           provider: String(response?.result?.provider || "AI"),
           confidence: response?.result?.confidence ? String(response.result.confidence) : undefined,
@@ -2654,6 +2658,7 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
     }));
     setResult(null);
     setSellerMessage("");
+    setSellerMessageCopyNotice("");
     setAiExtractionSummary(null);
     setNotice("Listing text was parsed locally on this device. Review the fields before analyzing.");
   }
@@ -2684,7 +2689,21 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
     setDraftListing(listingForAnalysis);
     setResult(localResult);
     setSellerMessage(generateSellerMessage("askQuestions", "friendly", listingForAnalysis, {}));
+    setSellerMessageCopyNotice("");
     setNotice("Local analysis complete. No screenshot, listing text, or child profile was sent to an AI service for this result.");
+  }
+
+  async function copySellerMessage() {
+    if (!sellerMessage) {
+      setSellerMessageCopyNotice("Generate a result before copying a seller message.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(sellerMessage);
+      setSellerMessageCopyNotice("Seller message copied.");
+    } catch {
+      setSellerMessageCopyNotice("Copy is unavailable here. Press and hold the message to select it manually.");
+    }
   }
 
   function saveResultToHistory() {
@@ -2989,24 +3008,62 @@ function EvaluateScreenPlaceholder({ onHistory, onProfile }: { onHistory: () => 
 
       {result && (
         <section className="app-native-group">
+          <div className={`app-native-row ${resultSurfaceClass(result.overall.meter)}`}>
+            <div className="flex min-w-0 items-start gap-3">
+              <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border bg-white/80 ${resultIconClass(result.overall.meter)}`} aria-hidden="true">
+                <RecommendationIcon meter={result.overall.meter} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold tracking-[0.04em] opacity-80">Overall recommendation</p>
+                <h2 className="mt-1 break-words text-[1.875rem] font-bold leading-9 tracking-[-0.035em] text-[var(--app-text-strong)]">{result.overall.label}</h2>
+                <p className="mt-2 break-words text-sm leading-6 text-[var(--app-text)]">{result.overall.reasoning}</p>
+              </div>
+            </div>
+          </div>
           <div className="app-native-row">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Recommendation</p>
-            <h2 className="mt-2 break-words text-2xl font-bold text-slate-950">{result.overall.label}</h2>
-            <p className="mt-2 break-words text-sm leading-6 text-slate-700">{result.overall.reasoning}</p>
+            <AppFormGroupTitle title="Fit, deal, and risk" copy="Each status includes the reason behind the recommendation." />
+            <div className="mt-4 grid gap-3">
+              <ResultMeter label="Fit" item={result.dimensions.fit} />
+              <ResultMeter label="Deal/value" item={result.dimensions.price} />
+              <ResultMeter label="Risk" item={result.dimensions.risk} />
+            </div>
+          </div>
+          <div className="app-native-row">
+            <AppFormGroupTitle title="What to do next" copy="Use the recommendation as decision support before arranging pickup." />
+            <ol className="mt-4 grid gap-3">
+              {buildResultNextSteps(result).map((step, index) => (
+                <li key={step} className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--app-brand-050)] text-sm font-bold text-brand" aria-hidden="true">{index + 1}</span>
+                  <p className="pt-1 text-sm leading-5 text-[var(--app-text)]">{step}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="app-native-row bg-[var(--app-surface-subtle)]">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-bold tracking-[0.04em] text-brand">Message the seller</p>
+                <h3 className="mt-1 text-lg font-bold text-[var(--app-text-strong)]">Ask for the details you still need</h3>
+              </div>
+              <button type="button" onClick={copySellerMessage} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-blue-200 bg-white px-3 text-xs font-bold text-brand">
+                Copy
+              </button>
+            </div>
+            <div className="mt-3 rounded-[var(--app-radius-button)] border border-[var(--app-border)] bg-white p-4">
+              <p className="select-text break-words text-sm leading-6 text-[var(--app-text)]">{sellerMessage}</p>
+            </div>
+            {sellerMessageCopyNotice && (
+              <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]" role="status">{sellerMessageCopyNotice}</p>
+            )}
           </div>
           <div className="app-native-row grid gap-3">
-            <ResultMeter label="Fit" item={result.dimensions.fit} />
-            <ResultMeter label="Deal/value" item={result.dimensions.price} />
-            <ResultMeter label="Risk" item={result.dimensions.risk} />
-          </div>
-          <div className="app-native-row bg-slate-50">
-            <p className="text-sm font-bold text-slate-900">Seller message</p>
-            <p className="mt-2 break-words text-sm leading-6 text-slate-700">{sellerMessage}</p>
-          </div>
-          <div className="app-native-row">
-            <button type="button" onClick={saveResultToHistory} className="min-h-12 w-full rounded-[0.9rem] bg-brand px-4 text-sm font-bold text-white">
+            <button type="button" onClick={saveResultToHistory} className="min-h-12 w-full rounded-[var(--app-radius-button)] border border-blue-200 bg-white px-4 text-sm font-bold text-brand">
               Save to History
             </button>
+            <p className="text-center text-xs leading-5 text-[var(--app-text-muted)]">Saves this recommendation and listing snapshot on this device.</p>
+          </div>
+          <div className="app-native-row bg-[var(--app-surface-subtle)]">
+            <p className="text-xs leading-5 text-[var(--app-text-muted)]">{result.disclaimer}</p>
           </div>
         </section>
       )}
@@ -3160,19 +3217,75 @@ function EvaluateProgress({ currentStage }: { currentStage: 1 | 2 | 3 }) {
 }
 
 function ResultMeter({ label, item }: { label: string; item: MeterResult }) {
-  const meterClasses: Record<MeterResult["meter"], string> = {
-    green: "border-emerald-200 bg-emerald-50 text-emerald-900",
-    yellow: "border-amber-200 bg-amber-50 text-amber-900",
-    red: "border-rose-200 bg-rose-50 text-rose-900",
-  };
-
   return (
-    <article className={`rounded-md border p-3 ${meterClasses[item.meter]}`}>
-      <p className="text-xs font-bold uppercase tracking-[0.14em]">{label}</p>
-      <h3 className="mt-1 text-sm font-bold">{item.label}</h3>
-      <p className="mt-1 text-xs leading-5">{item.reasoning}</p>
+    <article className={`rounded-[var(--app-radius-button)] border p-3 ${resultSurfaceClass(item.meter)}`}>
+      <div className="flex min-w-0 items-start gap-3">
+        <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border bg-white/80 ${resultIconClass(item.meter)}`} aria-hidden="true">
+          <RecommendationIcon meter={item.meter} compact />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-bold tracking-[0.04em] opacity-80">{label}</p>
+          <h3 className="mt-1 text-sm font-bold text-[var(--app-text-strong)]">{item.label}</h3>
+          <p className="mt-1 text-xs leading-5 text-[var(--app-text)]">{item.reasoning}</p>
+        </div>
+      </div>
     </article>
   );
+}
+
+function RecommendationIcon({ meter, compact = false }: { meter: MeterResult["meter"]; compact?: boolean }) {
+  const commonProps = {
+    className: compact ? "h-4 w-4" : "h-6 w-6",
+    fill: "none",
+    stroke: "currentColor",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    strokeWidth: 2,
+    viewBox: "0 0 24 24",
+  };
+
+  if (meter === "green") {
+    return <svg {...commonProps}><path d="m5 12.5 4 4L19 7" /></svg>;
+  }
+  if (meter === "red") {
+    return <svg {...commonProps}><path d="m7 7 10 10M17 7 7 17" /></svg>;
+  }
+  return <svg {...commonProps}><path d="M12 7.5v5m0 4h.01" /><circle cx="12" cy="12" r="9" /></svg>;
+}
+
+function resultSurfaceClass(meter: MeterResult["meter"]) {
+  if (meter === "green") return "border-emerald-200 bg-emerald-50";
+  if (meter === "red") return "border-rose-200 bg-rose-50";
+  return "border-amber-200 bg-amber-50";
+}
+
+function resultIconClass(meter: MeterResult["meter"]) {
+  if (meter === "green") return "border-emerald-200 text-emerald-700";
+  if (meter === "red") return "border-rose-200 text-rose-700";
+  return "border-amber-200 text-amber-700";
+}
+
+function buildResultNextSteps(result: AnalysisResult) {
+  const firstQuestion = result.sellerQuestions[0];
+  if (result.overall.meter === "red") {
+    return [
+      "Pause before arranging pickup; the current result points to a meaningful fit, value, or condition concern.",
+      firstQuestion ? `Ask the seller first: ${firstQuestion}` : "Ask the seller to confirm wheel size, brakes, tires, and frame condition.",
+      "Skip the listing if the concern cannot be resolved clearly or safely.",
+    ];
+  }
+  if (result.overall.meter === "green") {
+    return [
+      firstQuestion ? `Confirm one remaining detail: ${firstQuestion}` : "Confirm the wheel size and basic condition with the seller.",
+      "Arrange an in-person fit and condition check before paying.",
+      "Use the prepared message below to contact the seller.",
+    ];
+  }
+  return [
+    firstQuestion ? `Ask before deciding: ${firstQuestion}` : "Ask the seller to fill in the missing fit or condition details.",
+    "Compare the answer with the fit, deal, and risk notes above.",
+    "Only arrange pickup if the open questions are resolved.",
+  ];
 }
 
 function HistoryScreenPlaceholder({ onEvaluate }: { onEvaluate: () => void }) {
