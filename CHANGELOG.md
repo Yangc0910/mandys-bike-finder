@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed App Store History deduplication so distinct listings with different model, location, link, condition, description, or other snapshot details no longer overwrite each other.
+- Added History card model/location context plus automated coverage for distinct-listing saves and exact-repeat deduplication.
+- Added persistent English and Simplified Chinese support across the App Store Profile, Evaluate, History, Settings, Privacy, and offline recovery flows.
+- Localized core analysis results, standard seller messages, dates, wheel sizes, riding experience, validation, and status feedback while preserving existing local data formats.
 - Confirmed production Salesforce Web-to-Lead CRM sync is working end-to-end after consented report-email flow testing (`/api/reports/email`), with safe diagnostics now available via `/api/status` and server-side CRM logs.
 - Added a Salesforce Web-to-Lead auth mode for the optional CRM sync path so Free/Starter-style Salesforce setups can capture opted-in leads without Connected App credentials.
 - Added a lightweight, feature-flagged Salesforce CRM sync layer for explicitly opted-in report-email leads while keeping Resend transactional email separate and non-blocking.

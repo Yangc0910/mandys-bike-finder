@@ -1,10 +1,30 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, FormEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import type { BikeCoachIntent } from "@/lib/assistant";
 import { analyzeBike, generateSellerMessage, localPriceReference, recommendWheelSize } from "@/lib/analysis";
+import {
+  mergeAppStoreSavedEvaluation,
+  type AppStoreEvaluateInputMode,
+  type AppStoreSavedEvaluation,
+  type AppStoreSavedEvaluationDraft,
+  type AppStoreSavedEvaluationWriteResult,
+} from "@/lib/app-store-history";
+import {
+  APP_LOCALE_STORAGE_KEY,
+  appText,
+  formatLocalizedDate,
+  localizeAnalysisResult,
+  localizePreference,
+  localizeRecommendationCopy,
+  localizeRidingExperience,
+  localizeSellerMessage,
+  localizeWheelSize,
+  resolveAppLocale,
+  type AppLocale,
+} from "@/lib/app-store-i18n";
 import {
   getScreenshotFixtureFrame,
   screenshotFixtureHistory,
@@ -63,14 +83,29 @@ const APP_STORE_MVP_MODE = process.env.NEXT_PUBLIC_APP_STORE_MVP_MODE === "true"
 const APP_STORE_SCREENSHOT_FIXTURE_MODE = process.env.NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE === "true";
 const APP_STORE_ACTIVE_CHILD_PROFILE_KEY = "mbf.appStore.activeChildProfile";
 const APP_STORE_SAVED_EVALUATIONS_KEY = "mbf.appStore.savedEvaluations";
-const APP_STORE_MVP_VERSION = "1.1";
+const APP_STORE_MVP_VERSION = "1.2";
 const APP_STORE_MVP_LOCAL_STORAGE_KEYS = [
   APP_STORE_ACTIVE_CHILD_PROFILE_KEY,
   APP_STORE_SAVED_EVALUATIONS_KEY,
 ];
 
 type AppStoreTab = "profile" | "evaluate" | "history" | "settings";
-type AppStoreEvaluateInputMode = "screenshot" | "link" | "manual";
+
+type AppLocaleContextValue = {
+  locale: AppLocale;
+  setLocale: (locale: AppLocale) => void;
+  t: (source: string) => string;
+};
+
+const AppLocaleContext = createContext<AppLocaleContextValue>({
+  locale: "en",
+  setLocale: () => undefined,
+  t: (source) => source,
+});
+
+function useAppLocale() {
+  return useContext(AppLocaleContext);
+}
 
 type AppStoreAiExtractionSummary = {
   provider: string;
@@ -83,25 +118,6 @@ type AppStoreActiveChildProfile = {
   nickname?: string;
   child: ChildProfile;
   savedAt: string;
-};
-
-type AppStoreSavedEvaluation = {
-  id: string;
-  createdAt: string;
-  listing: Listing;
-  analysis: AnalysisResult;
-  sellerMessage: string;
-  childNickname?: string;
-  childSnapshot: ChildProfile;
-  inputMode: AppStoreEvaluateInputMode;
-  screenshotName?: string;
-  savedAt: string;
-  favorite: boolean;
-};
-
-type AppStoreSavedEvaluationWriteResult = {
-  evaluation: AppStoreSavedEvaluation;
-  wasDuplicate: boolean;
 };
 
 type SavedRiderProfile = {
@@ -2157,6 +2173,7 @@ function AppStoreTabShell({
 }) {
   const wasOffline = useRef(isOffline);
   const [showRestoredNotice, setShowRestoredNotice] = useState(false);
+  const [locale, setLocaleState] = useState<AppLocale>("en");
 
   useEffect(() => {
     if (wasOffline.current && !isOffline) {
@@ -2169,47 +2186,71 @@ function AppStoreTabShell({
     wasOffline.current = isOffline;
   }, [isOffline]);
 
+  useEffect(() => {
+    const resolvedLocale = resolveAppLocale(
+      window.localStorage.getItem(APP_LOCALE_STORAGE_KEY),
+      window.navigator.language,
+    );
+    setLocaleState(resolvedLocale);
+    document.documentElement.lang = resolvedLocale === "zh-Hans" ? "zh-CN" : "en";
+  }, []);
+
   function selectTab(tab: AppStoreTab) {
     onSelectTab(tab);
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }
 
+  function setLocale(nextLocale: AppLocale) {
+    window.localStorage.setItem(APP_LOCALE_STORAGE_KEY, nextLocale);
+    document.documentElement.lang = nextLocale === "zh-Hans" ? "zh-CN" : "en";
+    setLocaleState(nextLocale);
+  }
+
+  const localeContext = useMemo<AppLocaleContextValue>(() => ({
+    locale,
+    setLocale,
+    t: (source) => appText(locale, source),
+  }), [locale]);
+  const { t } = localeContext;
+
   return (
-    <div className="app-native-shell">
-      <main className="app-safe-shell px-4 md:px-6">
-        {isOffline && (
-          <div className="app-safe-top sticky z-40 mx-auto mb-4 flex max-w-2xl items-start gap-3 rounded-[var(--app-radius-card)] border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 shadow-[var(--app-shadow-card)]" role="status">
-            <ConnectionStatusIcon />
-            <div className="min-w-0">
-              <p className="text-sm font-bold">You&apos;re offline</p>
-              <p className="mt-0.5 text-xs leading-5">Saved Profile, History, and local guidance remain available. AI screenshot extraction waits for a connection.</p>
+    <AppLocaleContext.Provider value={localeContext}>
+      <div className="app-native-shell">
+        <main className="app-safe-shell px-4 md:px-6">
+          {isOffline && (
+            <div className="app-safe-top sticky z-40 mx-auto mb-4 flex max-w-2xl items-start gap-3 rounded-[var(--app-radius-card)] border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 shadow-[var(--app-shadow-card)]" role="status">
+              <ConnectionStatusIcon />
+              <div className="min-w-0">
+                <p className="text-sm font-bold">{t("You're offline")}</p>
+                <p className="mt-0.5 text-xs leading-5">{t("Saved Profile, History, and local guidance remain available. AI screenshot extraction waits for a connection.")}</p>
+              </div>
             </div>
-          </div>
-        )}
-        {showRestoredNotice && (
-          <div className="app-safe-top sticky z-40 mx-auto mb-4 flex max-w-2xl items-start gap-3 rounded-[var(--app-radius-card)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-950 shadow-[var(--app-shadow-card)]" role="status">
-            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700" aria-hidden="true">✓</span>
-            <div className="min-w-0">
-              <p className="text-sm font-bold">Back online</p>
-              <p className="mt-0.5 text-xs leading-5">AI extraction and other server actions are available again.</p>
-            </div>
-          </div>
-        )}
-        <section className="app-native-content mx-auto grid max-w-2xl gap-5">
-          {activeTab === "profile" && <ProfileScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} onEvaluate={() => selectTab("evaluate")} />}
-          {activeTab === "evaluate" && (
-            <EvaluateScreenPlaceholder
-              screenshotFixtureFrame={screenshotFixtureFrame}
-              onHistory={() => selectTab("history")}
-              onProfile={() => selectTab("profile")}
-            />
           )}
-          {activeTab === "history" && <HistoryScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} onEvaluate={() => selectTab("evaluate")} />}
-          {activeTab === "settings" && <SettingsScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} />}
-        </section>
-      </main>
-      <BottomTabNav activeTab={activeTab} onSelectTab={selectTab} />
-    </div>
+          {showRestoredNotice && (
+            <div className="app-safe-top sticky z-40 mx-auto mb-4 flex max-w-2xl items-start gap-3 rounded-[var(--app-radius-card)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-950 shadow-[var(--app-shadow-card)]" role="status">
+              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700" aria-hidden="true">✓</span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold">{t("Back online")}</p>
+                <p className="mt-0.5 text-xs leading-5">{t("AI extraction and other server actions are available again.")}</p>
+              </div>
+            </div>
+          )}
+          <section className="app-native-content mx-auto grid max-w-2xl gap-5">
+            {activeTab === "profile" && <ProfileScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} onEvaluate={() => selectTab("evaluate")} />}
+            {activeTab === "evaluate" && (
+              <EvaluateScreenPlaceholder
+                screenshotFixtureFrame={screenshotFixtureFrame}
+                onHistory={() => selectTab("history")}
+                onProfile={() => selectTab("profile")}
+              />
+            )}
+            {activeTab === "history" && <HistoryScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} onEvaluate={() => selectTab("evaluate")} />}
+            {activeTab === "settings" && <SettingsScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} />}
+          </section>
+        </main>
+        <BottomTabNav activeTab={activeTab} onSelectTab={selectTab} />
+      </div>
+    </AppLocaleContext.Provider>
   );
 }
 
@@ -2240,6 +2281,7 @@ function ProfileScreenPlaceholder({
   screenshotFixtureFrame: ScreenshotFixtureFrame | null;
   onEvaluate: () => void;
 }) {
+  const { locale, t } = useAppLocale();
   const [savedProfile, setSavedProfile] = useState<AppStoreActiveChildProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [nickname, setNickname] = useState("");
@@ -2286,7 +2328,9 @@ function ProfileScreenPlaceholder({
     };
   }, [age, colorPreferences, experience, heightCmInput, heightFeet, heightInches, heightUnit, stylePreference, weightInput, weightUnit]);
 
-  const activeRecommendation = savedProfile ? buildChildBikeRecommendation(savedProfile.child) : null;
+  const activeRecommendation = savedProfile
+    ? localizeRecommendationCopy(locale, buildChildBikeRecommendation(savedProfile.child))
+    : null;
 
   function hydrateAppStoreProfileForm(profile: AppStoreActiveChildProfile) {
     const childProfile = profile.child;
@@ -2321,11 +2365,11 @@ function ProfileScreenPlaceholder({
   function validateAppStoreProfile() {
     const height = Number(normalizedChild.heightCm);
     const parsedAge = Number(age);
-    if (!height) return "Enter height to estimate bike size.";
-    if (height < 80 || height > 190) return "Check height. Use a child-height value.";
-    if (!age) return "Enter age to improve the fit recommendation.";
-    if (!Number.isFinite(parsedAge) || parsedAge < 2 || parsedAge > 18) return "Check age. Use a value from 2 to 18.";
-    if (!experience) return "Choose riding experience.";
+    if (!height) return t("Enter height to estimate bike size.");
+    if (height < 80 || height > 190) return t("Check height. Use a child-height value.");
+    if (!age) return t("Enter age to improve the fit recommendation.");
+    if (!Number.isFinite(parsedAge) || parsedAge < 2 || parsedAge > 18) return t("Check age. Use a value from 2 to 18.");
+    if (!experience) return t("Choose riding experience.");
     return "";
   }
 
@@ -2384,27 +2428,27 @@ function ProfileScreenPlaceholder({
   return (
     <>
       <AppScreenHeader
-        eyebrow="Mandy's Bike Finder"
-        title="Profile"
-        copy="Build a reusable rider profile for clearer fit guidance on every bike check."
+        eyebrow={t("Mandy's Bike Finder")}
+        title={t("Profile")}
+        copy={t("Build a reusable rider profile for clearer fit guidance on every bike check.")}
       />
       {!savedProfile && !isEditing && (
         <section className="app-native-group">
           <div className="app-native-row bg-[linear-gradient(145deg,var(--app-brand-050),#ffffff_72%)]">
             <span className="inline-flex min-h-8 items-center rounded-full border border-blue-200 bg-white px-3 text-xs font-bold text-brand">
-              Your fit starting point
+              {t("Your fit starting point")}
             </span>
-            <h2 className="mt-4 text-[1.375rem] font-bold leading-7 text-[var(--app-text-strong)]">Find a bike size that feels manageable now</h2>
+            <h2 className="mt-4 text-[1.375rem] font-bold leading-7 text-[var(--app-text-strong)]">{t("Find a bike size that feels manageable now")}</h2>
             <p className="mt-2 text-[15px] leading-6 text-[var(--app-text)]">
-              Height, age, and riding confidence help Mandy suggest a practical wheel size before you evaluate a listing.
+              {t("Height, age, and riding confidence help Mandy suggest a practical wheel size before you evaluate a listing.")}
             </p>
             <div className="mt-5 grid gap-3">
-              <ProfileBenefitRow number="1" title="Add three rider basics" copy="Height, age, and riding experience are required." />
-              <ProfileBenefitRow number="2" title="See a fit-first recommendation" copy="Get a starting wheel size, bike type, and growth caution." />
-              <ProfileBenefitRow number="3" title="Reuse it for every check" copy="The profile stays on this device. No account or cloud sync." />
+              <ProfileBenefitRow number="1" title={t("Add three rider basics")} copy={t("Height, age, and riding experience are required.")} />
+              <ProfileBenefitRow number="2" title={t("See a fit-first recommendation")} copy={t("Get a starting wheel size, bike type, and growth caution.")} />
+              <ProfileBenefitRow number="3" title={t("Reuse it for every check")} copy={t("The profile stays on this device. No account or cloud sync.")} />
             </div>
             <button type="button" onClick={() => setIsEditing(true)} className="app-native-primary mt-6 w-full px-4 text-sm">
-              Set up rider profile
+              {t("Set up rider profile")}
             </button>
           </div>
         </section>
@@ -2414,51 +2458,55 @@ function ProfileScreenPlaceholder({
           <div className="app-native-row">
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-bold tracking-[0.04em] text-brand">Saved on this device</p>
-                <h2 className="mt-1 break-words text-[1.375rem] font-bold leading-7 text-[var(--app-text-strong)]">{savedProfile.nickname || "Your child"}</h2>
+                <p className="text-xs font-bold tracking-[0.04em] text-brand">{t("Saved on this device")}</p>
+                <h2 className="mt-1 break-words text-[1.375rem] font-bold leading-7 text-[var(--app-text-strong)]">{savedProfile.nickname || t("Your child")}</h2>
                 <p className="mt-1 break-words text-sm leading-5 text-[var(--app-text-muted)]">
-                  Age {savedProfile.child.age || "not set"} · {savedProfile.child.heightCm || "unknown"} cm · {formatRidingExperience(savedProfile.child.experience)}
+                  {locale === "zh-Hans"
+                    ? `${savedProfile.child.age || "未填写"} 岁 · ${savedProfile.child.heightCm || "未知"} 厘米 · ${localizeRidingExperience(locale, savedProfile.child.experience)}`
+                    : `Age ${savedProfile.child.age || "not set"} · ${savedProfile.child.heightCm || "unknown"} cm · ${localizeRidingExperience(locale, savedProfile.child.experience)}`}
                 </p>
               </div>
               <button type="button" onClick={editProfile} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-[var(--app-border)] bg-white px-4 text-sm font-bold text-[var(--app-text)]">
-                Edit
+                {t("Edit")}
               </button>
             </div>
           </div>
           <div className="app-native-row bg-[var(--app-brand-050)]">
-            <p className="text-xs font-bold tracking-[0.04em] text-brand">Best size to start with</p>
+            <p className="text-xs font-bold tracking-[0.04em] text-brand">{t("Best size to start with")}</p>
             <div className="mt-2 flex min-w-0 items-end justify-between gap-4">
               <p className="break-words text-[2.25rem] font-bold leading-10 tracking-[-0.04em] text-[var(--app-text-strong)]">{activeRecommendation.wheelSize}</p>
-              <span className="mb-1 shrink-0 rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-brand">Fit first</span>
+              <span className="mb-1 shrink-0 rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-brand">{t("Fit first")}</span>
             </div>
             <p className="mt-2 text-sm leading-5 text-[var(--app-text)]">{activeRecommendation.category}</p>
           </div>
           <div className="app-native-row grid gap-4">
-            <ProfileGuidanceBlock label="Why this size" copy={activeRecommendation.explanation} />
-            <ProfileGuidanceBlock label="Growth caution" copy={activeRecommendation.growthOption || "No larger growth option is recommended now."} tone="caution" />
-            <ProfileGuidanceBlock label="Style guidance" copy={activeRecommendation.styleRecommendation || "Prioritize fit and manageable controls first."} />
+            <ProfileGuidanceBlock label={t("Why this size")} copy={activeRecommendation.explanation} />
+            <ProfileGuidanceBlock label={t("Growth caution")} copy={activeRecommendation.growthOption || t("No larger growth option is recommended now.")} tone="caution" />
+            <ProfileGuidanceBlock label={t("Style guidance")} copy={activeRecommendation.styleRecommendation || t("Prioritize fit and manageable controls first.")} />
             <button type="button" onClick={onEvaluate} className="app-native-primary w-full px-4 text-sm">
-              Evaluate a bike for {savedProfile.nickname?.trim() || "this rider"}
+              {locale === "zh-Hans"
+                ? `为 ${savedProfile.nickname?.trim() || "这位骑手"} 评估自行车`
+                : `Evaluate a bike for ${savedProfile.nickname?.trim() || "this rider"}`}
             </button>
             <p className="text-xs leading-[1.125rem] text-[var(--app-text-muted)]">
-              This is a starting point, not a safety guarantee. Confirm standover height, brakes, tires, frame condition, and test-ride comfort before buying.
+              {t("This is a starting point, not a safety guarantee. Confirm standover height, brakes, tires, frame condition, and test-ride comfort before buying.")}
             </p>
           </div>
           <div className="app-native-row bg-[var(--app-surface-subtle)]">
             {!isConfirmingClear ? (
               <button type="button" onClick={() => setIsConfirmingClear(true)} className="min-h-11 rounded-[var(--app-radius-button)] px-2 text-sm font-bold text-red-700">
-                Remove rider profile
+                {t("Remove rider profile")}
               </button>
             ) : (
               <div className="rounded-[var(--app-radius-button)] border border-red-200 bg-red-50 p-3">
-                <p className="text-sm font-bold text-red-900">Remove this profile from this device?</p>
-                <p className="mt-1 text-xs leading-5 text-red-800">Saved History will stay available.</p>
+                <p className="text-sm font-bold text-red-900">{t("Remove this profile from this device?")}</p>
+                <p className="mt-1 text-xs leading-5 text-red-800">{t("Saved History will stay available.")}</p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button type="button" onClick={clearProfile} className="min-h-11 rounded-[var(--app-radius-button)] bg-red-700 px-3 text-sm font-bold text-white">
-                    Remove
+                    {t("Remove")}
                   </button>
                   <button type="button" onClick={() => setIsConfirmingClear(false)} className="min-h-11 rounded-[var(--app-radius-button)] border border-red-200 bg-white px-3 text-sm font-bold text-red-700">
-                    Keep profile
+                    {t("Keep profile")}
                   </button>
                 </div>
               </div>
@@ -2470,9 +2518,9 @@ function ProfileScreenPlaceholder({
         <section className="app-native-group">
           <div className="app-native-row flex min-w-0 items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-bold tracking-[0.04em] text-brand">{savedProfile ? "Update profile" : "Three required details"}</p>
-              <h2 className="mt-1 break-words text-xl font-bold text-[var(--app-text-strong)]">{savedProfile ? "Edit rider profile" : "Set up your rider"}</h2>
-              <p className="mt-1 text-sm leading-5 text-[var(--app-text-muted)]">Saved locally on this device. No account needed.</p>
+              <p className="text-xs font-bold tracking-[0.04em] text-brand">{t(savedProfile ? "Update profile" : "Three required details")}</p>
+              <h2 className="mt-1 break-words text-xl font-bold text-[var(--app-text-strong)]">{t(savedProfile ? "Edit rider profile" : "Set up your rider")}</h2>
+              <p className="mt-1 text-sm leading-5 text-[var(--app-text-muted)]">{t("Saved locally on this device. No account needed.")}</p>
             </div>
             {savedProfile && (
               <button
@@ -2480,67 +2528,68 @@ function ProfileScreenPlaceholder({
                 onClick={cancelEdit}
                 className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-[var(--app-border)] bg-white px-3 text-sm font-bold text-[var(--app-text)]"
               >
-                Cancel
+                {t("Cancel")}
               </button>
             )}
           </div>
           <div className="app-native-row grid gap-4">
-            <AppFormGroupTitle title="Rider basics" copy="Height, age, and riding experience shape the fit recommendation." />
-            <Field label="Height" required>
+            <AppFormGroupTitle title={t("Rider basics")} copy={t("Height, age, and riding experience shape the fit recommendation.")} />
+            <Field label={t("Height")} required>
               <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={heightUnit} onChange={(event) => setHeightUnit(event.target.value as "cm" | "ft-in")}>
                   <option value="cm">cm</option>
                   <option value="ft-in">ft-in</option>
                 </select>
                 {heightUnit === "cm" ? (
-                  <input className={inputClass} type="number" min="80" max="190" placeholder="Height value" value={heightCmInput} onChange={(event) => setHeightCmInput(event.target.value)} />
+                  <input className={inputClass} type="number" min="80" max="190" placeholder={t("Height value")} value={heightCmInput} onChange={(event) => setHeightCmInput(event.target.value)} />
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
-                    <input className={inputClass} type="number" min="2" max="6" placeholder="feet" value={heightFeet} onChange={(event) => setHeightFeet(event.target.value)} />
-                    <input className={inputClass} type="number" min="0" max="11" placeholder="inches" value={heightInches} onChange={(event) => setHeightInches(event.target.value)} />
+                    <input className={inputClass} type="number" min="2" max="6" placeholder={t("feet")} value={heightFeet} onChange={(event) => setHeightFeet(event.target.value)} />
+                    <input className={inputClass} type="number" min="0" max="11" placeholder={t("inches")} value={heightInches} onChange={(event) => setHeightInches(event.target.value)} />
                   </div>
                 )}
               </div>
             </Field>
-            <Field label="Age" required>
-              <input className={inputClass} type="number" min="2" max="18" placeholder="Age" value={age} onChange={(event) => setAge(event.target.value)} />
+            <Field label={t("Age")} required>
+              <input className={inputClass} type="number" min="2" max="18" placeholder={t("Age")} value={age} onChange={(event) => setAge(event.target.value)} />
             </Field>
-            <Field label="Riding experience" required>
+            <Field label={t("Riding experience")} required>
               <select className={inputClass} value={experience} onChange={(event) => setExperience(event.target.value as ChildProfile["experience"])}>
-                <option value="beginner">Beginner</option>
-                <option value="comfortable">Comfortable</option>
-                <option value="confident">Confident</option>
-                <option value="advanced">Advanced</option>
+                <option value="beginner">{t("Beginner")}</option>
+                <option value="comfortable">{t("Comfortable")}</option>
+                <option value="confident">{t("Confident")}</option>
+                <option value="advanced">{t("Advanced")}</option>
               </select>
             </Field>
           </div>
           <div className="app-native-row grid gap-4">
-            <AppFormGroupTitle title="Optional personalization" copy="These details can refine presentation but never block fit guidance." />
-            <Field label="Child name / nickname" optional>
-              <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Optional nickname" />
+            <AppFormGroupTitle title={t("Optional personalization")} copy={t("These details can refine presentation but never block fit guidance.")} />
+            <Field label={t("Child name / nickname")} optional>
+              <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder={t("Optional nickname")} />
             </Field>
-            <Field label="Weight" optional>
+            <Field label={t("Weight")} optional>
               <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={weightUnit} onChange={(event) => setWeightUnit(event.target.value as "lb" | "kg")}>
                   <option value="lb">lb</option>
                   <option value="kg">kg</option>
                 </select>
-                <input className={inputClass} type="number" placeholder="Weight value" value={weightInput} onChange={(event) => setWeightInput(event.target.value)} />
+                <input className={inputClass} type="number" placeholder={t("Weight value")} value={weightInput} onChange={(event) => setWeightInput(event.target.value)} />
               </div>
             </Field>
-            <Field label="Style preference" optional>
+            <Field label={t("Style preference")} optional>
               <select className={inputClass} value={stylePreference} onChange={(event) => setStylePreference(event.target.value)}>
-                <option value="all good / no preference">All good / no preference</option>
-                <option value="boy-style">Boy-style</option>
-                <option value="girl-style">Girl-style</option>
+                <option value="all good / no preference">{t("All good / no preference")}</option>
+                <option value="boy-style">{t("Boy-style")}</option>
+                <option value="girl-style">{t("Girl-style")}</option>
               </select>
             </Field>
-            <Field label="Color preference" optional>
+            <Field label={t("Color preference")} optional>
               <div className="grid gap-2 rounded-md border border-slate-300 bg-slate-50 p-3 sm:grid-cols-2">
                 {colorPreferenceOptions.map((option) => (
                   <ColorPreferenceChip
                     key={option}
                     option={option}
+                    displayOption={localizePreference(locale, option)}
                     selected={colorPreferences.includes(option)}
                     onClick={() => toggleAppStoreColorPreference(option)}
                   />
@@ -2555,14 +2604,14 @@ function ProfileScreenPlaceholder({
           )}
           <div className="app-native-row grid gap-2 sm:grid-cols-2">
             <button type="button" onClick={saveProfile} className="app-native-primary px-4 text-sm">
-              {savedProfile ? "Update profile" : "Save profile"}
+              {t(savedProfile ? "Update profile" : "Save profile")}
             </button>
             {savedProfile ? (
               <button type="button" onClick={cancelEdit} className="min-h-11 rounded-[var(--app-radius-button)] border border-[var(--app-border-strong)] bg-white px-4 text-sm font-bold text-[var(--app-text)]">
-                Cancel
+                {t("Cancel")}
               </button>
             ) : (
-              <p className="px-1 text-center text-xs leading-5 text-[var(--app-text-muted)] sm:col-span-2">Save the profile first, then continue to Evaluate.</p>
+              <p className="px-1 text-center text-xs leading-5 text-[var(--app-text-muted)] sm:col-span-2">{t("Save the profile first, then continue to Evaluate.")}</p>
             )}
           </div>
         </section>
@@ -2613,6 +2662,7 @@ function EvaluateScreenPlaceholder({
   onHistory: () => void;
   onProfile: () => void;
 }) {
+  const { locale, t } = useAppLocale();
   const [activeProfile, setActiveProfile] = useState<AppStoreActiveChildProfile | null>(null);
   const [inputMode, setInputMode] = useState<AppStoreEvaluateInputMode>("screenshot");
   const [draftListing, setDraftListing] = useState<Listing>(defaultListing);
@@ -2621,7 +2671,7 @@ function EvaluateScreenPlaceholder({
   const [screenshotName, setScreenshotName] = useState("");
   const [screenshotPreviewUrl, setScreenshotPreviewUrl] = useState("");
   const [isExtractingScreenshot, setIsExtractingScreenshot] = useState(false);
-  const [notice, setNotice] = useState("Local analysis is ready. AI screenshot extraction only starts after you tap the AI button.");
+  const [notice, setNotice] = useState(() => t("Local analysis is ready. AI screenshot extraction only starts after you tap the AI button."));
   const [aiExtractionSummary, setAiExtractionSummary] = useState<AppStoreAiExtractionSummary | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [sellerMessage, setSellerMessage] = useState("");
@@ -2638,18 +2688,22 @@ function EvaluateScreenPlaceholder({
   );
   const canAnalyze = hasProfile && hasListingDetails;
   const evaluateStage = result ? 3 : hasListingDetails ? 2 : 1;
+  const displayResult = result ? localizeAnalysisResult(locale, result) : null;
+  const displaySellerMessage = result && locale === "zh-Hans"
+    ? localizeSellerMessage(locale, draftListing)
+    : sellerMessage;
   const inputModeGuidance: Record<AppStoreEvaluateInputMode, { title: string; copy: string }> = {
     screenshot: {
-      title: "Best when the listing is easiest to capture",
-      copy: "Choose an image for local preview. AI reads it only after you explicitly request extraction.",
+      title: t("Best when the listing is easiest to capture"),
+      copy: t("Choose an image for local preview. AI reads it only after you explicitly request extraction."),
     },
     link: {
-      title: "Best when you can copy the listing text",
-      copy: "Keep the URL as a reference and paste readable details. Marketplace pages are not scraped automatically.",
+      title: t("Best when you can copy the listing text"),
+      copy: t("Keep the URL as a reference and paste readable details. Marketplace pages are not scraped automatically."),
     },
     manual: {
-      title: "Best when you already know the key details",
-      copy: "Enter the price, wheel size, and condition yourself. No AI is needed.",
+      title: t("Best when you already know the key details"),
+      copy: t("Enter the price, wheel size, and condition yourself. No AI is needed."),
     },
   };
 
@@ -2661,10 +2715,10 @@ function EvaluateScreenPlaceholder({
       setScreenshotName("trek-kids-bike-sample.png");
       setScreenshotPreviewUrl("/images/trek-kids-bike-sample.png");
       setScreenshotFile(new File(["fictional screenshot fixture"], "trek-kids-bike-sample.png", { type: "image/png" }));
-      setNotice("Screenshot fixture loaded for App Store capture. No AI or server processing started.");
+      setNotice(t("Screenshot fixture loaded for App Store capture. No AI or server processing started."));
       if (screenshotFixtureFrame === "4") {
         setResult(screenshotFixturePrimaryAnalysis);
-        setSellerMessage(generateSellerMessage("askQuestions", "friendly", screenshotFixturePrimaryListing, {}));
+        setSellerMessage(localizeSellerMessage(locale, screenshotFixturePrimaryListing));
       } else {
         setResult(null);
         setSellerMessage("");
@@ -2672,7 +2726,7 @@ function EvaluateScreenPlaceholder({
       return;
     }
     setActiveProfile(loadAppStoreActiveChildProfile());
-  }, [screenshotFixtureFrame]);
+  }, [locale, screenshotFixtureFrame, t]);
 
   useEffect(() => {
     return () => {
@@ -2697,35 +2751,35 @@ function EvaluateScreenPlaceholder({
       setScreenshotName("");
       setScreenshotPreviewUrl("");
       setAiExtractionSummary(null);
-      setNotice("Screenshot removed. You can still paste text or enter details manually.");
+      setNotice(t("Screenshot removed. You can still paste text or enter details manually."));
       return;
     }
     setScreenshotFile(file);
     setScreenshotName(file.name);
     setScreenshotPreviewUrl(URL.createObjectURL(file));
     setAiExtractionSummary(null);
-    setNotice("Screenshot attached for local preview only. No AI or server processing started.");
+    setNotice(t("Screenshot attached for local preview only. No AI or server processing started."));
   }
 
   async function extractScreenshotWithAI() {
     if (!screenshotFile) {
       setAiExtractionSummary(null);
-      setNotice("Choose a screenshot first, then tap AI extraction.");
+      setNotice(t("Choose a screenshot first, then tap AI extraction."));
       return;
     }
     if (screenshotFile.size > 5 * 1024 * 1024) {
       setAiExtractionSummary(null);
-      setNotice("Screenshot file is too large. Please upload an image under 5 MB.");
+      setNotice(t("Screenshot file is too large. Please upload an image under 5 MB."));
       return;
     }
     if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(screenshotFile.type)) {
       setAiExtractionSummary(null);
-      setNotice("AI extraction supports jpg, jpeg, png, and webp screenshots. You can still enter details manually.");
+      setNotice(t("AI extraction supports jpg, jpeg, png, and webp screenshots. You can still enter details manually."));
       return;
     }
 
     setIsExtractingScreenshot(true);
-    setNotice("Sending this screenshot to the server-side AI extraction service. Review the fields after it returns.");
+    setNotice(t("Sending this screenshot to the server-side AI extraction service. Review the fields after it returns."));
     try {
       const prepared = await prepareScreenshotForExtraction(screenshotFile);
       const response = await apiPost("/api/extract", {
@@ -2758,7 +2812,7 @@ function EvaluateScreenPlaceholder({
       }
     } catch {
       setAiExtractionSummary(null);
-      setNotice("AI extraction failed. Manual entry and local analysis are still available.");
+      setNotice(t("AI extraction failed. Manual entry and local analysis are still available."));
     } finally {
       setIsExtractingScreenshot(false);
     }
@@ -2767,7 +2821,7 @@ function EvaluateScreenPlaceholder({
   function applyPastedTextLocally() {
     const text = pastedListingText.trim();
     if (!text) {
-      setNotice("Paste listing text first, then apply it to the editable review fields.");
+      setNotice(t("Paste listing text first, then apply it to the editable review fields."));
       return;
     }
     const extracted = localExtract(text);
@@ -2780,12 +2834,12 @@ function EvaluateScreenPlaceholder({
     setSellerMessage("");
     setSellerMessageCopyNotice("");
     setAiExtractionSummary(null);
-    setNotice("Listing text was parsed locally on this device. Review the fields before analyzing.");
+    setNotice(t("Listing text was parsed locally on this device. Review the fields before analyzing."));
   }
 
   function analyzeListingLocally() {
     if (!activeProfile) {
-      setNotice("Save a child profile first so Mandy can check bike fit.");
+      setNotice(t("Save a child profile first so Mandy can check bike fit."));
       return;
     }
 
@@ -2801,69 +2855,69 @@ function EvaluateScreenPlaceholder({
     };
 
     if (!hasListingDetails) {
-      setNotice("Add a screenshot, pasted text, or a few manual listing details before analyzing.");
+      setNotice(t("Add a screenshot, pasted text, or a few manual listing details before analyzing."));
       return;
     }
 
     const localResult = analyzeBike(activeProfile.child, listingForAnalysis, localPriceReference(listingForAnalysis));
     setDraftListing(listingForAnalysis);
     setResult(localResult);
-    setSellerMessage(generateSellerMessage("askQuestions", "friendly", listingForAnalysis, {}));
+    setSellerMessage(localizeSellerMessage(locale, listingForAnalysis));
     setSellerMessageCopyNotice("");
-    setNotice("Local analysis complete. No screenshot, listing text, or child profile was sent to an AI service for this result.");
+    setNotice(t("Local analysis complete. No screenshot, listing text, or child profile was sent to an AI service for this result."));
   }
 
   async function copySellerMessage() {
-    if (!sellerMessage) {
-      setSellerMessageCopyNotice("Generate a result before copying a seller message.");
+    if (!displaySellerMessage) {
+      setSellerMessageCopyNotice(t("Generate a result before copying a seller message."));
       return;
     }
     try {
-      await navigator.clipboard.writeText(sellerMessage);
-      setSellerMessageCopyNotice("Seller message copied.");
+      await navigator.clipboard.writeText(displaySellerMessage);
+      setSellerMessageCopyNotice(t("Seller message copied."));
     } catch {
-      setSellerMessageCopyNotice("Copy is unavailable here. Press and hold the message to select it manually.");
+      setSellerMessageCopyNotice(t("Copy is unavailable here. Press and hold the message to select it manually."));
     }
   }
 
   function saveResultToHistory() {
     if (!activeProfile || !result) {
-      setNotice("Run an analysis before saving to History.");
+      setNotice(t("Run an analysis before saving to History."));
       return;
     }
 
     const saved = addAppStoreSavedEvaluation({
       listing: draftListing,
       analysis: result,
-      sellerMessage,
+      sellerMessage: displaySellerMessage,
       childNickname: activeProfile.nickname,
       childSnapshot: activeProfile.child,
       inputMode,
       screenshotName,
     });
-    setNotice(saved.wasDuplicate ? "This result is already in History, so the existing saved item was moved to the top." : "Saved to History on this device.");
+    setNotice(t(saved.wasDuplicate ? "This result is already in History, so the existing saved item was moved to the top." : "Saved to History on this device."));
     onHistory();
   }
 
   return (
     <>
       <AppScreenHeader
-        eyebrow="One listing at a time"
-        title="Evaluate"
-        copy="Add a used-bike listing, confirm the details, then get local fit, value, and risk guidance."
+        eyebrow={t("One listing at a time")}
+        title={t("Evaluate")}
+        copy={t("Add a used-bike listing, confirm the details, then get local fit, value, and risk guidance.")}
       />
 
       <EvaluateProgress currentStage={evaluateStage} />
 
       {!hasProfile && (
         <section className="rounded-[var(--app-radius-card)] border border-amber-200 bg-amber-50 p-5 shadow-[var(--app-shadow-card)]">
-          <p className="text-xs font-bold tracking-[0.04em] text-amber-800">Profile needed for fit</p>
-          <h2 className="mt-1 text-xl font-bold text-[var(--app-text-strong)]">Save a rider profile first</h2>
+          <p className="text-xs font-bold tracking-[0.04em] text-amber-800">{t("Profile needed for fit")}</p>
+          <h2 className="mt-1 text-xl font-bold text-[var(--app-text-strong)]">{t("Save a rider profile first")}</h2>
           <p className="mt-2 text-sm leading-6 text-amber-900">
-            Height, age, and riding experience power the fit recommendation. Listing details you add here will stay available while you switch tabs.
+            {t("Height, age, and riding experience power the fit recommendation. Listing details you add here will stay available while you switch tabs.")}
           </p>
           <button type="button" onClick={onProfile} className="app-native-primary mt-5 w-full px-4 text-sm">
-            Set up rider profile
+            {t("Set up rider profile")}
           </button>
         </section>
       )}
@@ -2871,45 +2925,49 @@ function EvaluateScreenPlaceholder({
       {activeProfile && (
         <section className="flex min-w-0 items-center justify-between gap-3 rounded-[var(--app-radius-card)] border border-blue-100 bg-[var(--app-brand-050)] px-4 py-3">
           <div className="min-w-0">
-            <p className="text-xs font-bold tracking-[0.04em] text-brand">Rider confirmed</p>
+            <p className="text-xs font-bold tracking-[0.04em] text-brand">{t("Rider confirmed")}</p>
             <p className="mt-1 text-sm font-bold text-[var(--app-text-strong)]">
-              Checking for {activeProfile.nickname?.trim() || "your child"}
+              {locale === "zh-Hans"
+                ? `正在为 ${activeProfile.nickname?.trim() || "孩子"} 评估`
+                : `Checking for ${activeProfile.nickname?.trim() || "your child"}`}
             </p>
             <p className="mt-0.5 break-words text-xs font-semibold text-[var(--app-text-muted)]">
-              {activeProfile.child.heightCm || "Unknown"} cm · {formatRidingExperience(activeProfile.child.experience)}
+              {locale === "zh-Hans"
+                ? `${activeProfile.child.heightCm || "未知"} 厘米 · ${localizeRidingExperience(locale, activeProfile.child.experience)}`
+                : `${activeProfile.child.heightCm || "Unknown"} cm · ${localizeRidingExperience(locale, activeProfile.child.experience)}`}
             </p>
           </div>
           <button type="button" onClick={onProfile} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-blue-100 bg-white px-3 text-xs font-bold text-brand">
-            Edit
+            {t("Edit")}
           </button>
         </section>
       )}
 
       <section className="app-native-group">
         <div className="app-native-row">
-          <AppSectionHeading eyebrow="Step 1" title="Choose how to add the listing" copy="Start with the information you already have. You can edit every field before analysis." />
+          <AppSectionHeading eyebrow={locale === "zh-Hans" ? "第 1 步" : "Step 1"} title={t("Choose how to add the listing")} copy={t("Start with the information you already have. You can edit every field before analysis.")} />
         </div>
         <div className="app-native-row">
-          <div className="grid grid-cols-3 gap-1 rounded-[var(--app-radius-card)] border border-[var(--app-border)] bg-[var(--app-surface-subtle)] p-1.5" aria-label="Listing input method">
+          <div className="grid grid-cols-3 gap-1 rounded-[var(--app-radius-card)] border border-[var(--app-border)] bg-[var(--app-surface-subtle)] p-1.5" aria-label={t("Listing input method")}>
             <AppStoreInputMethodButton
               active={inputMode === "screenshot"}
               mode="screenshot"
-              title="Screenshot"
-              copy="Attach an image for local preview, then tap AI extraction if you want Mandy to read visible listing details."
+              title={t("Screenshot")}
+              copy={t("Attach an image for local preview, then tap AI extraction if you want Mandy to read visible listing details.")}
               onClick={() => setInputMode("screenshot")}
             />
             <AppStoreInputMethodButton
               active={inputMode === "link"}
               mode="link"
-              title="Text / link"
-              copy="Save the link as a reference and paste readable listing text. No marketplace page is scraped automatically."
+              title={t("Text / link")}
+              copy={t("Save the link as a reference and paste readable listing text. No marketplace page is scraped automatically.")}
               onClick={() => setInputMode("link")}
             />
             <AppStoreInputMethodButton
               active={inputMode === "manual"}
               mode="manual"
-              title="Manual"
-              copy="Enter details yourself and use local guidance. No AI is required."
+              title={t("Manual")}
+              copy={t("Enter details yourself and use local guidance. No AI is required.")}
               onClick={() => setInputMode("manual")}
             />
           </div>
@@ -2922,9 +2980,9 @@ function EvaluateScreenPlaceholder({
 
       <section id="app-store-fixture-listing" className="app-native-group scroll-mt-4">
         <div className="app-native-row">
-          <AppSectionHeading eyebrow="Add listing" title={
-            inputMode === "screenshot" ? "Choose a listing screenshot" : inputMode === "link" ? "Add listing text or a reference link" : "Enter the listing details yourself"
-          } copy="Nothing is analyzed or sent to AI just by adding information." />
+          <AppSectionHeading eyebrow={t("Add listing")} title={t(
+            inputMode === "screenshot" ? "Choose a listing screenshot" : inputMode === "link" ? "Add listing text or a reference link" : "Enter the listing details yourself",
+          )} copy={t("Nothing is analyzed or sent to AI just by adding information.")} />
         </div>
         {inputMode === "screenshot" && (
           <div className="app-native-row grid gap-4">
@@ -2932,8 +2990,8 @@ function EvaluateScreenPlaceholder({
               <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-brand shadow-sm" aria-hidden="true">
                 <UploadIcon />
               </span>
-              <span className="mt-3 max-w-full break-words text-sm font-bold text-[var(--app-text-strong)]">{screenshotName ? "Replace listing screenshot" : "Choose listing screenshot"}</span>
-              <span className="mt-1 text-xs font-semibold text-[var(--app-text-muted)]">JPG, PNG, or WEBP · Maximum 5 MB</span>
+              <span className="mt-3 max-w-full break-words text-sm font-bold text-[var(--app-text-strong)]">{t(screenshotName ? "Replace listing screenshot" : "Choose listing screenshot")}</span>
+              <span className="mt-1 text-xs font-semibold text-[var(--app-text-muted)]">{t("JPG, PNG, or WEBP · Maximum 5 MB")}</span>
               <input
                 className="sr-only"
                 type="file"
@@ -2945,20 +3003,20 @@ function EvaluateScreenPlaceholder({
               <div className="grid gap-3">
                 <div className="overflow-hidden rounded-[var(--app-radius-card)] border border-[var(--app-border)] bg-slate-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={screenshotPreviewUrl} alt="Uploaded listing screenshot preview" className="max-h-72 w-full object-contain" />
+                  <img src={screenshotPreviewUrl} alt={locale === "zh-Hans" ? "已上传商品截图预览" : "Uploaded listing screenshot preview"} className="max-h-72 w-full object-contain" />
                 </div>
                 <div className="flex min-w-0 items-center justify-between gap-3">
                   <p className="min-w-0 truncate text-xs font-semibold text-[var(--app-text-muted)]">{screenshotName}</p>
                   <button type="button" onClick={() => handleScreenshotUpload(null)} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] px-3 text-xs font-bold text-red-700">
-                    Remove
+                    {t("Remove")}
                   </button>
                 </div>
               </div>
             )}
             <div className="rounded-[var(--app-radius-button)] border border-blue-100 bg-[var(--app-brand-050)] p-3">
-              <p className="text-xs font-bold text-brand">Optional AI extraction</p>
+              <p className="text-xs font-bold text-brand">{t("Optional AI extraction")}</p>
               <p className="mt-1 text-xs leading-5 text-[var(--app-text)]">
-                The image stays in local preview until you tap the extraction button. Then the selected screenshot is sent to the server-side AI service and returned as editable fields.
+                {t("The image stays in local preview until you tap the extraction button. Then the selected screenshot is sent to the server-side AI service and returned as editable fields.")}
               </p>
             </div>
             <button
@@ -2971,15 +3029,15 @@ function EvaluateScreenPlaceholder({
                   : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
               }`}
             >
-              {isExtractingScreenshot ? "Extracting details..." : "Extract details with AI"}
+              {t(isExtractingScreenshot ? "Extracting details..." : "Extract details with AI")}
             </button>
-            {!screenshotFile && <p className="text-xs font-semibold leading-5 text-[var(--app-text-muted)]">Choose a screenshot to enable optional AI extraction.</p>}
+            {!screenshotFile && <p className="text-xs font-semibold leading-5 text-[var(--app-text-muted)]">{t("Choose a screenshot to enable optional AI extraction.")}</p>}
           </div>
         )}
 
         {inputMode === "link" && (
           <div className="app-native-row grid gap-4">
-            <Field label="Listing link" optional>
+            <Field label={t("Listing link")} optional>
               <input
                 className={inputClass}
                 type="url"
@@ -2994,12 +3052,12 @@ function EvaluateScreenPlaceholder({
               />
             </Field>
             <p className="rounded-[var(--app-radius-button)] border border-slate-200 bg-[var(--app-surface-subtle)] p-3 text-xs leading-5 text-[var(--app-text)]">
-              The link is saved only as reference information. Paste the visible listing text below because marketplace pages may be private, login-gated, or unreadable.
+              {t("The link is saved only as reference information. Paste the visible listing text below because marketplace pages may be private, login-gated, or unreadable.")}
             </p>
-            <Field label="Listing text" optional>
+            <Field label={t("Listing text")} optional>
               <textarea
                 className={`${inputClass} min-h-32`}
-                placeholder="Paste the marketplace title, price, wheel size, condition, or description here."
+                placeholder={t("Paste the marketplace title, price, wheel size, condition, or description here.")}
                 value={pastedListingText}
                 onChange={(event) => {
                   setPastedListingText(event.target.value);
@@ -3009,85 +3067,85 @@ function EvaluateScreenPlaceholder({
               />
             </Field>
             <button type="button" onClick={applyPastedTextLocally} className="min-h-12 rounded-[var(--app-radius-button)] border border-[var(--app-border-strong)] bg-white px-4 text-sm font-bold text-[var(--app-text-strong)]">
-              Apply pasted text locally
+              {t("Apply pasted text locally")}
             </button>
-            <p className="text-xs leading-5 text-[var(--app-text-muted)]">This parser runs locally and fills the review fields below. It does not call AI.</p>
+            <p className="text-xs leading-5 text-[var(--app-text-muted)]">{t("This parser runs locally and fills the review fields below. It does not call AI.")}</p>
           </div>
         )}
 
         {inputMode === "manual" && (
           <div className="app-native-row">
-            <p className="text-sm font-semibold text-[var(--app-text-strong)]">Start with price, wheel size, and condition if known.</p>
-            <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">More detail can improve the usefulness of the recommendation, but every field remains editable and optional.</p>
+            <p className="text-sm font-semibold text-[var(--app-text-strong)]">{t("Start with price, wheel size, and condition if known.")}</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">{t("More detail can improve the usefulness of the recommendation, but every field remains editable and optional.")}</p>
           </div>
         )}
       </section>
 
       <section className="app-native-group">
         <div className="app-native-row">
-          <AppSectionHeading eyebrow="Step 2" title="Review the listing details" copy="Confirm what you know and correct anything extracted or parsed incorrectly." />
+          <AppSectionHeading eyebrow={locale === "zh-Hans" ? "第 2 步" : "Step 2"} title={t("Review the listing details")} copy={t("Confirm what you know and correct anything extracted or parsed incorrectly.")} />
         </div>
         <div className="app-native-row grid gap-4">
-          <AppFormGroupTitle title="Bike basics" copy="Price and wheel size are especially useful for fit and value guidance." />
-          <Field label="Bike title" optional>
+          <AppFormGroupTitle title={t("Bike basics")} copy={t("Price and wheel size are especially useful for fit and value guidance.")} />
+          <Field label={t("Bike title")} optional>
             <input className={inputClass} value={draftListing.title} onChange={(event) => updateDraftListingField("title", event.target.value)} placeholder="20 inch Trek kids bike" />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Price" optional>
+            <Field label={t("Price")} optional>
               <input className={inputClass} inputMode="numeric" value={draftListing.askingPrice || ""} onChange={(event) => updateDraftListingField("askingPrice", event.target.value)} placeholder="120" />
             </Field>
-            <Field label="Wheel size" optional>
+            <Field label={t("Wheel size")} optional>
               <input className={inputClass} value={draftListing.wheelSize || ""} onChange={(event) => updateDraftListingField("wheelSize", event.target.value)} placeholder="20 inch" />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Brand" optional>
+            <Field label={t("Brand")} optional>
               <input className={inputClass} value={draftListing.brand || ""} onChange={(event) => updateDraftListingField("brand", event.target.value)} placeholder="Trek, Woom, Schwinn" />
             </Field>
-            <Field label="Model" optional>
+            <Field label={t("Model")} optional>
               <input className={inputClass} value={draftListing.model || ""} onChange={(event) => updateDraftListingField("model", event.target.value)} placeholder="Precaliber, REV, Koen" />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Bike type" optional>
-              <input className={inputClass} value={draftListing.bikeType || ""} onChange={(event) => updateDraftListingField("bikeType", event.target.value)} placeholder="Hybrid, mountain, cruiser" />
+            <Field label={t("Bike type")} optional>
+              <input className={inputClass} value={draftListing.bikeType || ""} onChange={(event) => updateDraftListingField("bikeType", event.target.value)} placeholder={t("Hybrid, mountain, cruiser")} />
             </Field>
-            <Field label="Color / style" optional>
-              <input className={inputClass} value={draftListing.colorStyle || ""} onChange={(event) => updateDraftListingField("colorStyle", event.target.value)} placeholder="Blue, step-through, sporty" />
+            <Field label={t("Color / style")} optional>
+              <input className={inputClass} value={draftListing.colorStyle || ""} onChange={(event) => updateDraftListingField("colorStyle", event.target.value)} placeholder={t("Blue, step-through, sporty")} />
             </Field>
           </div>
         </div>
         <div className="app-native-row grid gap-4">
-          <AppFormGroupTitle title="Source and condition" copy="Helpful for pickup context and risk checks." />
+          <AppFormGroupTitle title={t("Source and condition")} copy={t("Helpful for pickup context and risk checks.")} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Platform/source" optional>
+            <Field label={t("Platform/source")} optional>
               <input className={inputClass} value={draftListing.platform || ""} onChange={(event) => updateDraftListingField("platform", event.target.value)} placeholder="Facebook Marketplace" />
             </Field>
-            <Field label="Location" optional>
-              <input className={inputClass} value={draftListing.location || ""} onChange={(event) => updateDraftListingField("location", event.target.value)} placeholder="Nearby city or pickup area" />
+            <Field label={t("Location")} optional>
+              <input className={inputClass} value={draftListing.location || ""} onChange={(event) => updateDraftListingField("location", event.target.value)} placeholder={t("Nearby city or pickup area")} />
             </Field>
           </div>
-          <Field label="Condition / description" optional>
+          <Field label={t("Condition / description")} optional>
             <textarea
               className={`${inputClass} min-h-28`}
               value={draftListing.description}
               onChange={(event) => updateDraftListingField("description", event.target.value)}
-              placeholder="Brakes work, tires hold air, light rust, needs tube..."
+              placeholder={t("Brakes work, tires hold air, light rust, needs tube...")}
             />
           </Field>
-          <Field label="Condition summary" optional>
-            <input className={inputClass} value={draftListing.condition || ""} onChange={(event) => updateDraftListingField("condition", event.target.value)} placeholder="Good, fair, needs repair" />
+          <Field label={t("Condition summary")} optional>
+            <input className={inputClass} value={draftListing.condition || ""} onChange={(event) => updateDraftListingField("condition", event.target.value)} placeholder={t("Good, fair, needs repair")} />
           </Field>
         </div>
         {notice && (
           <div className="app-native-row bg-[var(--app-surface-subtle)]" aria-live="polite">
-            <p className="text-xs font-bold text-[var(--app-text-strong)]">Current status</p>
+            <p className="text-xs font-bold text-[var(--app-text-strong)]">{t("Current status")}</p>
             <p className="mt-1 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">{notice}</p>
           </div>
         )}
         {aiExtractionSummary && (
           <article className="app-native-row bg-emerald-50 text-xs font-semibold text-emerald-950">
-            <p className="font-bold uppercase tracking-[0.12em] text-emerald-700">AI extraction review</p>
+            <p className="font-bold uppercase tracking-[0.12em] text-emerald-700">{t("AI extraction review")}</p>
             <p className="mt-2">
               Fields were extracted by {aiExtractionSummary.provider === "openai" ? "server-side AI" : aiExtractionSummary.provider}
               {aiExtractionSummary.confidence ? ` with ${aiExtractionSummary.confidence} confidence` : ""}. Please confirm title, price, wheel size, location, and condition before analyzing.
@@ -3105,7 +3163,7 @@ function EvaluateScreenPlaceholder({
           </article>
         )}
         <div className="app-native-row">
-          <p className="mb-3 text-xs font-bold tracking-[0.04em] text-brand">Step 3 · Get recommendation</p>
+          <p className="mb-3 text-xs font-bold tracking-[0.04em] text-brand">{locale === "zh-Hans" ? "第 3 步 · 获取建议" : "Step 3 · Get recommendation"}</p>
           <button
             type="button"
             disabled={!canAnalyze}
@@ -3114,44 +3172,44 @@ function EvaluateScreenPlaceholder({
               canAnalyze ? "bg-brand text-white shadow-[0_7px_18px_rgba(47,111,237,0.22)]" : "cursor-not-allowed bg-slate-200 text-slate-500"
             }`}
           >
-            Analyze bike locally
+            {t("Analyze bike locally")}
           </button>
           {!hasProfile ? (
-            <p className="mt-3 text-xs font-semibold leading-5 text-amber-800">Save a rider Profile to unlock fit analysis.</p>
+            <p className="mt-3 text-xs font-semibold leading-5 text-amber-800">{t("Save a rider Profile to unlock fit analysis.")}</p>
           ) : !hasListingDetails ? (
-            <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">Add a screenshot, pasted text, or a few manual listing details first.</p>
+            <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">{t("Add a screenshot, pasted text, or a few manual listing details first.")}</p>
           ) : (
-            <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">Local analysis stays on this device and does not send your profile or listing to AI.</p>
+            <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]">{t("Local analysis stays on this device and does not send your profile or listing to AI.")}</p>
           )}
         </div>
       </section>
 
-      {result && (
+      {displayResult && (
         <section id="app-store-fixture-result" className="app-native-group scroll-mt-4">
-          <div className={`app-native-row ${resultSurfaceClass(result.overall.meter)}`}>
+          <div className={`app-native-row ${resultSurfaceClass(displayResult.overall.meter)}`}>
             <div className="flex min-w-0 items-start gap-3">
-              <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border bg-white/80 ${resultIconClass(result.overall.meter)}`} aria-hidden="true">
-                <RecommendationIcon meter={result.overall.meter} />
+              <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border bg-white/80 ${resultIconClass(displayResult.overall.meter)}`} aria-hidden="true">
+                <RecommendationIcon meter={displayResult.overall.meter} />
               </span>
               <div className="min-w-0">
-                <p className="text-xs font-bold tracking-[0.04em] opacity-80">Overall recommendation</p>
-                <h2 className="mt-1 break-words text-[1.875rem] font-bold leading-9 tracking-[-0.035em] text-[var(--app-text-strong)]">{result.overall.label}</h2>
-                <p className="mt-2 break-words text-sm leading-6 text-[var(--app-text)]">{result.overall.reasoning}</p>
+                <p className="text-xs font-bold tracking-[0.04em] opacity-80">{t("Overall recommendation")}</p>
+                <h2 className="mt-1 break-words text-[1.875rem] font-bold leading-9 tracking-[-0.035em] text-[var(--app-text-strong)]">{displayResult.overall.label}</h2>
+                <p className="mt-2 break-words text-sm leading-6 text-[var(--app-text)]">{displayResult.overall.reasoning}</p>
               </div>
             </div>
           </div>
           <div className="app-native-row">
-            <AppFormGroupTitle title="Fit, deal, and risk" copy="Each status includes the reason behind the recommendation." />
+            <AppFormGroupTitle title={t("Fit, deal, and risk")} copy={t("Each status includes the reason behind the recommendation.")} />
             <div className="mt-4 grid gap-3">
-              <ResultMeter label="Fit" item={result.dimensions.fit} />
-              <ResultMeter label="Deal/value" item={result.dimensions.price} />
-              <ResultMeter label="Risk" item={result.dimensions.risk} />
+              <ResultMeter label={t("Fit")} item={displayResult.dimensions.fit} />
+              <ResultMeter label={t("Deal/value")} item={displayResult.dimensions.price} />
+              <ResultMeter label={t("Risk")} item={displayResult.dimensions.risk} />
             </div>
           </div>
           <div className="app-native-row">
-            <AppFormGroupTitle title="What to do next" copy="Use the recommendation as decision support before arranging pickup." />
+            <AppFormGroupTitle title={t("What to do next")} copy={t("Use the recommendation as decision support before arranging pickup.")} />
             <ol className="mt-4 grid gap-3">
-              {buildResultNextSteps(result).map((step, index) => (
+              {buildResultNextSteps(displayResult, locale).map((step, index) => (
                 <li key={step} className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3">
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--app-brand-050)] text-sm font-bold text-brand" aria-hidden="true">{index + 1}</span>
                   <p className="pt-1 text-sm leading-5 text-[var(--app-text)]">{step}</p>
@@ -3162,15 +3220,15 @@ function EvaluateScreenPlaceholder({
           <div className="app-native-row bg-[var(--app-surface-subtle)]">
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-bold tracking-[0.04em] text-brand">Message the seller</p>
-                <h3 className="mt-1 text-lg font-bold text-[var(--app-text-strong)]">Ask for the details you still need</h3>
+                <p className="text-xs font-bold tracking-[0.04em] text-brand">{t("Message the seller")}</p>
+                <h3 className="mt-1 text-lg font-bold text-[var(--app-text-strong)]">{t("Ask for the details you still need")}</h3>
               </div>
               <button type="button" onClick={copySellerMessage} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-blue-200 bg-white px-3 text-xs font-bold text-brand">
-                Copy
+                {t("Copy")}
               </button>
             </div>
             <div className="mt-3 rounded-[var(--app-radius-button)] border border-[var(--app-border)] bg-white p-4">
-              <p className="select-text break-words text-sm leading-6 text-[var(--app-text)]">{sellerMessage}</p>
+              <p className="select-text break-words text-sm leading-6 text-[var(--app-text)]">{displaySellerMessage}</p>
             </div>
             {sellerMessageCopyNotice && (
               <p className="mt-3 text-xs font-semibold leading-5 text-[var(--app-text-muted)]" role="status">{sellerMessageCopyNotice}</p>
@@ -3178,12 +3236,12 @@ function EvaluateScreenPlaceholder({
           </div>
           <div className="app-native-row grid gap-3">
             <button type="button" onClick={saveResultToHistory} className="min-h-12 w-full rounded-[var(--app-radius-button)] border border-blue-200 bg-white px-4 text-sm font-bold text-brand">
-              Save to History
+              {t("Save to History")}
             </button>
-            <p className="text-center text-xs leading-5 text-[var(--app-text-muted)]">Saves this recommendation and listing snapshot on this device.</p>
+            <p className="text-center text-xs leading-5 text-[var(--app-text-muted)]">{t("Saves this recommendation and listing snapshot on this device.")}</p>
           </div>
           <div className="app-native-row bg-[var(--app-surface-subtle)]">
-            <p className="text-xs leading-5 text-[var(--app-text-muted)]">{result.disclaimer}</p>
+            <p className="text-xs leading-5 text-[var(--app-text-muted)]">{displayResult.disclaimer}</p>
           </div>
         </section>
       )}
@@ -3312,14 +3370,15 @@ function UploadIcon() {
 }
 
 function EvaluateProgress({ currentStage }: { currentStage: 1 | 2 | 3 }) {
+  const { t } = useAppLocale();
   const stages = [
-    { id: 1, label: "Add listing" },
-    { id: 2, label: "Review" },
-    { id: 3, label: "Result" },
+    { id: 1, label: t("Add listing") },
+    { id: 2, label: t("Review") },
+    { id: 3, label: t("Result") },
   ] as const;
 
   return (
-    <ol className="grid grid-cols-3 gap-2 px-1" aria-label="Evaluation progress">
+    <ol className="grid grid-cols-3 gap-2 px-1" aria-label={t("Evaluation progress")}>
       {stages.map((stage) => {
         const isCurrent = currentStage === stage.id;
         const isComplete = currentStage > stage.id;
@@ -3385,8 +3444,29 @@ function resultIconClass(meter: MeterResult["meter"]) {
   return "border-amber-200 text-amber-700";
 }
 
-function buildResultNextSteps(result: AnalysisResult) {
+function buildResultNextSteps(result: AnalysisResult, locale: AppLocale = "en") {
   const firstQuestion = result.sellerQuestions[0];
+  if (locale === "zh-Hans") {
+    if (result.overall.meter === "red") {
+      return [
+        "先不要安排取车；当前结果显示尺寸、价格或车况存在明显问题。",
+        firstQuestion ? `先询问卖家：${firstQuestion}` : "请卖家确认轮径、刹车、轮胎和车架状况。",
+        "如果问题无法得到清楚且安全的解决，建议放弃这条商品。",
+      ];
+    }
+    if (result.overall.meter === "green") {
+      return [
+        firstQuestion ? `再确认一项信息：${firstQuestion}` : "向卖家确认轮径和基本车况。",
+        "付款前安排孩子现场试骑，并检查整体车况。",
+        "使用下方准备好的消息联系卖家。",
+      ];
+    }
+    return [
+      firstQuestion ? `决定前先询问：${firstQuestion}` : "请卖家补充缺失的尺寸或车况信息。",
+      "将卖家的回答与尺寸、价格和风险说明进行比较。",
+      "只有在疑问得到解决后再安排取车。",
+    ];
+  }
   if (result.overall.meter === "red") {
     return [
       "Pause before arranging pickup; the current result points to a meaningful fit, value, or condition concern.",
@@ -3415,6 +3495,7 @@ function HistoryScreenPlaceholder({
   screenshotFixtureFrame: ScreenshotFixtureFrame | null;
   onEvaluate: () => void;
 }) {
+  const { locale, t } = useAppLocale();
   const [savedEvaluations, setSavedEvaluations] = useState<AppStoreSavedEvaluation[]>([]);
   const [selectedEvaluationId, setSelectedEvaluationId] = useState("");
 
@@ -3446,16 +3527,16 @@ function HistoryScreenPlaceholder({
   }
 
   function deleteEvaluation(id: string) {
-    if (!window.confirm("Delete this saved bike check from this device?")) return;
+    if (!window.confirm(locale === "zh-Hans" ? "从本设备删除这条自行车评估？" : "Delete this saved bike check from this device?")) return;
     refreshHistory(savedEvaluations.filter((evaluation) => evaluation.id !== id));
   }
 
   return (
     <>
       <AppScreenHeader
-        eyebrow="Saved on this device"
-        title="History"
-        copy="Compare the bike checks you saved. These snapshots stay on this device and never re-run analysis when opened."
+        eyebrow={t("Saved on this device")}
+        title={t("History")}
+        copy={t("Compare the bike checks you saved. These snapshots stay on this device and never re-run analysis when opened.")}
       />
 
       {!savedEvaluations.length ? (
@@ -3464,36 +3545,46 @@ function HistoryScreenPlaceholder({
             <span className="grid h-14 w-14 place-items-center rounded-full border border-blue-100 bg-[var(--app-brand-050)] text-brand" aria-hidden="true">
               <HistoryEmptyIcon />
             </span>
-            <h2 className="mt-4 text-xl font-bold tracking-[-0.02em] text-[var(--app-text-strong)]">Save bikes you want to remember</h2>
+            <h2 className="mt-4 text-xl font-bold tracking-[-0.02em] text-[var(--app-text-strong)]">{t("Save bikes you want to remember")}</h2>
             <p className="mt-2 max-w-sm text-sm leading-6 text-[var(--app-text-muted)]">
-              After evaluating a listing, save its recommendation here to compare later on this device.
+              {t("After evaluating a listing, save its recommendation here to compare later on this device.")}
             </p>
             <button type="button" onClick={onEvaluate} className="mt-5 min-h-12 rounded-[var(--app-radius-button)] bg-brand px-5 text-sm font-bold text-white">
-              Evaluate a bike
+              {t("Evaluate a bike")}
             </button>
           </div>
         </section>
       ) : (
         <>
           <AppSectionHeading
-            eyebrow={`${savedEvaluations.length} saved ${savedEvaluations.length === 1 ? "decision" : "decisions"}`}
-            title={favoriteCount ? `${favoriteCount} on your shortlist` : "Your saved bikes"}
-            copy="Tap a star to keep promising bikes easy to spot."
+            eyebrow={locale === "zh-Hans"
+              ? `已保存 ${savedEvaluations.length} 条决定`
+              : `${savedEvaluations.length} saved ${savedEvaluations.length === 1 ? "decision" : "decisions"}`}
+            title={favoriteCount
+              ? locale === "zh-Hans" ? `${favoriteCount} 条已加入候选清单` : `${favoriteCount} on your shortlist`
+              : t("Your saved bikes")}
+            copy={t("Tap a star to keep promising bikes easy to spot.")}
           />
           <section className="app-native-group">
             {savedEvaluations.map((evaluation) => {
               const isSelected = selectedEvaluationId === evaluation.id;
+              const localizedAnalysis = localizeAnalysisResult(locale, evaluation.analysis);
               return (
                 <article key={evaluation.id} className={`app-native-row ${evaluation.favorite ? "bg-amber-50/60" : ""}`}>
                   <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex min-w-0 items-center gap-2">
-                        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${historyMeterDotClass(evaluation.analysis.overall.meter)}`} aria-hidden="true" />
-                        <p className="break-words text-sm font-bold text-[var(--app-text-strong)]">{evaluation.analysis.overall.label}</p>
+                        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${historyMeterDotClass(localizedAnalysis.overall.meter)}`} aria-hidden="true" />
+                        <p className="break-words text-sm font-bold text-[var(--app-text-strong)]">{localizedAnalysis.overall.label}</p>
                       </div>
                       <h2 className="mt-2 break-words text-lg font-bold tracking-[-0.02em] text-[var(--app-text-strong)]">
-                        {evaluation.listing.title || "Untitled bike listing"}
+                        {evaluation.listing.title || t("Untitled bike listing")}
                       </h2>
+                      {(evaluation.listing.model || evaluation.listing.location) && (
+                        <p className="mt-1 break-words text-xs font-semibold text-[var(--app-text-muted)]">
+                          {[evaluation.listing.model, evaluation.listing.location].filter(Boolean).join(" · ")}
+                        </p>
+                      )}
                     </div>
                     <button
                       type="button"
@@ -3503,7 +3594,9 @@ function HistoryScreenPlaceholder({
                           ? "border-amber-300 bg-amber-100 text-amber-800"
                           : "border-[var(--app-border)] bg-white text-[var(--app-text-muted)]"
                       }`}
-                      aria-label={evaluation.favorite ? `Remove ${evaluation.listing.title || "this bike"} from shortlist` : `Add ${evaluation.listing.title || "this bike"} to shortlist`}
+                      aria-label={locale === "zh-Hans"
+                        ? evaluation.favorite ? "从候选清单移除" : "加入候选清单"
+                        : evaluation.favorite ? `Remove ${evaluation.listing.title || "this bike"} from shortlist` : `Add ${evaluation.listing.title || "this bike"} to shortlist`}
                       aria-pressed={Boolean(evaluation.favorite)}
                     >
                       <FavoriteIcon filled={Boolean(evaluation.favorite)} />
@@ -3511,18 +3604,20 @@ function HistoryScreenPlaceholder({
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-2">
-                    <HistoryMetadata label="Price" value={evaluation.listing.askingPrice ? `$${evaluation.listing.askingPrice}` : "Not set"} />
-                    <HistoryMetadata label="Wheel size" value={formatHistoryWheelSize(evaluation.listing.wheelSize)} />
+                    <HistoryMetadata label={t("Price")} value={evaluation.listing.askingPrice ? `$${evaluation.listing.askingPrice}` : t("Not set")} />
+                    <HistoryMetadata label={t("Wheel size")} value={localizeWheelSize(locale, evaluation.listing.wheelSize)} />
                   </div>
 
                   <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--app-text-muted)]">
                     <p>
-                      <span className="font-bold text-[var(--app-text)]">{evaluation.childNickname?.trim() || "Your child"}</span>
-                      {evaluation.childSnapshot?.heightCm ? `, ${evaluation.childSnapshot.heightCm} cm` : ""}
-                      {evaluation.childSnapshot?.experience ? `, ${evaluation.childSnapshot.experience}` : ""}
+                      <span className="font-bold text-[var(--app-text)]">{evaluation.childNickname?.trim() || t("Your child")}</span>
+                      {evaluation.childSnapshot?.heightCm ? locale === "zh-Hans" ? `，${evaluation.childSnapshot.heightCm} 厘米` : `, ${evaluation.childSnapshot.heightCm} cm` : ""}
+                      {evaluation.childSnapshot?.experience ? locale === "zh-Hans" ? `，${localizeRidingExperience(locale, evaluation.childSnapshot.experience)}` : `, ${evaluation.childSnapshot.experience}` : ""}
                     </p>
                     <p>
-                      Saved {formatAppStoreDate(evaluation.savedAt)} from {evaluation.listing.platform || sourceLabelFromInputMode(evaluation.inputMode)}
+                      {locale === "zh-Hans"
+                        ? `${formatLocalizedDate(locale, evaluation.savedAt)}保存，来源：${evaluation.listing.platform || sourceLabelFromInputMode(evaluation.inputMode, locale)}`
+                        : `Saved ${formatLocalizedDate(locale, evaluation.savedAt)} from ${evaluation.listing.platform || sourceLabelFromInputMode(evaluation.inputMode, locale)}`}
                     </p>
                   </div>
 
@@ -3532,7 +3627,7 @@ function HistoryScreenPlaceholder({
                     className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--app-radius-button)] border border-blue-200 bg-white px-4 text-sm font-bold text-brand"
                     aria-expanded={isSelected}
                   >
-                    {isSelected ? "Hide saved details" : "View saved details"}
+                    {t(isSelected ? "Hide saved details" : "View saved details")}
                     <DisclosureIcon expanded={isSelected} />
                   </button>
                 </article>
@@ -3545,9 +3640,11 @@ function HistoryScreenPlaceholder({
       {selectedEvaluation && (
         <>
           <AppSectionHeading
-            eyebrow="Saved snapshot"
-            title={selectedEvaluation.listing.title || "Bike details"}
-            copy={`Saved ${formatAppStoreDate(selectedEvaluation.savedAt)}. Nothing on this screen is re-analyzed or refreshed.`}
+            eyebrow={t("Saved snapshot")}
+            title={selectedEvaluation.listing.title || t("Bike details")}
+            copy={locale === "zh-Hans"
+              ? `${formatLocalizedDate(locale, selectedEvaluation.savedAt)}保存。此页面不会重新分析或刷新商品信息。`
+              : `Saved ${formatLocalizedDate(locale, selectedEvaluation.savedAt)}. Nothing on this screen is re-analyzed or refreshed.`}
           />
           <section className="app-native-group">
             <div className={`app-native-row ${resultSurfaceClass(selectedEvaluation.analysis.overall.meter)}`}>
@@ -3556,58 +3653,63 @@ function HistoryScreenPlaceholder({
                   <RecommendationIcon meter={selectedEvaluation.analysis.overall.meter} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold tracking-[0.04em] opacity-80">Saved recommendation</p>
-                  <h2 className="mt-1 break-words text-xl font-bold text-[var(--app-text-strong)]">{selectedEvaluation.analysis.overall.label}</h2>
-                  <p className="mt-2 break-words text-sm leading-6 text-[var(--app-text)]">{selectedEvaluation.analysis.overall.reasoning}</p>
+                  <p className="text-xs font-bold tracking-[0.04em] opacity-80">{t("Saved recommendation")}</p>
+                  <h2 className="mt-1 break-words text-xl font-bold text-[var(--app-text-strong)]">{localizeAnalysisResult(locale, selectedEvaluation.analysis).overall.label}</h2>
+                  <p className="mt-2 break-words text-sm leading-6 text-[var(--app-text)]">{localizeAnalysisResult(locale, selectedEvaluation.analysis).overall.reasoning}</p>
                 </div>
               </div>
             </div>
             <div className="app-native-row">
-              <AppFormGroupTitle title="Listing snapshot" copy="The listing details saved with this recommendation." />
+              <AppFormGroupTitle title={t("Listing snapshot")} copy={t("The listing details saved with this recommendation.")} />
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <HistoryMetadata label="Price" value={selectedEvaluation.listing.askingPrice ? `$${selectedEvaluation.listing.askingPrice}` : "Not set"} />
-                <HistoryMetadata label="Wheel size" value={formatHistoryWheelSize(selectedEvaluation.listing.wheelSize)} />
+                <HistoryMetadata label={t("Price")} value={selectedEvaluation.listing.askingPrice ? `$${selectedEvaluation.listing.askingPrice}` : t("Not set")} />
+                <HistoryMetadata label={t("Wheel size")} value={localizeWheelSize(locale, selectedEvaluation.listing.wheelSize)} />
               </div>
               <div className="mt-4 grid gap-2 text-sm leading-6 text-[var(--app-text)]">
-                {selectedEvaluation.listing.brand && <p><span className="font-bold text-[var(--app-text-strong)]">Brand:</span> {selectedEvaluation.listing.brand}</p>}
-                <p><span className="font-bold text-[var(--app-text-strong)]">Source:</span> {selectedEvaluation.listing.platform || sourceLabelFromInputMode(selectedEvaluation.inputMode)}</p>
-                {selectedEvaluation.listing.location && <p><span className="font-bold text-[var(--app-text-strong)]">Location:</span> {selectedEvaluation.listing.location}</p>}
-                {selectedEvaluation.screenshotName && <p className="break-words"><span className="font-bold text-[var(--app-text-strong)]">Screenshot:</span> {selectedEvaluation.screenshotName}</p>}
-                {selectedEvaluation.listing.listingLink && <p className="break-words"><span className="font-bold text-[var(--app-text-strong)]">Reference:</span> {selectedEvaluation.listing.listingLink}</p>}
+                {selectedEvaluation.listing.brand && <p><span className="font-bold text-[var(--app-text-strong)]">{t("Brand")}:</span> {selectedEvaluation.listing.brand}</p>}
+                {selectedEvaluation.listing.model && <p><span className="font-bold text-[var(--app-text-strong)]">{t("Model")}:</span> {selectedEvaluation.listing.model}</p>}
+                <p><span className="font-bold text-[var(--app-text-strong)]">{t("Source")}:</span> {selectedEvaluation.listing.platform || sourceLabelFromInputMode(selectedEvaluation.inputMode, locale)}</p>
+                {selectedEvaluation.listing.location && <p><span className="font-bold text-[var(--app-text-strong)]">{t("Location")}:</span> {selectedEvaluation.listing.location}</p>}
+                {selectedEvaluation.screenshotName && <p className="break-words"><span className="font-bold text-[var(--app-text-strong)]">{t("Screenshot")}:</span> {selectedEvaluation.screenshotName}</p>}
+                {selectedEvaluation.listing.listingLink && <p className="break-words"><span className="font-bold text-[var(--app-text-strong)]">{t("Reference")}:</span> {selectedEvaluation.listing.listingLink}</p>}
               </div>
             </div>
             <div className="app-native-row">
-              <AppFormGroupTitle title="Child snapshot" copy="The profile details used when this bike was evaluated." />
+              <AppFormGroupTitle title={t("Child snapshot")} copy={t("The profile details used when this bike was evaluated.")} />
               <p className="mt-3 text-sm leading-6 text-[var(--app-text)]">
-                <span className="font-bold text-[var(--app-text-strong)]">{selectedEvaluation.childNickname?.trim() || "Your child"}</span>
-                {selectedEvaluation.childSnapshot?.heightCm ? `, ${selectedEvaluation.childSnapshot.heightCm} cm` : ", height not saved"}
-                {selectedEvaluation.childSnapshot?.experience ? `, ${selectedEvaluation.childSnapshot.experience}` : ""}
+                <span className="font-bold text-[var(--app-text-strong)]">{selectedEvaluation.childNickname?.trim() || t("Your child")}</span>
+                {selectedEvaluation.childSnapshot?.heightCm
+                  ? locale === "zh-Hans" ? `，${selectedEvaluation.childSnapshot.heightCm} 厘米` : `, ${selectedEvaluation.childSnapshot.heightCm} cm`
+                  : locale === "zh-Hans" ? "，未保存身高" : ", height not saved"}
+                {selectedEvaluation.childSnapshot?.experience
+                  ? locale === "zh-Hans" ? `，${localizeRidingExperience(locale, selectedEvaluation.childSnapshot.experience)}` : `, ${selectedEvaluation.childSnapshot.experience}`
+                  : ""}
               </p>
             </div>
             <div className="app-native-row">
-              <AppFormGroupTitle title="Fit, deal, and risk" copy="These are the statuses saved with the original recommendation." />
+              <AppFormGroupTitle title={t("Fit, deal, and risk")} copy={t("These are the statuses saved with the original recommendation.")} />
               <div className="mt-4 grid gap-3">
-                <ResultMeter label="Fit" item={selectedEvaluation.analysis.dimensions.fit} />
-                <ResultMeter label="Deal/value" item={selectedEvaluation.analysis.dimensions.price} />
-                <ResultMeter label="Risk" item={selectedEvaluation.analysis.dimensions.risk} />
+                <ResultMeter label={t("Fit")} item={localizeAnalysisResult(locale, selectedEvaluation.analysis).dimensions.fit} />
+                <ResultMeter label={t("Deal/value")} item={localizeAnalysisResult(locale, selectedEvaluation.analysis).dimensions.price} />
+                <ResultMeter label={t("Risk")} item={localizeAnalysisResult(locale, selectedEvaluation.analysis).dimensions.risk} />
               </div>
             </div>
             {selectedEvaluation.sellerMessage && (
               <div className="app-native-row bg-[var(--app-surface-subtle)]">
-                <p className="text-sm font-bold text-[var(--app-text-strong)]">Saved seller message</p>
-                <p className="mt-2 select-text break-words text-sm leading-6 text-[var(--app-text)]">{selectedEvaluation.sellerMessage}</p>
+                <p className="text-sm font-bold text-[var(--app-text-strong)]">{t("Saved seller message")}</p>
+                <p className="mt-2 select-text break-words text-sm leading-6 text-[var(--app-text)]">{locale === "zh-Hans" ? localizeSellerMessage(locale, selectedEvaluation.listing) : selectedEvaluation.sellerMessage}</p>
               </div>
             )}
             <div className="app-native-row grid gap-3">
               <p className="text-xs leading-5 text-[var(--app-text-muted)]">
-                Deleting removes only this saved snapshot. It does not change the child profile or other saved bikes.
+                {t("Deleting removes only this saved snapshot. It does not change the child profile or other saved bikes.")}
               </p>
               <button
                 type="button"
                 onClick={() => deleteEvaluation(selectedEvaluation.id)}
                 className="min-h-11 rounded-[var(--app-radius-button)] border border-rose-200 bg-white px-4 text-sm font-bold text-rose-700"
               >
-                Delete this saved bike
+                {t("Delete this saved bike")}
               </button>
             </div>
           </section>
@@ -3658,14 +3760,8 @@ function historyMeterDotClass(meter: MeterResult["meter"]) {
   return "bg-amber-500";
 }
 
-function formatHistoryWheelSize(value?: string) {
-  const wheelSize = String(value || "").trim();
-  if (!wheelSize) return "Not set";
-  if (/inch|in\.?|["”]/i.test(wheelSize)) return wheelSize;
-  return `${wheelSize} inch`;
-}
-
 function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtureFrame: ScreenshotFixtureFrame | null }) {
+  const { locale, setLocale, t } = useAppLocale();
   const [hasProfile, setHasProfile] = useState(false);
   const [historyCount, setHistoryCount] = useState(0);
   const [notice, setNotice] = useState("");
@@ -3686,68 +3782,96 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
 
   function clearProfileFromSettings() {
     if (!hasProfile) {
-      setNotice("No child profile is saved on this device.");
+      setNotice(locale === "zh-Hans" ? "本设备没有已保存的骑手资料。" : "No child profile is saved on this device.");
       return;
     }
-    if (!window.confirm("Clear the saved child profile from this device?")) return;
+    if (!window.confirm(locale === "zh-Hans" ? "清除本设备上保存的骑手资料？" : "Clear the saved child profile from this device?")) return;
     clearAppStoreActiveChildProfile();
     refreshSettingsDataSummary();
-    setNotice("Child profile cleared from this device.");
+    setNotice(locale === "zh-Hans" ? "已从本设备清除骑手资料。" : "Child profile cleared from this device.");
   }
 
   function clearHistoryFromSettings() {
     if (!historyCount) {
-      setNotice("No saved evaluations are stored on this device.");
+      setNotice(locale === "zh-Hans" ? "本设备没有已保存的评估。" : "No saved evaluations are stored on this device.");
       return;
     }
-    if (!window.confirm("Clear all saved bike evaluations from this device?")) return;
+    if (!window.confirm(locale === "zh-Hans" ? "清除本设备上所有已保存的自行车评估？" : "Clear all saved bike evaluations from this device?")) return;
     clearAppStoreSavedEvaluations();
     refreshSettingsDataSummary();
-    setNotice("Saved evaluations cleared from this device.");
+    setNotice(locale === "zh-Hans" ? "已从本设备清除所有评估。" : "Saved evaluations cleared from this device.");
   }
 
   function clearAllLocalDataFromSettings() {
     if (!hasProfile && !historyCount) {
-      setNotice("No App Store MVP local data is stored on this device.");
+      setNotice(locale === "zh-Hans" ? "本设备没有可清除的 App 本地数据。" : "No App Store MVP local data is stored on this device.");
       return;
     }
-    if (!window.confirm("Clear child profile and saved evaluations from this device?")) return;
+    if (!window.confirm(locale === "zh-Hans" ? "清除本设备上的骑手资料和所有已保存评估？" : "Clear child profile and saved evaluations from this device?")) return;
     clearAppStoreMvpLocalData();
     refreshSettingsDataSummary();
-    setNotice("All App Store MVP local data cleared from this device.");
+    setNotice(locale === "zh-Hans" ? "已清除本设备上的全部 App 本地数据。" : "All App Store MVP local data cleared from this device.");
   }
 
   return (
     <>
       <AppScreenHeader
-        eyebrow="Privacy and controls"
-        title="Settings"
-        copy="Privacy, stored data, and app information."
+        eyebrow={t("Privacy and controls")}
+        title={t("Settings")}
+        copy={t("Privacy, stored data, and app information.")}
       />
-      <AppSectionHeading eyebrow="Privacy" title="How your data is handled" />
+      <AppSectionHeading eyebrow={t("Language")} title={t("Choose app language")} />
       <section className="app-native-group">
-        <SettingsPlaceholderCard title="Privacy summary" copy="Child profile and saved evaluations are stored on this device for the App Store MVP. No account or cloud sync is required, and you can clear local data at any time." />
-        <SettingsPlaceholderCard title="AI disclosure" copy="AI features are optional and must start from a clear user action. Choosing a screenshot or pasting text does not start AI by itself. Local fallback analysis works without AI, provider keys stay server-side, and initial app load does not call OpenAI or an LLM." />
-        <SettingsPlaceholderCard title="Marketplace disclosure" copy="Links, text, and screenshots are user-provided references. Mandy's Bike Finder does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages, and saved History does not re-fetch marketplace pages." />
+        <div className="app-native-row grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setLocale("en")}
+            aria-pressed={locale === "en"}
+            className={`min-h-12 rounded-[var(--app-radius-button)] border px-3 text-sm font-bold ${
+              locale === "en" ? "border-brand bg-[var(--app-brand-050)] text-brand" : "border-[var(--app-border)] bg-white text-[var(--app-text)]"
+            }`}
+          >
+            English
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale("zh-Hans")}
+            aria-pressed={locale === "zh-Hans"}
+            className={`min-h-12 rounded-[var(--app-radius-button)] border px-3 text-sm font-bold ${
+              locale === "zh-Hans" ? "border-brand bg-[var(--app-brand-050)] text-brand" : "border-[var(--app-border)] bg-white text-[var(--app-text)]"
+            }`}
+          >
+            简体中文
+          </button>
+        </div>
+      </section>
+
+      <AppSectionHeading eyebrow={t("Privacy")} title={t("How your data is handled")} />
+      <section className="app-native-group">
+        <SettingsPlaceholderCard title={t("Privacy summary")} copy={t("Child profile and saved evaluations are stored on this device for the App Store MVP. No account or cloud sync is required, and you can clear local data at any time.")} />
+        <SettingsPlaceholderCard title={t("AI disclosure")} copy={t("AI features are optional and must start from a clear user action. Choosing a screenshot or pasting text does not start AI by itself. Local fallback analysis works without AI, provider keys stay server-side, and initial app load does not call OpenAI or an LLM.")} />
+        <SettingsPlaceholderCard title={t("Marketplace disclosure")} copy={t("Links, text, and screenshots are user-provided references. Mandy's Bike Finder does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages, and saved History does not re-fetch marketplace pages.")} />
         <article className="app-native-row flex min-w-0 items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-base font-bold text-slate-950">Privacy policy</h2>
-            <p className="mt-1 break-words text-sm leading-5 text-slate-600">Review the full policy.</p>
+            <h2 className="text-base font-bold text-slate-950">{t("Privacy policy")}</h2>
+            <p className="mt-1 break-words text-sm leading-5 text-slate-600">{t("Review the full policy.")}</p>
           </div>
           <a className="shrink-0 rounded-xl bg-blue-50 px-3 py-2 text-sm font-bold text-brand" href="/privacy">
-            Open privacy policy
+            {t("Open privacy policy")}
           </a>
         </article>
       </section>
 
       <div id="app-store-fixture-local-data" className="scroll-mt-4">
-        <AppSectionHeading eyebrow="On this iPhone" title="Local data controls" />
+        <AppSectionHeading eyebrow={t("On this iPhone")} title={t("Local data controls")} />
       </div>
       <section className="app-native-group">
         <article className="app-native-row">
-          <h2 className="text-base font-bold text-slate-950">Stored data</h2>
+          <h2 className="text-base font-bold text-slate-950">{t("Stored data")}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Current device data: {hasProfile ? "1 child profile" : "no child profile"} and {historyCount} saved {historyCount === 1 ? "evaluation" : "evaluations"}.
+            {locale === "zh-Hans"
+              ? `当前设备数据：${hasProfile ? "1 份骑手资料" : "无骑手资料"}，${historyCount} 条已保存评估。`
+              : `Current device data: ${hasProfile ? "1 child profile" : "no child profile"} and ${historyCount} saved ${historyCount === 1 ? "evaluation" : "evaluations"}.`}
           </p>
           {notice && (
             <p className="mt-3 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-900">
@@ -3760,41 +3884,41 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
               onClick={clearProfileFromSettings}
               className="min-h-11 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
             >
-              Clear child profile
+              {t("Clear child profile")}
             </button>
             <button
               type="button"
               onClick={clearHistoryFromSettings}
               className="min-h-11 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
             >
-              Clear history
+              {t("Clear history")}
             </button>
             <button
               type="button"
               onClick={clearAllLocalDataFromSettings}
               className="min-h-11 rounded-xl bg-rose-50 px-4 text-sm font-bold text-rose-800"
             >
-              Clear all local data
+              {t("Clear all local data")}
             </button>
           </div>
         </article>
       </section>
 
-      <AppSectionHeading eyebrow="About" title="Mandy's Bike Finder" />
+      <AppSectionHeading eyebrow={t("About")} title={t("Mandy's Bike Finder")} />
       <section className="app-native-group">
         <article className="app-native-row">
-          <h2 className="text-base font-bold text-slate-950">App information</h2>
+          <h2 className="text-base font-bold text-slate-950">{t("App information")}</h2>
           <div className="mt-2 grid gap-2 text-sm leading-6 text-slate-600">
-            <p><span className="font-bold text-slate-800">App:</span> Mandy&apos;s Bike Finder</p>
-            <p><span className="font-bold text-slate-800">Mode:</span> App Store MVP</p>
-            <p><span className="font-bold text-slate-800">Version:</span> {APP_STORE_MVP_VERSION}</p>
-            <p><span className="font-bold text-slate-800">Feedback:</span> Coming in a later release.</p>
+            <p><span className="font-bold text-slate-800">{t("App")}:</span> {t("Mandy's Bike Finder")}</p>
+            <p><span className="font-bold text-slate-800">{t("Mode")}:</span> App Store MVP</p>
+            <p><span className="font-bold text-slate-800">{t("Version")}:</span> {APP_STORE_MVP_VERSION}</p>
+            <p><span className="font-bold text-slate-800">{t("Feedback")}:</span> {t("Coming in a later release.")}</p>
           </div>
         </article>
 
         <SettingsPlaceholderCard
-          title="Disclaimer"
-          copy="Bike recommendations are decision support only. Parents should inspect fit, brakes, tires, frame condition, and safety before purchase."
+          title={t("Disclaimer")}
+          copy={t("Bike recommendations are decision support only. Parents should inspect fit, brakes, tires, frame condition, and safety before purchase.")}
         />
       </section>
     </>
@@ -3817,15 +3941,16 @@ function BottomTabNav({
   activeTab: AppStoreTab;
   onSelectTab: (tab: AppStoreTab) => void;
 }) {
+  const { t } = useAppLocale();
   const tabs: Array<{ id: AppStoreTab; label: string }> = [
-    { id: "profile", label: "Profile" },
-    { id: "evaluate", label: "Evaluate" },
-    { id: "history", label: "History" },
-    { id: "settings", label: "Settings" },
+    { id: "profile", label: t("Profile") },
+    { id: "evaluate", label: t("Evaluate") },
+    { id: "history", label: t("History") },
+    { id: "settings", label: t("Settings") },
   ];
 
   return (
-    <nav className="app-native-nav px-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5" aria-label="App Store MVP tabs">
+    <nav className="app-native-nav px-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5" aria-label={t("App Store MVP tabs")}>
       <div className="mx-auto grid max-w-2xl grid-cols-4 gap-1">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
@@ -4086,10 +4211,12 @@ function FlowStepButton({
 
 function ColorPreferenceChip({
   option,
+  displayOption,
   selected,
   onClick,
 }: {
   option: string;
+  displayOption?: string;
   selected: boolean;
   onClick: () => void;
 }) {
@@ -4107,7 +4234,7 @@ function ColorPreferenceChip({
           <span key={color} className="h-5 w-5 rounded-full border border-white shadow-sm" style={{ background: color }} />
         ))}
       </span>
-      <span className="min-w-0 flex-1">{option}</span>
+      <span className="min-w-0 flex-1">{displayOption || option}</span>
       <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] font-bold ${selected ? "border-brand bg-brand text-white" : "border-slate-300 bg-white text-transparent"}`}>
         OK
       </span>
@@ -4435,12 +4562,13 @@ function Field({
   optional?: boolean;
   children: ReactNode;
 }) {
+  const { t } = useAppLocale();
   return (
     <label className={`grid gap-1 text-sm font-bold text-slate-700 ${wide ? "md:col-span-2" : ""}`}>
       <span className="flex items-center gap-2">
         <span>{label}</span>
-        {required && <span className="text-xs font-semibold text-brand">Required</span>}
-        {optional && <span className="text-xs font-semibold text-slate-500">Optional</span>}
+        {required && <span className="text-xs font-semibold text-brand">{t("Required")}</span>}
+        {optional && <span className="text-xs font-semibold text-slate-500">{t("Optional")}</span>}
       </span>
       {children}
     </label>
@@ -4723,52 +4851,14 @@ function clearAppStoreMvpLocalData() {
   APP_STORE_MVP_LOCAL_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
 }
 
-function addAppStoreSavedEvaluation(evaluation: Omit<AppStoreSavedEvaluation, "createdAt" | "favorite" | "id" | "savedAt">): AppStoreSavedEvaluationWriteResult {
+function addAppStoreSavedEvaluation(evaluation: AppStoreSavedEvaluationDraft): AppStoreSavedEvaluationWriteResult {
   const existing = loadAppStoreSavedEvaluations();
-  const duplicateIndex = existing.findIndex((savedEvaluation) => appStoreEvaluationSignature(savedEvaluation) === appStoreEvaluationSignature(evaluation));
-  if (duplicateIndex >= 0) {
-    const duplicate = {
-      ...existing[duplicateIndex],
-      ...evaluation,
-      id: existing[duplicateIndex].id,
-      createdAt: existing[duplicateIndex].createdAt || existing[duplicateIndex].savedAt || new Date().toISOString(),
-      savedAt: new Date().toISOString(),
-      favorite: existing[duplicateIndex].favorite,
-    };
-    saveAppStoreSavedEvaluations([duplicate, ...existing.filter((_, index) => index !== duplicateIndex)]);
-    return { evaluation: duplicate, wasDuplicate: true };
-  }
-
-  const next: AppStoreSavedEvaluation = {
-    ...evaluation,
+  const result = mergeAppStoreSavedEvaluation(existing, evaluation, {
     id: createAppStoreEvaluationId(),
-    createdAt: new Date().toISOString(),
-    savedAt: new Date().toISOString(),
-    favorite: false,
-  };
-  saveAppStoreSavedEvaluations([next, ...existing].slice(0, 10));
-  return { evaluation: next, wasDuplicate: false };
-}
-
-function appStoreEvaluationSignature(evaluation: Pick<AppStoreSavedEvaluation, "analysis" | "childSnapshot" | "listing">) {
-  const listing = evaluation.listing || defaultListing;
-  return JSON.stringify({
-    title: normalizeHistoryValue(listing.title),
-    askingPrice: normalizeHistoryValue(listing.askingPrice),
-    brand: normalizeHistoryValue(listing.brand),
-    wheelSize: normalizeHistoryValue(listing.wheelSize),
-    platform: normalizeHistoryValue(listing.platform),
-    overall: normalizeHistoryValue(evaluation.analysis?.overall?.label),
-    fit: normalizeHistoryValue(evaluation.analysis?.dimensions?.fit?.label),
-    deal: normalizeHistoryValue(evaluation.analysis?.dimensions?.price?.label),
-    risk: normalizeHistoryValue(evaluation.analysis?.dimensions?.risk?.label),
-    childHeight: normalizeHistoryValue(evaluation.childSnapshot?.heightCm),
-    childExperience: normalizeHistoryValue(evaluation.childSnapshot?.experience),
+    now: new Date().toISOString(),
   });
-}
-
-function normalizeHistoryValue(value: unknown) {
-  return String(value || "").trim().toLowerCase();
+  saveAppStoreSavedEvaluations(result.evaluations);
+  return result;
 }
 
 function createAppStoreEvaluationId() {
@@ -4776,20 +4866,10 @@ function createAppStoreEvaluationId() {
   return `evaluation-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function formatAppStoreDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Saved recently";
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
-}
-
-function sourceLabelFromInputMode(inputMode: AppStoreEvaluateInputMode) {
-  if (inputMode === "screenshot") return "Screenshot";
-  if (inputMode === "link") return "Link/text";
-  return "Manual entry";
-}
-
-function formatRidingExperience(experience: ChildProfile["experience"]) {
-  return experience ? `${experience.charAt(0).toUpperCase()}${experience.slice(1)} rider` : "Riding experience not set";
+function sourceLabelFromInputMode(inputMode: AppStoreEvaluateInputMode, locale: AppLocale = "en") {
+  if (inputMode === "screenshot") return locale === "zh-Hans" ? "截图" : "Screenshot";
+  if (inputMode === "link") return locale === "zh-Hans" ? "链接 / 文字" : "Link/text";
+  return locale === "zh-Hans" ? "手动输入" : "Manual entry";
 }
 
 function feetInchesToCm(feet: string, inches: string) {

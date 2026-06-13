@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function OfflineRecovery() {
+import type { AppLocale } from "@/lib/app-store-i18n";
+
+export default function OfflineRecovery({ locale = "en" }: { locale?: AppLocale }) {
   const [isOnline, setIsOnline] = useState(false);
+  const zh = locale === "zh-Hans";
 
   useEffect(() => {
     const updateStatus = () => setIsOnline(navigator.onLine);
@@ -24,16 +27,20 @@ export default function OfflineRecovery() {
         onClick={() => window.location.reload()}
         className="min-h-12 rounded-[var(--app-radius-button)] bg-brand px-5 text-sm font-bold text-white"
       >
-        {isOnline ? "Connection restored - try again" : "Try again"}
+        {isOnline
+          ? zh ? "网络已恢复，再试一次" : "Connection restored - try again"
+          : zh ? "重试" : "Try again"}
       </button>
       <Link
         className="inline-flex min-h-11 items-center justify-center rounded-[var(--app-radius-button)] border border-blue-200 bg-white px-4 text-sm font-bold text-brand"
         href="/"
       >
-        Open saved app data
+        {zh ? "打开已保存的 App 数据" : "Open saved app data"}
       </Link>
       <p className={`text-center text-xs font-semibold ${isOnline ? "text-emerald-700" : "text-[var(--app-text-muted)]"}`} role="status">
-        {isOnline ? "You are back online." : "Still offline. Reconnect, then try again."}
+        {isOnline
+          ? zh ? "网络已恢复。" : "You are back online."
+          : zh ? "仍处于离线状态。重新联网后请再试。" : "Still offline. Reconnect, then try again."}
       </p>
     </div>
   );
