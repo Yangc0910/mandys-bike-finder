@@ -1,5 +1,20 @@
 # Testing Notes
 
+# Version 1.2 TestFlight Candidate Preparation
+
+Prepared on 2026-06-13:
+
+- Advanced the native iOS target to marketing version `1.2`, build `5`.
+- Confirmed the generated Capacitor configuration still points to `https://app.mandysbikefinder.com`.
+- `npm run cap:doctor` passed with the existing Capacitor 8.3.4 iOS project.
+- `npm run cap:sync` passed without producing unexpected tracked-file changes.
+- Generic iOS Release archive with signing disabled passed.
+- Automatically signed generic iOS Release archive passed using the existing development identity.
+- Added a reusable App Store Connect export configuration and bilingual v1.2 submission copy.
+- App Store Connect export/upload did not occur. Xcode reported an invalid local account credential entry, and the keychain currently has no usable Apple Distribution identity.
+
+The archive continues to load the production hosted URL, which remains on the accepted v1.1 experience until the v1.2 branch is merged and promoted. After the Apple account is refreshed in Xcode, rerun the App Store Connect export, wait for build `1.2 (5)` to process, install it over `1.1 (4)` without deleting the app, and complete the upgrade-persistence checklist.
+
 ## Version 1.1 Mobile Regression Pass
 
 Validated locally on 2026-06-11:
