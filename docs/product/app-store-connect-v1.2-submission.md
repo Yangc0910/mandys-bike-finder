@@ -1,6 +1,6 @@
 # App Store Connect Submission Package v1.2
 
-Status: TestFlight candidate preparation
+Status: Build uploaded; Apple processing pending
 
 Build: `1.2 (5)`
 

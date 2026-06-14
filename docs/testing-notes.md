@@ -11,9 +11,11 @@ Prepared on 2026-06-13:
 - Generic iOS Release archive with signing disabled passed.
 - Automatically signed generic iOS Release archive passed using the existing development identity.
 - Added a reusable App Store Connect export configuration and bilingual v1.2 submission copy.
-- App Store Connect export/upload did not occur. Xcode reported an invalid local account credential entry, and the keychain currently has no usable Apple Distribution identity.
+- Xcode's stale Apple Account session was removed and the same Apple Account was signed in again.
+- App Store Connect export used the existing store profile and Apple Distribution identity successfully.
+- Build `1.2 (5)` uploaded successfully on June 14, 2026, and Apple reported that the package entered processing.
 
-The archive continues to load the production hosted URL, which remains on the accepted v1.1 experience until the v1.2 branch is merged and promoted. After the Apple account is refreshed in Xcode, rerun the App Store Connect export, wait for build `1.2 (5)` to process, install it over `1.1 (4)` without deleting the app, and complete the upgrade-persistence checklist.
+The archive continues to load the production hosted URL, which remains on the accepted v1.1 experience until the v1.2 branch is merged and promoted. After Apple completes processing, install build `1.2 (5)` over `1.1 (4)` without deleting the app and complete the upgrade-persistence checklist.
 
 ## Version 1.1 Mobile Regression Pass
 
