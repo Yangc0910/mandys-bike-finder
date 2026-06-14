@@ -1,6 +1,6 @@
 # App Store Connect Submission Package v1.2
 
-Status: Production deployed and hosted acceptance passed; build uploaded and Apple processing pending
+Status: Production deployed and hosted acceptance passed; build available to internal TestFlight testers
 
 Build: `1.2 (5)`
 
@@ -16,10 +16,11 @@ Updated on June 14, 2026:
 - Hosted browser acceptance saved two new evaluations without replacing the existing evaluation; all three remained after reload.
 - English and Simplified Chinese switching persisted after reload.
 - No browser-console errors or Vercel production error/fatal logs were found during the acceptance pass.
-- App Store Connect accepted the `1.2 (5)` upload and reported that processing started. Apple has not yet confirmed that the build is available in TestFlight.
-- TestFlight on the paired iPhone continued to show the installed `1.1 (4)` build with an Open action rather than an Update action during the June 14 follow-up check.
+- App Store Connect completed processing `1.2 (5)` at 12:12 AM EDT, but the build remained unavailable because its export-compliance answer was missing.
+- The export-compliance answer was completed on June 14. App Store Connect then reported `1.2 (5)` as Testing in the `Internal Testing` group with one tester.
+- Added `ITSAppUsesNonExemptEncryption = false` to the native Info.plist so future builds do not stop at the same compliance gate.
 - Six Simplified Chinese native source screenshots and final marketing exports were generated at `1320 x 2868`. The final PNG files are RGB with no alpha channel.
-- Physical-device upgrade acceptance from `1.1 (4)` remains pending and must be completed without deleting the app.
+- Physical-device upgrade acceptance from `1.1 (4)` remains pending and must be completed without deleting the app after TestFlight finishes syncing the newly enabled build.
 
 ## English (U.S.)
 

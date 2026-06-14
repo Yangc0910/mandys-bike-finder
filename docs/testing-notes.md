@@ -14,6 +14,9 @@ Prepared on 2026-06-13:
 - Xcode's stale Apple Account session was removed and the same Apple Account was signed in again.
 - App Store Connect export used the existing store profile and Apple Distribution identity successfully.
 - Build `1.2 (5)` uploaded successfully on June 14, 2026, and Apple reported that the package entered processing.
+- App Store Connect completed the upload at 12:12 AM EDT, but the build stayed unavailable in TestFlight because export compliance was missing.
+- Completed the compliance answer on June 14 and confirmed `1.2 (5)` changed to Testing in the existing `Internal Testing` group with one tester.
+- Added `ITSAppUsesNonExemptEncryption = false` to the native Info.plist to prevent future builds from stopping at the same compliance gate.
 
 Production release and hosted acceptance completed on June 14, 2026:
 
@@ -27,7 +30,7 @@ Production release and hosted acceptance completed on June 14, 2026:
 - Browser console inspection found no errors.
 - Vercel runtime inspection found no `error` or `fatal` entries for either production deployment during the release window.
 
-The paired iPhone 17 Pro Max remains available for acceptance testing. Apple has not yet confirmed that build `1.2 (5)` is available in TestFlight, so the upgrade from `1.1 (4)` must remain pending. Install it without deleting the app, then verify the existing Profile and History, exact-repeat deduplication, destructive controls, and force-quit persistence.
+The paired iPhone 17 Pro Max remains available for acceptance testing. Build `1.2 (5)` is enabled for the internal tester, but the upgrade from `1.1 (4)` must remain pending until TestFlight finishes syncing it to the device. Install it without deleting the app, then verify the existing Profile and History, exact-repeat deduplication, destructive controls, and force-quit persistence.
 
 ## Version 1.2 Simplified Chinese App Store Screenshots
 
