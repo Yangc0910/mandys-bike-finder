@@ -15,7 +15,19 @@ Prepared on 2026-06-13:
 - App Store Connect export used the existing store profile and Apple Distribution identity successfully.
 - Build `1.2 (5)` uploaded successfully on June 14, 2026, and Apple reported that the package entered processing.
 
-The archive continues to load the production hosted URL, which remains on the accepted v1.1 experience until the v1.2 branch is merged and promoted. After Apple completes processing, install build `1.2 (5)` over `1.1 (4)` without deleting the app and complete the upgrade-persistence checklist.
+Production release and hosted acceptance completed on June 14, 2026:
+
+- Pull request `#2` merged into `main` at commit `eb551c7`.
+- App deployment `dpl_GNuw7geVAacs8HjFNaaEzvYpNgne` reached `READY` and received the `app.mandysbikefinder.com` alias.
+- Public-site deployment `dpl_Bnoz2LECcHTAssjKmHXmAF3xZxhd` reached `READY`; `www.mandysbikefinder.com` continued returning `200`.
+- Production `/`, `/privacy`, `/offline`, and `/api/status` returned `200`; `/api/status` reported `ok: true`.
+- Settings displayed App Store MVP version `1.2`.
+- In the live Simplified Chinese UI, two new evaluations with different titles, prices, and wheel sizes were saved. History displayed both new records plus the existing record, for three records total.
+- After switching from Chinese to English and back to Chinese, a reload preserved the Chinese selection and all three History records.
+- Browser console inspection found no errors.
+- Vercel runtime inspection found no `error` or `fatal` entries for either production deployment during the release window.
+
+The paired iPhone 17 Pro Max remains available for acceptance testing. Apple has not yet confirmed that build `1.2 (5)` is available in TestFlight, so the upgrade from `1.1 (4)` must remain pending. Install it without deleting the app, then verify the existing Profile and History, exact-repeat deduplication, destructive controls, and force-quit persistence.
 
 ## Version 1.1 Mobile Regression Pass
 

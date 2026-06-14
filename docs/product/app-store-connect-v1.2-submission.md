@@ -1,8 +1,23 @@
 # App Store Connect Submission Package v1.2
 
-Status: Build uploaded; Apple processing pending
+Status: Production deployed and hosted acceptance passed; build uploaded and Apple processing pending
 
 Build: `1.2 (5)`
+
+## Release Status
+
+Updated on June 14, 2026:
+
+- Pull request `#2` merged into `main` at commit `eb551c7`.
+- Vercel production deployment `dpl_GNuw7geVAacs8HjFNaaEzvYpNgne` reached `READY` and serves `app.mandysbikefinder.com`.
+- The public website deployment `dpl_Bnoz2LECcHTAssjKmHXmAF3xZxhd` also reached `READY`.
+- Production `/`, `/privacy`, `/offline`, and `/api/status` returned `200`.
+- Settings reports App Store MVP version `1.2`.
+- Hosted browser acceptance saved two new evaluations without replacing the existing evaluation; all three remained after reload.
+- English and Simplified Chinese switching persisted after reload.
+- No browser-console errors or Vercel production error/fatal logs were found during the acceptance pass.
+- App Store Connect accepted the `1.2 (5)` upload and reported that processing started. Apple has not yet confirmed that the build is available in TestFlight.
+- Physical-device upgrade acceptance from `1.1 (4)` remains pending and must be completed without deleting the app.
 
 ## English (U.S.)
 

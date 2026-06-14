@@ -1,7 +1,7 @@
 # Xcode And TestFlight Preparation
 
-Status: Version 1.1 build 4 installed and launched from Internal TestFlight against the production v1.1 host; interactive device QA remains
-Last updated: 2026-06-11
+Status: Version 1.2 build 5 uploaded and production v1.2 hosted acceptance passed; Apple processing and physical-device upgrade QA remain
+Last updated: 2026-06-14
 
 ## Purpose
 
@@ -24,8 +24,8 @@ Current native settings:
 | Hosted URL | `https://app.mandysbikefinder.com` |
 | Cleartext traffic | `false` |
 | iOS deployment target | `15.0` |
-| Marketing version | `1.1` |
-| Build number | `4` |
+| Marketing version | `1.2` |
+| Build number | `5` |
 | Apple Developer Team | `H23DM6J89F` |
 | App icon asset catalog | `AppIcon` |
 | Launch screen | `LaunchScreen` storyboard with generated `Splash` asset |
@@ -60,6 +60,11 @@ Validation now completed on macOS:
 - The paired iPhone 17 Pro Max reports Mandy's Bike Finder version `1.1`, build `4`, installed.
 - The TestFlight app launched successfully; production logs recorded `200` responses for `/` and `/api/status` with no AI request.
 - The uploaded archive points to `https://app.mandysbikefinder.com`, which now serves the accepted v1.1 release candidate.
+- Version `1.2` build `5` unsigned and automatically signed release archives passed on June 13, 2026.
+- App Store Connect distribution export and upload for `1.2 (5)` succeeded on June 14, 2026; Apple reported that processing started.
+- Pull request `#2` merged into `main`, and the production v1.2 deployment reached `READY` at `app.mandysbikefinder.com`.
+- Hosted v1.2 acceptance confirmed multiple distinct History saves, English/Simplified Chinese persistence, version `1.2`, healthy routes, and no browser or production runtime errors.
+- Apple has not yet confirmed that `1.2 (5)` is available to the internal tester. Upgrade testing over `1.1 (4)` remains pending.
 
 GitHub handoff status:
 
@@ -103,8 +108,8 @@ In Xcode:
 - Confirm bundle identifier: `com.mandysbikefinder.app`.
 - Confirm display name: `Mandy's Bike Finder`.
 - Confirm version/build:
-  - Version: `1.1`
-  - Build: `4`
+  - Version: `1.2`
+  - Build: `5`
 - Confirm iOS deployment target is acceptable for first TestFlight. Current target is `15.0`.
 - Confirm App Transport Security allows the HTTPS hosted URL without adding broad exceptions.
 - Confirm no unnecessary native capabilities are enabled.
