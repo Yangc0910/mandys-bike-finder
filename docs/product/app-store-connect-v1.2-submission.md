@@ -1,6 +1,6 @@
 # App Store Connect Submission Package v1.2
 
-Status: Production deployed and hosted acceptance passed; build available to internal TestFlight testers
+Status: Submitted to App Review; waiting for review
 
 Build: `1.2 (5)`
 
@@ -20,7 +20,11 @@ Updated on June 14, 2026:
 - The export-compliance answer was completed on June 14. App Store Connect then reported `1.2 (5)` as Testing in the `Internal Testing` group with one tester.
 - Added `ITSAppUsesNonExemptEncryption = false` to the native Info.plist so future builds do not stop at the same compliance gate.
 - Six Simplified Chinese native source screenshots and final marketing exports were generated at `1320 x 2868`. The final PNG files are RGB with no alpha channel.
-- Physical-device upgrade acceptance from `1.1 (4)` remains pending and must be completed without deleting the app after TestFlight finishes syncing the newly enabled build.
+- The paired physical iPhone reports Mandy's Bike Finder version `1.2`, build `5`, after updating without deleting the app.
+- Device-container inspection confirmed the existing version 1.1 child profile and saved History evaluation remained present after the TestFlight update.
+- App Store Connect version `1.2` was created with build `1.2 (5)`, English and Simplified Chinese metadata, localized release notes, review notes, and the Simplified Chinese subtitle.
+- The Simplified Chinese product page currently inherits the accepted English screenshots. The six localized Chinese screenshot exports remain ready for a later metadata update.
+- Version `1.2 (5)` was submitted to App Review at 3:16 PM EDT on June 14, 2026. App Store Connect reports `Waiting for Review` and notes that review may take up to 48 hours.
 
 ## English (U.S.)
 
@@ -110,12 +114,15 @@ Mandy's Bike Finder 仅提供决策辅助。购买前请务必亲自检查车辆
 
 ## Submission Checks
 
-- [ ] Select build `1.2 (5)` after Apple makes it available.
-- [ ] Add the Simplified Chinese localization in App Store Connect.
+- [x] Select build `1.2 (5)` after Apple makes it available.
+- [x] Add the Simplified Chinese localization in App Store Connect.
 - [x] Capture localized Chinese screenshots.
 - [x] Confirm support and privacy URLs remain available.
-- [ ] Recheck App Privacy and export-compliance answers.
-- [ ] Submit only after the TestFlight acceptance checklist passes.
+- [x] Recheck the submission against App Store Connect validation and complete export compliance.
+- [x] Confirm the physical TestFlight upgrade preserves existing version 1.1 local data.
+- [x] Submit version `1.2 (5)` to App Review.
+
+Current App Store Connect status: `Waiting for Review`.
 
 Localized screenshot files:
 

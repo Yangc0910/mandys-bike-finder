@@ -30,7 +30,15 @@ Production release and hosted acceptance completed on June 14, 2026:
 - Browser console inspection found no errors.
 - Vercel runtime inspection found no `error` or `fatal` entries for either production deployment during the release window.
 
-The paired iPhone 17 Pro Max remains available for acceptance testing. Build `1.2 (5)` is enabled for the internal tester, but the upgrade from `1.1 (4)` must remain pending until TestFlight finishes syncing it to the device. Install it without deleting the app, then verify the existing Profile and History, exact-repeat deduplication, destructive controls, and force-quit persistence.
+Physical TestFlight upgrade and App Store submission completed on June 14, 2026:
+
+- The paired iPhone reports Mandy's Bike Finder version `1.2`, build `5`, after updating from `1.1 (4)` without deleting the app.
+- Device-container inspection confirmed the existing child profile and saved History evaluation remained in WebKit local storage after the update.
+- This verifies upgrade data compatibility. Interactive multi-save behavior remains covered by the production browser acceptance and automated regression tests rather than a physical-device touch automation pass.
+- App Store Connect version `1.2` was associated with build `1.2 (5)`.
+- English and Simplified Chinese product metadata, release notes, review notes, and the Simplified Chinese subtitle were saved.
+- The Simplified Chinese product page inherits the existing accepted English screenshots; six Chinese screenshot exports remain available locally for a future metadata-only update.
+- Version `1.2 (5)` was submitted to App Review at 3:16 PM EDT. App Store Connect reports `Waiting for Review` and says review may take up to 48 hours.
 
 ## Version 1.2 Simplified Chinese App Store Screenshots
 

@@ -1,6 +1,6 @@
 # Xcode And TestFlight Preparation
 
-Status: Version 1.2 build 5 uploaded and production v1.2 hosted acceptance passed; Apple processing and physical-device upgrade QA remain
+Status: Version 1.2 build 5 submitted to App Review; waiting for review
 Last updated: 2026-06-14
 
 ## Purpose
@@ -64,7 +64,11 @@ Validation now completed on macOS:
 - App Store Connect distribution export and upload for `1.2 (5)` succeeded on June 14, 2026; Apple reported that processing started.
 - Pull request `#2` merged into `main`, and the production v1.2 deployment reached `READY` at `app.mandysbikefinder.com`.
 - Hosted v1.2 acceptance confirmed multiple distinct History saves, English/Simplified Chinese persistence, version `1.2`, healthy routes, and no browser or production runtime errors.
-- Apple has not yet confirmed that `1.2 (5)` is available to the internal tester. Upgrade testing over `1.1 (4)` remains pending.
+- Apple made `1.2 (5)` available in the existing `Internal Testing` group after export compliance was completed.
+- The paired physical iPhone updated from `1.1 (4)` to `1.2 (5)` without deleting the app.
+- Device-container inspection confirmed the existing version 1.1 child profile and saved History evaluation survived the TestFlight update.
+- English and Simplified Chinese App Store metadata, release notes, review notes, build selection, and the Simplified Chinese subtitle were saved in App Store Connect.
+- Version `1.2 (5)` was submitted to App Review at 3:16 PM EDT on June 14, 2026, and is now `Waiting for Review`.
 
 GitHub handoff status:
 
