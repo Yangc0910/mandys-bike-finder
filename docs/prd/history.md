@@ -10,6 +10,7 @@ Historical PRD versions now live in:
 Post-launch release PRDs:
 
 - [versions/v1.1.md](versions/v1.1.md) - App Store post-launch UX polish release.
+- [versions/v1.2.md](versions/v1.2.md) - History reliability and Simplified Chinese localization release.
 
 The current source of truth is:
 

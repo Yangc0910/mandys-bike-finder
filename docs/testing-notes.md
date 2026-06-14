@@ -1,5 +1,22 @@
 # Testing Notes
 
+# Version 1.2 TestFlight Candidate Preparation
+
+Prepared on 2026-06-13:
+
+- Advanced the native iOS target to marketing version `1.2`, build `5`.
+- Confirmed the generated Capacitor configuration still points to `https://app.mandysbikefinder.com`.
+- `npm run cap:doctor` passed with the existing Capacitor 8.3.4 iOS project.
+- `npm run cap:sync` passed without producing unexpected tracked-file changes.
+- Generic iOS Release archive with signing disabled passed.
+- Automatically signed generic iOS Release archive passed using the existing development identity.
+- Added a reusable App Store Connect export configuration and bilingual v1.2 submission copy.
+- Xcode's stale Apple Account session was removed and the same Apple Account was signed in again.
+- App Store Connect export used the existing store profile and Apple Distribution identity successfully.
+- Build `1.2 (5)` uploaded successfully on June 14, 2026, and Apple reported that the package entered processing.
+
+The archive continues to load the production hosted URL, which remains on the accepted v1.1 experience until the v1.2 branch is merged and promoted. After Apple completes processing, install build `1.2 (5)` over `1.1 (4)` without deleting the app and complete the upgrade-persistence checklist.
+
 ## Version 1.1 Mobile Regression Pass
 
 Validated locally on 2026-06-11:

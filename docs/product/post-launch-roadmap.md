@@ -1,6 +1,6 @@
 # Post-Launch Product Roadmap
 
-Last updated: 2026-06-10
+Last updated: 2026-06-13
 
 ## Baseline
 
@@ -46,17 +46,31 @@ Release readiness:
 - Mobile regression and hosted preview verification pass.
 - App Store screenshots and release notes are ready.
 
-## Version 1.2: Evidence-Led Improvements
+## Version 1.2: History Reliability And Chinese Localization
 
-Version 1.2 should be selected after reviewing v1.1 usage, App Store feedback, support questions, and observed flow friction. Candidate themes may include:
+Primary outcome: make saved decisions dependable and make the complete App Store workflow usable in Simplified Chinese.
 
-- More useful comparison and shortlist tools within local History.
-- Better fit education and seller inspection guidance.
-- Accessibility and larger-text refinements.
-- Performance and maintainability improvements that do not change provider boundaries.
-- Carefully selected sharing/export improvements if privacy and product value are clear.
+Confirmed scope:
 
-Version 1.2 should not be assumed to include accounts, payments, subscriptions, or marketplace automation. Those require separate product, privacy, App Store, and architecture decisions.
+- Fix different listings being merged when their visible summary fields are similar.
+- Preserve exact-repeat deduplication and the 10-record local History limit.
+- Make similar saved listings easier to distinguish with model and location context.
+- Add persistent English / Simplified Chinese language selection.
+- Localize the core app shell, analysis results, Privacy, and offline recovery.
+- Preserve existing local Profile and History data without migration.
+
+Release proof:
+
+- Three similar listings can be saved and reopened as three correct snapshots.
+- Re-saving one exact evaluation does not increase the count.
+- English and Chinese flows pass physical-device and hosted regression checks.
+- Chinese App Store metadata and screenshots are ready before submission.
+
+Deferred candidates:
+
+- Two-bike comparison.
+- History sorting and private saved-item nicknames.
+- Accounts, cloud sync, payments, subscriptions, and marketplace automation.
 
 ## Version Control Policy
 

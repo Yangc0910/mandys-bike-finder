@@ -144,6 +144,7 @@ for (const frame of frames) {
       },
     ])
     .flatten({ background: "#F5F7FA" })
+    .removeAlpha()
     .withMetadata({ density: 72 })
     .png({ compressionLevel: 9, palette: false })
     .toFile(outputPath);
