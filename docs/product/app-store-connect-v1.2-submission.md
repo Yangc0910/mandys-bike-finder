@@ -17,6 +17,8 @@ Updated on June 14, 2026:
 - English and Simplified Chinese switching persisted after reload.
 - No browser-console errors or Vercel production error/fatal logs were found during the acceptance pass.
 - App Store Connect accepted the `1.2 (5)` upload and reported that processing started. Apple has not yet confirmed that the build is available in TestFlight.
+- TestFlight on the paired iPhone continued to show the installed `1.1 (4)` build with an Open action rather than an Update action during the June 14 follow-up check.
+- Six Simplified Chinese native source screenshots and final marketing exports were generated at `1320 x 2868`. The final PNG files are RGB with no alpha channel.
 - Physical-device upgrade acceptance from `1.1 (4)` remains pending and must be completed without deleting the app.
 
 ## English (U.S.)
@@ -107,9 +109,15 @@ Mandy's Bike Finder 仅提供决策辅助。购买前请务必亲自检查车辆
 
 ## Submission Checks
 
-- Select build `1.2 (5)`.
-- Add the Simplified Chinese localization in App Store Connect.
-- Capture localized Chinese screenshots before submission.
-- Confirm support and privacy URLs remain available.
-- Recheck App Privacy and export-compliance answers.
-- Submit only after the TestFlight acceptance checklist passes.
+- [ ] Select build `1.2 (5)` after Apple makes it available.
+- [ ] Add the Simplified Chinese localization in App Store Connect.
+- [x] Capture localized Chinese screenshots.
+- [x] Confirm support and privacy URLs remain available.
+- [ ] Recheck App Privacy and export-compliance answers.
+- [ ] Submit only after the TestFlight acceptance checklist passes.
+
+Localized screenshot files:
+
+- Native sources: `artifacts/app-store/v1.2/zh-Hans/source/`
+- Final marketing exports: `artifacts/app-store/v1.2/zh-Hans/final/`
+- Export command: `npm run export:app-store-screenshots:zh-Hans`

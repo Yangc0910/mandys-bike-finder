@@ -8,6 +8,7 @@
     "build": "next build",
     "build:screenshots": "NEXT_PUBLIC_APP_STORE_MVP_MODE=true NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE=true next build",
     "export:app-store-screenshots": "node scripts/export-app-store-screenshots.mjs",
+    "export:app-store-screenshots:zh-Hans": "APP_STORE_SCREENSHOT_LOCALE=zh-Hans node scripts/export-app-store-screenshots.mjs",
     "start": "next start",
     "lint": "next lint",
     "test:copy": "node --experimental-strip-types --test tests/listing-copy.test.mjs",

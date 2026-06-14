@@ -29,6 +29,24 @@ Production release and hosted acceptance completed on June 14, 2026:
 
 The paired iPhone 17 Pro Max remains available for acceptance testing. Apple has not yet confirmed that build `1.2 (5)` is available in TestFlight, so the upgrade from `1.1 (4)` must remain pending. Install it without deleting the app, then verify the existing Profile and History, exact-repeat deduplication, destructive controls, and force-quit persistence.
 
+## Version 1.2 Simplified Chinese App Store Screenshots
+
+Captured and exported on June 14, 2026:
+
+- Used the iOS 26.5 iPhone 17 Pro Max simulator at the Apple-accepted `1320 x 2868` portrait size.
+- Set the simulator to Simplified Chinese, Light appearance, `9:41`, full Wi-Fi/cellular signal, and a charged battery.
+- Captured six native fixture states: Profile, Profile edit, Evaluate, Result, History, and Settings/privacy.
+- The fixture used only repository-owned fictional data and made page plus `/api/status` requests; no extraction, analysis, message, report, email, or marketplace request occurred.
+- Added a reusable `npm run export:app-store-screenshots:zh-Hans` command while preserving the existing English export behavior.
+- Generated six final Simplified Chinese marketing PNG files at `1320 x 2868`, RGB, with no alpha channel.
+- Visually checked headline wrapping, supporting copy, native capture placement, active tabs, fixture content, and data-control messaging across all six frames.
+- Restored the generated Capacitor configuration to `https://app.mandysbikefinder.com`, cleared the status-bar override, and shut down the simulator after capture.
+
+Local artifact paths:
+
+- `artifacts/app-store/v1.2/zh-Hans/source/`
+- `artifacts/app-store/v1.2/zh-Hans/final/`
+
 ## Version 1.1 Mobile Regression Pass
 
 Validated locally on 2026-06-11:

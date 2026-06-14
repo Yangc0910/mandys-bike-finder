@@ -5,8 +5,7 @@ import sharp from "sharp";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "../..");
-const sourceDirectory = path.join(repositoryRoot, "artifacts/app-store/v1.1/source");
-const outputDirectory = path.join(repositoryRoot, "artifacts/app-store/v1.1/final");
+const locale = process.env.APP_STORE_SCREENSHOT_LOCALE || "en";
 
 const canvasWidth = 1320;
 const canvasHeight = 2868;
@@ -15,44 +14,102 @@ const captureHeight = 2151;
 const captureLeft = 165;
 const captureTop = 640;
 
-const frames = [
-  {
-    source: "frame-01-profile.png",
-    output: "frame-01-find-the-right-bike-size.png",
-    headline: ["Find the right bike size"],
-    supporting: ["Get practical fit guidance built around your child."],
+const screenshotSets = {
+  en: {
+    sourceDirectory: "artifacts/app-store/v1.1/source",
+    outputDirectory: "artifacts/app-store/v1.1/final",
+    frames: [
+      {
+        source: "frame-01-profile.png",
+        output: "frame-01-find-the-right-bike-size.png",
+        headline: ["Find the right bike size"],
+        supporting: ["Get practical fit guidance built around your child."],
+      },
+      {
+        source: "frame-02-profile-setup.png",
+        output: "frame-02-guidance-built-for-your-child.png",
+        headline: ["Guidance built for", "your child"],
+        supporting: ["Height, age, and riding confidence shape", "every recommendation."],
+      },
+      {
+        source: "frame-03-evaluate.png",
+        output: "frame-03-check-a-used-bike-listing.png",
+        headline: ["Check a used-bike listing"],
+        supporting: ["Add a screenshot, review the details, then decide."],
+      },
+      {
+        source: "frame-04-result.png",
+        output: "frame-04-see-fit-deal-and-risk-clearly.png",
+        headline: ["See fit, deal, and", "risk clearly"],
+        supporting: ["Understand the recommendation and know", "what to do next."],
+      },
+      {
+        source: "frame-05-history.png",
+        output: "frame-05-save-the-bikes-worth-considering.png",
+        headline: ["Save the bikes worth", "considering"],
+        supporting: ["Keep promising options organized on this device."],
+      },
+      {
+        source: "frame-06-privacy.png",
+        output: "frame-06-your-data-stays-in-your-control.png",
+        headline: ["Your data stays in", "your control"],
+        supporting: ["Local saves, clear controls, and optional", "user-triggered AI."],
+      },
+    ],
   },
-  {
-    source: "frame-02-profile-setup.png",
-    output: "frame-02-guidance-built-for-your-child.png",
-    headline: ["Guidance built for", "your child"],
-    supporting: ["Height, age, and riding confidence shape", "every recommendation."],
+  "zh-Hans": {
+    sourceDirectory: "artifacts/app-store/v1.2/zh-Hans/source",
+    outputDirectory: "artifacts/app-store/v1.2/zh-Hans/final",
+    frames: [
+      {
+        source: "frame-01-profile.png",
+        output: "frame-01-find-the-right-bike-size.png",
+        headline: ["找到更合适的", "自行车尺寸"],
+        supporting: ["根据孩子情况，获得实用的尺寸建议。"],
+      },
+      {
+        source: "frame-02-profile-setup.png",
+        output: "frame-02-guidance-built-for-your-child.png",
+        headline: ["为孩子定制的", "选车指导"],
+        supporting: ["身高、年龄和骑行经验共同决定建议。"],
+      },
+      {
+        source: "frame-03-evaluate.png",
+        output: "frame-03-check-a-used-bike-listing.png",
+        headline: ["快速检查", "二手自行车"],
+        supporting: ["添加截图，核对信息，再做决定。"],
+      },
+      {
+        source: "frame-04-result.png",
+        output: "frame-04-see-fit-deal-and-risk-clearly.png",
+        headline: ["清楚了解尺寸、", "价格与风险"],
+        supporting: ["看懂推荐理由，明确下一步怎么做。"],
+      },
+      {
+        source: "frame-05-history.png",
+        output: "frame-05-save-the-bikes-worth-considering.png",
+        headline: ["保存值得考虑的", "自行车"],
+        supporting: ["将有希望的选择整理在本设备上。"],
+      },
+      {
+        source: "frame-06-privacy.png",
+        output: "frame-06-your-data-stays-in-your-control.png",
+        headline: ["数据始终由你掌控"],
+        supporting: ["本地保存、清晰控制，AI 仅在主动操作后运行。"],
+      },
+    ],
   },
-  {
-    source: "frame-03-evaluate.png",
-    output: "frame-03-check-a-used-bike-listing.png",
-    headline: ["Check a used-bike listing"],
-    supporting: ["Add a screenshot, review the details, then decide."],
-  },
-  {
-    source: "frame-04-result.png",
-    output: "frame-04-see-fit-deal-and-risk-clearly.png",
-    headline: ["See fit, deal, and", "risk clearly"],
-    supporting: ["Understand the recommendation and know", "what to do next."],
-  },
-  {
-    source: "frame-05-history.png",
-    output: "frame-05-save-the-bikes-worth-considering.png",
-    headline: ["Save the bikes worth", "considering"],
-    supporting: ["Keep promising options organized on this device."],
-  },
-  {
-    source: "frame-06-privacy.png",
-    output: "frame-06-your-data-stays-in-your-control.png",
-    headline: ["Your data stays in", "your control"],
-    supporting: ["Local saves, clear controls, and optional", "user-triggered AI."],
-  },
-];
+};
+
+const screenshotSet = screenshotSets[locale];
+
+if (!screenshotSet) {
+  throw new Error(`Unsupported screenshot locale: ${locale}`);
+}
+
+const sourceDirectory = path.join(repositoryRoot, screenshotSet.sourceDirectory);
+const outputDirectory = path.join(repositoryRoot, screenshotSet.outputDirectory);
+const frames = screenshotSet.frames;
 
 function escapeXml(value) {
   return value
@@ -91,14 +148,14 @@ function backgroundSvg(frame) {
         <style>
           .headline {
             fill: #0F172A;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
             font-size: 88px;
             font-weight: 750;
             letter-spacing: -2.4px;
           }
           .supporting {
             fill: #64748B;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
             font-size: 48px;
             font-weight: 500;
             letter-spacing: -0.4px;
