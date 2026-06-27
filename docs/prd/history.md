@@ -11,6 +11,7 @@ Post-launch release PRDs:
 
 - [versions/v1.1.md](versions/v1.1.md) - App Store post-launch UX polish release.
 - [versions/v1.2.md](versions/v1.2.md) - History reliability and Simplified Chinese localization release.
+- [versions/v1.3.md](versions/v1.3.md) - App entry screen and icon-led visual guidance release.
 
 The current source of truth is:
 

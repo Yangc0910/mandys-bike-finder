@@ -1,5 +1,16 @@
 # Testing Notes
 
+# Version 1.3 App Entry And Visual Guidance
+
+Validated locally for the version 1.3 update:
+
+- Advanced App Store UI metadata to `1.3` and native iOS target metadata to `1.3 (6)`.
+- Added an App Store-mode startup entry screen using the launch artwork; screenshot fixture mode skips the startup wait for deterministic captures.
+- Added icon-led Profile, Evaluate, History, and Settings guidance, including the top Rider -> Listing -> Saved flow map.
+- `npm run test`: passed all listing-copy, History, and i18n tests.
+- `NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm run build`: passed production build, type checking, and route generation.
+- Local Chromium browser automation at `390 x 844` confirmed the startup screen renders, auto-enters the Profile screen, the flow map appears, Settings displays version `1.3`, no Next.js error overlay appears, and no browser console errors were captured.
+
 # Version 1.2 TestFlight Candidate Preparation
 
 Prepared on 2026-06-13:

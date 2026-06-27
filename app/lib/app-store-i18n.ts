@@ -241,6 +241,10 @@ const zhHans: Record<string, string> = {
   English: "English",
   "Simplified Chinese": "简体中文",
   "App Store MVP tabs": "App 主导航",
+  "App flow": "App 流程",
+  Rider: "骑手",
+  Listing: "商品",
+  Saved: "保存",
 };
 
 const analysisLabels: Record<string, string> = {

@@ -83,13 +83,36 @@ const APP_STORE_MVP_MODE = process.env.NEXT_PUBLIC_APP_STORE_MVP_MODE === "true"
 const APP_STORE_SCREENSHOT_FIXTURE_MODE = process.env.NEXT_PUBLIC_APP_STORE_SCREENSHOT_FIXTURE_MODE === "true";
 const APP_STORE_ACTIVE_CHILD_PROFILE_KEY = "mbf.appStore.activeChildProfile";
 const APP_STORE_SAVED_EVALUATIONS_KEY = "mbf.appStore.savedEvaluations";
-const APP_STORE_MVP_VERSION = "1.2";
+const APP_STORE_MVP_VERSION = "1.3";
+const APP_STORE_LAUNCH_DURATION_MS = 2300;
 const APP_STORE_MVP_LOCAL_STORAGE_KEYS = [
   APP_STORE_ACTIVE_CHILD_PROFILE_KEY,
   APP_STORE_SAVED_EVALUATIONS_KEY,
 ];
 
 type AppStoreTab = "profile" | "evaluate" | "history" | "settings";
+type AppVisualIconName =
+  | "bike"
+  | "camera"
+  | "check"
+  | "clock"
+  | "history"
+  | "language"
+  | "list"
+  | "lock"
+  | "message"
+  | "price"
+  | "profile"
+  | "risk"
+  | "ruler"
+  | "save"
+  | "search"
+  | "settings"
+  | "shield"
+  | "spark"
+  | "star"
+  | "trash"
+  | "wheel";
 
 type AppLocaleContextValue = {
   locale: AppLocale;
@@ -210,6 +233,7 @@ export default function Home() {
   const [isBikeCoachLoading, setIsBikeCoachLoading] = useState(false);
   const [activeAppStoreTab, setActiveAppStoreTab] = useState<AppStoreTab>("profile");
   const [screenshotFixtureFrame, setScreenshotFixtureFrame] = useState<ScreenshotFixtureFrame | null>(null);
+  const [showAppLaunchScreen, setShowAppLaunchScreen] = useState(APP_STORE_MVP_MODE && !APP_STORE_SCREENSHOT_FIXTURE_MODE);
 
   const normalizedChild = useMemo(() => {
     const normalizedHeightCm = heightUnit === "cm" ? heightCmInput : feetInchesToCm(heightFeet, heightInches);
@@ -291,6 +315,12 @@ export default function Home() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!showAppLaunchScreen) return;
+    const timer = window.setTimeout(() => setShowAppLaunchScreen(false), APP_STORE_LAUNCH_DURATION_MS);
+    return () => window.clearTimeout(timer);
+  }, [showAppLaunchScreen]);
 
   useEffect(() => {
     if (!APP_STORE_SCREENSHOT_FIXTURE_MODE) return;
@@ -836,6 +866,10 @@ export default function Home() {
   }
 
   if (APP_STORE_MVP_MODE) {
+    if (showAppLaunchScreen) {
+      return <AppStoreLaunchScreen onContinue={() => setShowAppLaunchScreen(false)} />;
+    }
+
     return (
       <AppStoreTabShell
         activeTab={activeAppStoreTab}
@@ -2160,6 +2194,50 @@ export default function Home() {
   );
 }
 
+function AppStoreLaunchScreen({ onContinue }: { onContinue: () => void }) {
+  const [locale, setLocale] = useState<AppLocale>("en");
+
+  useEffect(() => {
+    const resolvedLocale = resolveAppLocale(
+      window.localStorage.getItem(APP_LOCALE_STORAGE_KEY),
+      window.navigator.language,
+    );
+    setLocale(resolvedLocale);
+  }, []);
+
+  const zh = locale === "zh-Hans";
+
+  return (
+    <main className="app-launch-screen" aria-label={zh ? "Mandy 自行车助手启动画面" : "Mandy's Bike Finder launch screen"}>
+      <section className="app-launch-content">
+        <div className="app-launch-visual" aria-hidden="true">
+          <Image
+            src="/launch-screen.svg"
+            alt=""
+            fill
+            priority
+            sizes="min(82vw, 320px)"
+            className="object-contain"
+            unoptimized
+          />
+        </div>
+        <p className="app-launch-name">Mandy&apos;s Bike Finder</p>
+        <h1>{zh ? "正在进入自行车助手" : "Ready for a bike check"}</h1>
+        <div className="app-launch-chip-row" aria-hidden="true">
+          <span><AppVisualIcon name="ruler" />{zh ? "尺寸" : "Fit"}</span>
+          <span><AppVisualIcon name="price" />{zh ? "价格" : "Price"}</span>
+          <span><AppVisualIcon name="shield" />{zh ? "风险" : "Risk"}</span>
+        </div>
+        <div className="app-launch-progress" aria-hidden="true"><span /></div>
+        <p className="app-launch-status">{zh ? "无需账号，正在打开本地 App 流程" : "Continuing without an account"}</p>
+        <button type="button" onClick={onContinue} className="app-launch-skip">
+          {zh ? "立即进入" : "Enter app"}
+        </button>
+      </section>
+    </main>
+  );
+}
+
 function AppStoreTabShell({
   activeTab,
   screenshotFixtureFrame,
@@ -2236,6 +2314,7 @@ function AppStoreTabShell({
             </div>
           )}
           <section className="app-native-content mx-auto grid max-w-2xl gap-5">
+            <AppFlowMap activeTab={activeTab} onSelectTab={selectTab} />
             {activeTab === "profile" && <ProfileScreenPlaceholder screenshotFixtureFrame={screenshotFixtureFrame} onEvaluate={() => selectTab("evaluate")} />}
             {activeTab === "evaluate" && (
               <EvaluateScreenPlaceholder
@@ -2264,13 +2343,68 @@ function ConnectionStatusIcon() {
   );
 }
 
-function AppScreenHeader({ title, eyebrow, copy }: { title: string; eyebrow: string; copy: string }) {
+function AppScreenHeader({
+  title,
+  eyebrow,
+  copy,
+  icon,
+}: {
+  title: string;
+  eyebrow: string;
+  copy: string;
+  icon?: AppVisualIconName;
+}) {
   return (
-    <header className="min-w-0 px-1 pb-1 pt-1">
-      <p className="break-words text-xs font-bold tracking-[0.04em] text-brand">{eyebrow}</p>
-      <h1 className="mt-1 break-words text-[1.75rem] font-bold leading-[2.125rem] tracking-[-0.025em] text-[var(--app-text-strong)]">{title}</h1>
-      <p className="mt-1 max-w-xl break-words text-[15px] leading-[1.375rem] text-[var(--app-text-muted)]">{copy}</p>
+    <header className="flex min-w-0 items-start gap-3 px-1 pb-1 pt-1">
+      {icon && (
+        <span className="mt-1 grid h-11 w-11 shrink-0 place-items-center rounded-[var(--app-radius-button)] border border-blue-100 bg-[var(--app-brand-050)] text-brand" aria-hidden="true">
+          <AppVisualIcon name={icon} />
+        </span>
+      )}
+      <div className="min-w-0">
+        <p className="break-words text-xs font-bold tracking-[0.04em] text-brand">{eyebrow}</p>
+        <h1 className="mt-1 break-words text-[1.75rem] font-bold leading-[2.125rem] tracking-normal text-[var(--app-text-strong)]">{title}</h1>
+        <p className="mt-1 max-w-xl break-words text-[15px] leading-[1.375rem] text-[var(--app-text-muted)]">{copy}</p>
+      </div>
     </header>
+  );
+}
+
+function AppFlowMap({
+  activeTab,
+  onSelectTab,
+}: {
+  activeTab: AppStoreTab;
+  onSelectTab: (tab: AppStoreTab) => void;
+}) {
+  const { t } = useAppLocale();
+  const flowSteps: Array<{ tab: AppStoreTab; icon: AppVisualIconName; label: string; helper: string }> = [
+    { tab: "profile", icon: "profile", label: t("Rider"), helper: t("Profile") },
+    { tab: "evaluate", icon: "camera", label: t("Listing"), helper: t("Evaluate") },
+    { tab: "history", icon: "save", label: t("Saved"), helper: t("History") },
+  ];
+
+  return (
+    <nav className="app-flow-map" aria-label={t("App flow")}>
+      {flowSteps.map((step, index) => {
+        const active = activeTab === step.tab;
+        return (
+          <button
+            key={step.tab}
+            type="button"
+            onClick={() => onSelectTab(step.tab)}
+            aria-current={active ? "step" : undefined}
+            className="app-flow-step"
+          >
+            <span className="app-flow-step-icon" aria-hidden="true"><AppVisualIcon name={step.icon} compact /></span>
+            <span className="min-w-0 text-center">
+              <span className="sr-only">{step.helper}</span>
+              <span className="block text-[13px] font-bold leading-tight">{index + 1}. {step.label}</span>
+            </span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -2431,6 +2565,7 @@ function ProfileScreenPlaceholder({
         eyebrow={t("Mandy's Bike Finder")}
         title={t("Profile")}
         copy={t("Build a reusable rider profile for clearer fit guidance on every bike check.")}
+        icon="profile"
       />
       {!savedProfile && !isEditing && (
         <section className="app-native-group">
@@ -2443,11 +2578,12 @@ function ProfileScreenPlaceholder({
               {t("Height, age, and riding confidence help Mandy suggest a practical wheel size before you evaluate a listing.")}
             </p>
             <div className="mt-5 grid gap-3">
-              <ProfileBenefitRow number="1" title={t("Add three rider basics")} copy={t("Height, age, and riding experience are required.")} />
-              <ProfileBenefitRow number="2" title={t("See a fit-first recommendation")} copy={t("Get a starting wheel size, bike type, and growth caution.")} />
-              <ProfileBenefitRow number="3" title={t("Reuse it for every check")} copy={t("The profile stays on this device. No account or cloud sync.")} />
+              <ProfileBenefitRow icon="ruler" title={t("Add three rider basics")} copy={t("Height, age, and riding experience are required.")} />
+              <ProfileBenefitRow icon="wheel" title={t("See a fit-first recommendation")} copy={t("Get a starting wheel size, bike type, and growth caution.")} />
+              <ProfileBenefitRow icon="lock" title={t("Reuse it for every check")} copy={t("The profile stays on this device. No account or cloud sync.")} />
             </div>
-            <button type="button" onClick={() => setIsEditing(true)} className="app-native-primary mt-6 w-full px-4 text-sm">
+            <button type="button" onClick={() => setIsEditing(true)} className="app-native-primary mt-6 inline-flex w-full items-center justify-center gap-2 px-4 text-sm">
+              <AppVisualIcon name="profile" compact />
               {t("Set up rider profile")}
             </button>
           </div>
@@ -2483,7 +2619,8 @@ function ProfileScreenPlaceholder({
             <ProfileGuidanceBlock label={t("Why this size")} copy={activeRecommendation.explanation} />
             <ProfileGuidanceBlock label={t("Growth caution")} copy={activeRecommendation.growthOption || t("No larger growth option is recommended now.")} tone="caution" />
             <ProfileGuidanceBlock label={t("Style guidance")} copy={activeRecommendation.styleRecommendation || t("Prioritize fit and manageable controls first.")} />
-            <button type="button" onClick={onEvaluate} className="app-native-primary w-full px-4 text-sm">
+            <button type="button" onClick={onEvaluate} className="app-native-primary inline-flex w-full items-center justify-center gap-2 px-4 text-sm">
+              <AppVisualIcon name="search" compact />
               {locale === "zh-Hans"
                 ? `为 ${savedProfile.nickname?.trim() || "这位骑手"} 评估自行车`
                 : `Evaluate a bike for ${savedProfile.nickname?.trim() || "this rider"}`}
@@ -2533,7 +2670,7 @@ function ProfileScreenPlaceholder({
             )}
           </div>
           <div className="app-native-row grid gap-4">
-            <AppFormGroupTitle title={t("Rider basics")} copy={t("Height, age, and riding experience shape the fit recommendation.")} />
+            <AppFormGroupTitle title={t("Rider basics")} copy={t("Height, age, and riding experience shape the fit recommendation.")} icon="ruler" />
             <Field label={t("Height")} required>
               <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] gap-2 sm:grid-cols-[110px_minmax(0,1fr)]">
                 <select className={inputClass} value={heightUnit} onChange={(event) => setHeightUnit(event.target.value as "cm" | "ft-in")}>
@@ -2563,7 +2700,7 @@ function ProfileScreenPlaceholder({
             </Field>
           </div>
           <div className="app-native-row grid gap-4">
-            <AppFormGroupTitle title={t("Optional personalization")} copy={t("These details can refine presentation but never block fit guidance.")} />
+            <AppFormGroupTitle title={t("Optional personalization")} copy={t("These details can refine presentation but never block fit guidance.")} icon="star" />
             <Field label={t("Child name / nickname")} optional>
               <input className={inputClass} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder={t("Optional nickname")} />
             </Field>
@@ -2603,7 +2740,8 @@ function ProfileScreenPlaceholder({
             </p>
           )}
           <div className="app-native-row grid gap-2 sm:grid-cols-2">
-            <button type="button" onClick={saveProfile} className="app-native-primary px-4 text-sm">
+            <button type="button" onClick={saveProfile} className="app-native-primary inline-flex items-center justify-center gap-2 px-4 text-sm">
+              <AppVisualIcon name="save" compact />
               {t(savedProfile ? "Update profile" : "Save profile")}
             </button>
             {savedProfile ? (
@@ -2620,10 +2758,12 @@ function ProfileScreenPlaceholder({
   );
 }
 
-function ProfileBenefitRow({ number, title, copy }: { number: string; title: string; copy: string }) {
+function ProfileBenefitRow({ icon, title, copy }: { icon: AppVisualIconName; title: string; copy: string }) {
   return (
     <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3">
-      <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-sm font-bold text-brand shadow-sm" aria-hidden="true">{number}</span>
+      <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-brand shadow-sm" aria-hidden="true">
+        <AppVisualIcon name={icon} compact />
+      </span>
       <div className="min-w-0">
         <p className="text-sm font-bold text-[var(--app-text-strong)]">{title}</p>
         <p className="mt-0.5 text-xs leading-[1.125rem] text-[var(--app-text-muted)]">{copy}</p>
@@ -2905,6 +3045,7 @@ function EvaluateScreenPlaceholder({
         eyebrow={t("One listing at a time")}
         title={t("Evaluate")}
         copy={t("Add a used-bike listing, confirm the details, then get local fit, value, and risk guidance.")}
+        icon="search"
       />
 
       <EvaluateProgress currentStage={evaluateStage} />
@@ -2916,7 +3057,8 @@ function EvaluateScreenPlaceholder({
           <p className="mt-2 text-sm leading-6 text-amber-900">
             {t("Height, age, and riding experience power the fit recommendation. Listing details you add here will stay available while you switch tabs.")}
           </p>
-          <button type="button" onClick={onProfile} className="app-native-primary mt-5 w-full px-4 text-sm">
+          <button type="button" onClick={onProfile} className="app-native-primary mt-5 inline-flex w-full items-center justify-center gap-2 px-4 text-sm">
+            <AppVisualIcon name="profile" compact />
             {t("Set up rider profile")}
           </button>
         </section>
@@ -2937,15 +3079,16 @@ function EvaluateScreenPlaceholder({
                 : `${activeProfile.child.heightCm || "Unknown"} cm · ${localizeRidingExperience(locale, activeProfile.child.experience)}`}
             </p>
           </div>
-          <button type="button" onClick={onProfile} className="min-h-11 shrink-0 rounded-[var(--app-radius-button)] border border-blue-100 bg-white px-3 text-xs font-bold text-brand">
-            {t("Edit")}
-          </button>
+            <button type="button" onClick={onProfile} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-[var(--app-radius-button)] border border-blue-100 bg-white px-3 text-xs font-bold text-brand">
+              <AppVisualIcon name="profile" compact />
+              {t("Edit")}
+            </button>
         </section>
       )}
 
       <section className="app-native-group">
         <div className="app-native-row">
-          <AppSectionHeading eyebrow={locale === "zh-Hans" ? "第 1 步" : "Step 1"} title={t("Choose how to add the listing")} copy={t("Start with the information you already have. You can edit every field before analysis.")} />
+          <AppSectionHeading eyebrow={locale === "zh-Hans" ? "第 1 步" : "Step 1"} title={t("Choose how to add the listing")} copy={t("Start with the information you already have. You can edit every field before analysis.")} icon="camera" />
         </div>
         <div className="app-native-row">
           <div className="grid grid-cols-3 gap-1 rounded-[var(--app-radius-card)] border border-[var(--app-border)] bg-[var(--app-surface-subtle)] p-1.5" aria-label={t("Listing input method")}>
@@ -2982,7 +3125,7 @@ function EvaluateScreenPlaceholder({
         <div className="app-native-row">
           <AppSectionHeading eyebrow={t("Add listing")} title={t(
             inputMode === "screenshot" ? "Choose a listing screenshot" : inputMode === "link" ? "Add listing text or a reference link" : "Enter the listing details yourself",
-          )} copy={t("Nothing is analyzed or sent to AI just by adding information.")} />
+          )} copy={t("Nothing is analyzed or sent to AI just by adding information.")} icon={inputMode === "screenshot" ? "camera" : inputMode === "link" ? "list" : "bike"} />
         </div>
         {inputMode === "screenshot" && (
           <div className="app-native-row grid gap-4">
@@ -3083,10 +3226,10 @@ function EvaluateScreenPlaceholder({
 
       <section className="app-native-group">
         <div className="app-native-row">
-          <AppSectionHeading eyebrow={locale === "zh-Hans" ? "第 2 步" : "Step 2"} title={t("Review the listing details")} copy={t("Confirm what you know and correct anything extracted or parsed incorrectly.")} />
+          <AppSectionHeading eyebrow={locale === "zh-Hans" ? "第 2 步" : "Step 2"} title={t("Review the listing details")} copy={t("Confirm what you know and correct anything extracted or parsed incorrectly.")} icon="list" />
         </div>
         <div className="app-native-row grid gap-4">
-          <AppFormGroupTitle title={t("Bike basics")} copy={t("Price and wheel size are especially useful for fit and value guidance.")} />
+          <AppFormGroupTitle title={t("Bike basics")} copy={t("Price and wheel size are especially useful for fit and value guidance.")} icon="bike" />
           <Field label={t("Bike title")} optional>
             <input className={inputClass} value={draftListing.title} onChange={(event) => updateDraftListingField("title", event.target.value)} placeholder="20 inch Trek kids bike" />
           </Field>
@@ -3116,7 +3259,7 @@ function EvaluateScreenPlaceholder({
           </div>
         </div>
         <div className="app-native-row grid gap-4">
-          <AppFormGroupTitle title={t("Source and condition")} copy={t("Helpful for pickup context and risk checks.")} />
+          <AppFormGroupTitle title={t("Source and condition")} copy={t("Helpful for pickup context and risk checks.")} icon="shield" />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("Platform/source")} optional>
               <input className={inputClass} value={draftListing.platform || ""} onChange={(event) => updateDraftListingField("platform", event.target.value)} placeholder="Facebook Marketplace" />
@@ -3163,15 +3306,21 @@ function EvaluateScreenPlaceholder({
           </article>
         )}
         <div className="app-native-row">
-          <p className="mb-3 text-xs font-bold tracking-[0.04em] text-brand">{locale === "zh-Hans" ? "第 3 步 · 获取建议" : "Step 3 · Get recommendation"}</p>
+          <div className="mb-3 flex items-center gap-2 text-brand">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--app-brand-050)]" aria-hidden="true">
+              <AppVisualIcon name="spark" compact />
+            </span>
+            <p className="text-xs font-bold tracking-[0.04em]">{locale === "zh-Hans" ? "第 3 步 · 获取建议" : "Step 3 · Get recommendation"}</p>
+          </div>
           <button
             type="button"
             disabled={!canAnalyze}
             onClick={analyzeListingLocally}
-            className={`min-h-12 w-full rounded-[var(--app-radius-button)] px-4 text-sm font-bold ${
+            className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[var(--app-radius-button)] px-4 text-sm font-bold ${
               canAnalyze ? "bg-brand text-white shadow-[0_7px_18px_rgba(47,111,237,0.22)]" : "cursor-not-allowed bg-slate-200 text-slate-500"
             }`}
           >
+            <AppVisualIcon name="search" compact />
             {t("Analyze bike locally")}
           </button>
           {!hasProfile ? (
@@ -3199,7 +3348,7 @@ function EvaluateScreenPlaceholder({
             </div>
           </div>
           <div className="app-native-row">
-            <AppFormGroupTitle title={t("Fit, deal, and risk")} copy={t("Each status includes the reason behind the recommendation.")} />
+            <AppFormGroupTitle title={t("Fit, deal, and risk")} copy={t("Each status includes the reason behind the recommendation.")} icon="risk" />
             <div className="mt-4 grid gap-3">
               <ResultMeter label={t("Fit")} item={displayResult.dimensions.fit} />
               <ResultMeter label={t("Deal/value")} item={displayResult.dimensions.price} />
@@ -3207,7 +3356,7 @@ function EvaluateScreenPlaceholder({
             </div>
           </div>
           <div className="app-native-row">
-            <AppFormGroupTitle title={t("What to do next")} copy={t("Use the recommendation as decision support before arranging pickup.")} />
+            <AppFormGroupTitle title={t("What to do next")} copy={t("Use the recommendation as decision support before arranging pickup.")} icon="check" />
             <ol className="mt-4 grid gap-3">
               {buildResultNextSteps(displayResult, locale).map((step, index) => (
                 <li key={step} className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3">
@@ -3253,25 +3402,41 @@ function AppSectionHeading({
   eyebrow,
   title,
   copy,
+  icon,
 }: {
   eyebrow: string;
   title: string;
   copy?: string;
+  icon?: AppVisualIconName;
 }) {
   return (
-    <div className="min-w-0">
-      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand">{eyebrow}</p>
-      <h2 className="mt-1 break-words text-lg font-bold leading-tight text-slate-950">{title}</h2>
-      {copy && <p className="mt-1 break-words text-sm leading-5 text-slate-600">{copy}</p>}
+    <div className="flex min-w-0 items-start gap-3">
+      {icon && (
+        <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-[var(--app-radius-button)] bg-[var(--app-brand-050)] text-brand" aria-hidden="true">
+          <AppVisualIcon name={icon} compact />
+        </span>
+      )}
+      <div className="min-w-0">
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand">{eyebrow}</p>
+        <h2 className="mt-1 break-words text-lg font-bold leading-tight text-slate-950">{title}</h2>
+        {copy && <p className="mt-1 break-words text-sm leading-5 text-slate-600">{copy}</p>}
+      </div>
     </div>
   );
 }
 
-function AppFormGroupTitle({ title, copy }: { title: string; copy: string }) {
+function AppFormGroupTitle({ title, copy, icon }: { title: string; copy: string; icon?: AppVisualIconName }) {
   return (
-    <div className="min-w-0">
-      <h3 className="break-words text-sm font-bold text-slate-950">{title}</h3>
-      <p className="mt-1 break-words text-xs leading-5 text-slate-500">{copy}</p>
+    <div className="flex min-w-0 items-start gap-2.5">
+      {icon && (
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[var(--app-radius-button)] bg-slate-100 text-slate-700" aria-hidden="true">
+          <AppVisualIcon name={icon} compact />
+        </span>
+      )}
+      <div className="min-w-0">
+        <h3 className="break-words text-sm font-bold text-slate-950">{title}</h3>
+        <p className="mt-1 break-words text-xs leading-5 text-slate-500">{copy}</p>
+      </div>
     </div>
   );
 }
@@ -3372,9 +3537,9 @@ function UploadIcon() {
 function EvaluateProgress({ currentStage }: { currentStage: 1 | 2 | 3 }) {
   const { t } = useAppLocale();
   const stages = [
-    { id: 1, label: t("Add listing") },
-    { id: 2, label: t("Review") },
-    { id: 3, label: t("Result") },
+    { id: 1, label: t("Add listing"), icon: "camera" },
+    { id: 2, label: t("Review"), icon: "list" },
+    { id: 3, label: t("Result"), icon: "spark" },
   ] as const;
 
   return (
@@ -3384,10 +3549,22 @@ function EvaluateProgress({ currentStage }: { currentStage: 1 | 2 | 3 }) {
         const isComplete = currentStage > stage.id;
         return (
           <li key={stage.id} className="min-w-0">
-            <div className={`h-1 rounded-full ${isCurrent || isComplete ? "bg-brand" : "bg-slate-200"}`} aria-hidden="true" />
-            <p className={`mt-2 truncate text-[11px] font-bold ${isCurrent ? "text-brand" : isComplete ? "text-[var(--app-text)]" : "text-[var(--app-text-muted)]"}`}>
-              {stage.id}. {stage.label}
-            </p>
+            <div className={`grid min-h-[4.75rem] justify-items-center rounded-[var(--app-radius-button)] border px-2 py-2 text-center ${
+              isCurrent
+                ? "border-blue-200 bg-[var(--app-brand-050)] text-brand shadow-sm"
+                : isComplete
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-[var(--app-border)] bg-white text-[var(--app-text-muted)]"
+            }`}>
+              <span className={`grid h-8 w-8 place-items-center rounded-full ${
+                isCurrent || isComplete ? "bg-white" : "bg-[var(--app-surface-subtle)]"
+              }`} aria-hidden="true">
+                {isComplete ? <AppVisualIcon name="check" compact /> : <AppVisualIcon name={stage.icon} compact />}
+              </span>
+              <p className="mt-1 max-w-full truncate text-[11px] font-bold">
+                {stage.id}. {stage.label}
+              </p>
+            </div>
           </li>
         );
       })}
@@ -3537,6 +3714,7 @@ function HistoryScreenPlaceholder({
         eyebrow={t("Saved on this device")}
         title={t("History")}
         copy={t("Compare the bike checks you saved. These snapshots stay on this device and never re-run analysis when opened.")}
+        icon="history"
       />
 
       {!savedEvaluations.length ? (
@@ -3549,7 +3727,8 @@ function HistoryScreenPlaceholder({
             <p className="mt-2 max-w-sm text-sm leading-6 text-[var(--app-text-muted)]">
               {t("After evaluating a listing, save its recommendation here to compare later on this device.")}
             </p>
-            <button type="button" onClick={onEvaluate} className="mt-5 min-h-12 rounded-[var(--app-radius-button)] bg-brand px-5 text-sm font-bold text-white">
+            <button type="button" onClick={onEvaluate} className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--app-radius-button)] bg-brand px-5 text-sm font-bold text-white">
+              <AppVisualIcon name="search" compact />
               {t("Evaluate a bike")}
             </button>
           </div>
@@ -3564,6 +3743,7 @@ function HistoryScreenPlaceholder({
               ? locale === "zh-Hans" ? `${favoriteCount} 条已加入候选清单` : `${favoriteCount} on your shortlist`
               : t("Your saved bikes")}
             copy={t("Tap a star to keep promising bikes easy to spot.")}
+            icon="star"
           />
           <section className="app-native-group">
             {savedEvaluations.map((evaluation) => {
@@ -3645,6 +3825,7 @@ function HistoryScreenPlaceholder({
             copy={locale === "zh-Hans"
               ? `${formatLocalizedDate(locale, selectedEvaluation.savedAt)}保存。此页面不会重新分析或刷新商品信息。`
               : `Saved ${formatLocalizedDate(locale, selectedEvaluation.savedAt)}. Nothing on this screen is re-analyzed or refreshed.`}
+            icon="save"
           />
           <section className="app-native-group">
             <div className={`app-native-row ${resultSurfaceClass(selectedEvaluation.analysis.overall.meter)}`}>
@@ -3660,7 +3841,7 @@ function HistoryScreenPlaceholder({
               </div>
             </div>
             <div className="app-native-row">
-              <AppFormGroupTitle title={t("Listing snapshot")} copy={t("The listing details saved with this recommendation.")} />
+              <AppFormGroupTitle title={t("Listing snapshot")} copy={t("The listing details saved with this recommendation.")} icon="list" />
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <HistoryMetadata label={t("Price")} value={selectedEvaluation.listing.askingPrice ? `$${selectedEvaluation.listing.askingPrice}` : t("Not set")} />
                 <HistoryMetadata label={t("Wheel size")} value={localizeWheelSize(locale, selectedEvaluation.listing.wheelSize)} />
@@ -3675,7 +3856,7 @@ function HistoryScreenPlaceholder({
               </div>
             </div>
             <div className="app-native-row">
-              <AppFormGroupTitle title={t("Child snapshot")} copy={t("The profile details used when this bike was evaluated.")} />
+              <AppFormGroupTitle title={t("Child snapshot")} copy={t("The profile details used when this bike was evaluated.")} icon="profile" />
               <p className="mt-3 text-sm leading-6 text-[var(--app-text)]">
                 <span className="font-bold text-[var(--app-text-strong)]">{selectedEvaluation.childNickname?.trim() || t("Your child")}</span>
                 {selectedEvaluation.childSnapshot?.heightCm
@@ -3687,7 +3868,7 @@ function HistoryScreenPlaceholder({
               </p>
             </div>
             <div className="app-native-row">
-              <AppFormGroupTitle title={t("Fit, deal, and risk")} copy={t("These are the statuses saved with the original recommendation.")} />
+              <AppFormGroupTitle title={t("Fit, deal, and risk")} copy={t("These are the statuses saved with the original recommendation.")} icon="risk" />
               <div className="mt-4 grid gap-3">
                 <ResultMeter label={t("Fit")} item={localizeAnalysisResult(locale, selectedEvaluation.analysis).dimensions.fit} />
                 <ResultMeter label={t("Deal/value")} item={localizeAnalysisResult(locale, selectedEvaluation.analysis).dimensions.price} />
@@ -3819,8 +4000,9 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
         eyebrow={t("Privacy and controls")}
         title={t("Settings")}
         copy={t("Privacy, stored data, and app information.")}
+        icon="settings"
       />
-      <AppSectionHeading eyebrow={t("Language")} title={t("Choose app language")} />
+      <AppSectionHeading eyebrow={t("Language")} title={t("Choose app language")} icon="language" />
       <section className="app-native-group">
         <div className="app-native-row grid grid-cols-2 gap-2">
           <button
@@ -3846,11 +4028,11 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
         </div>
       </section>
 
-      <AppSectionHeading eyebrow={t("Privacy")} title={t("How your data is handled")} />
+      <AppSectionHeading eyebrow={t("Privacy")} title={t("How your data is handled")} icon="lock" />
       <section className="app-native-group">
-        <SettingsPlaceholderCard title={t("Privacy summary")} copy={t("Child profile and saved evaluations are stored on this device for the App Store MVP. No account or cloud sync is required, and you can clear local data at any time.")} />
-        <SettingsPlaceholderCard title={t("AI disclosure")} copy={t("AI features are optional and must start from a clear user action. Choosing a screenshot or pasting text does not start AI by itself. Local fallback analysis works without AI, provider keys stay server-side, and initial app load does not call OpenAI or an LLM.")} />
-        <SettingsPlaceholderCard title={t("Marketplace disclosure")} copy={t("Links, text, and screenshots are user-provided references. Mandy's Bike Finder does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages, and saved History does not re-fetch marketplace pages.")} />
+        <SettingsPlaceholderCard icon="lock" title={t("Privacy summary")} copy={t("Child profile and saved evaluations are stored on this device for the App Store MVP. No account or cloud sync is required, and you can clear local data at any time.")} />
+        <SettingsPlaceholderCard icon="spark" title={t("AI disclosure")} copy={t("AI features are optional and must start from a clear user action. Choosing a screenshot or pasting text does not start AI by itself. Local fallback analysis works without AI, provider keys stay server-side, and initial app load does not call OpenAI or an LLM.")} />
+        <SettingsPlaceholderCard icon="shield" title={t("Marketplace disclosure")} copy={t("Links, text, and screenshots are user-provided references. Mandy's Bike Finder does not automatically scrape Facebook, OfferUp, Craigslist, or login-gated marketplace pages, and saved History does not re-fetch marketplace pages.")} />
         <article className="app-native-row flex min-w-0 items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-base font-bold text-slate-950">{t("Privacy policy")}</h2>
@@ -3863,7 +4045,7 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
       </section>
 
       <div id="app-store-fixture-local-data" className="scroll-mt-4">
-        <AppSectionHeading eyebrow={t("On this iPhone")} title={t("Local data controls")} />
+        <AppSectionHeading eyebrow={t("On this iPhone")} title={t("Local data controls")} icon="trash" />
       </div>
       <section className="app-native-group">
         <article className="app-native-row">
@@ -3882,29 +4064,32 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
             <button
               type="button"
               onClick={clearProfileFromSettings}
-              className="min-h-11 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
             >
+              <AppVisualIcon name="profile" compact />
               {t("Clear child profile")}
             </button>
             <button
               type="button"
               onClick={clearHistoryFromSettings}
-              className="min-h-11 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 text-sm font-bold text-slate-800"
             >
+              <AppVisualIcon name="history" compact />
               {t("Clear history")}
             </button>
             <button
               type="button"
               onClick={clearAllLocalDataFromSettings}
-              className="min-h-11 rounded-xl bg-rose-50 px-4 text-sm font-bold text-rose-800"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 text-sm font-bold text-rose-800"
             >
+              <AppVisualIcon name="trash" compact />
               {t("Clear all local data")}
             </button>
           </div>
         </article>
       </section>
 
-      <AppSectionHeading eyebrow={t("About")} title={t("Mandy's Bike Finder")} />
+      <AppSectionHeading eyebrow={t("About")} title={t("Mandy's Bike Finder")} icon="bike" />
       <section className="app-native-group">
         <article className="app-native-row">
           <h2 className="text-base font-bold text-slate-950">{t("App information")}</h2>
@@ -3917,6 +4102,7 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
         </article>
 
         <SettingsPlaceholderCard
+          icon="shield"
           title={t("Disclaimer")}
           copy={t("Bike recommendations are decision support only. Parents should inspect fit, brakes, tires, frame condition, and safety before purchase.")}
         />
@@ -3925,11 +4111,18 @@ function SettingsScreenPlaceholder({ screenshotFixtureFrame }: { screenshotFixtu
   );
 }
 
-function SettingsPlaceholderCard({ title, copy }: { title: string; copy: string }) {
+function SettingsPlaceholderCard({ title, copy, icon }: { title: string; copy: string; icon?: AppVisualIconName }) {
   return (
-    <article className="app-native-row">
-      <h2 className="text-base font-bold text-slate-950">{title}</h2>
-      <p className="mt-1 break-words text-sm leading-5 text-slate-600">{copy}</p>
+    <article className="app-native-row flex min-w-0 items-start gap-3">
+      {icon && (
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[var(--app-radius-button)] bg-slate-100 text-slate-700" aria-hidden="true">
+          <AppVisualIcon name={icon} compact />
+        </span>
+      )}
+      <div className="min-w-0">
+        <h2 className="text-base font-bold text-slate-950">{title}</h2>
+        <p className="mt-1 break-words text-sm leading-5 text-slate-600">{copy}</p>
+      </div>
     </article>
   );
 }
@@ -4019,6 +4212,163 @@ function AppTabIcon({ tab }: { tab: AppStoreTab }) {
       <path d="M12 3.75v1.5m0 13.5v1.5m8.25-8.25h-1.5M5.25 12h-1.5m14.08-5.83-1.06 1.06M7.23 16.77l-1.06 1.06m11.66 0-1.06-1.06M7.23 7.23 6.17 6.17" />
     </svg>
   );
+}
+
+function AppVisualIcon({ name, compact = false }: { name: AppVisualIconName; compact?: boolean }) {
+  const commonProps = {
+    className: compact ? "h-4 w-4" : "h-5 w-5",
+    fill: "none",
+    stroke: "currentColor",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    strokeWidth: 2,
+    viewBox: "0 0 24 24",
+  };
+
+  switch (name) {
+    case "bike":
+      return (
+        <svg {...commonProps}>
+          <circle cx="6.5" cy="16.5" r="3" />
+          <circle cx="17.5" cy="16.5" r="3" />
+          <path d="M6.5 16.5 10 9h3l4.5 7.5M10 9l3.5 7.5H6.5m7 0 4-7.5M14 7h3" />
+        </svg>
+      );
+    case "camera":
+      return (
+        <svg {...commonProps}>
+          <rect x="4" y="6.5" width="16" height="12" rx="2" />
+          <path d="M8 6.5 9.3 4.5h5.4L16 6.5" />
+          <circle cx="12" cy="12.5" r="3" />
+        </svg>
+      );
+    case "check":
+      return <svg {...commonProps}><path d="m5 12.5 4 4L19 7" /></svg>;
+    case "clock":
+      return (
+        <svg {...commonProps}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7.5V12l3 1.75" />
+        </svg>
+      );
+    case "history":
+      return (
+        <svg {...commonProps}>
+          <path d="M4.5 8.25V4.5m0 0h3.75M4.75 4.75A8 8 0 1 1 4 14" />
+          <path d="M12 7.75v4.5l3 1.75" />
+        </svg>
+      );
+    case "language":
+      return (
+        <svg {...commonProps}>
+          <path d="M4 5h8M8 5v14M5 9c.7 2.4 2.4 4.2 5 5.5M11 9c-.9 2.7-2.8 5-6 6.5" />
+          <path d="M14 19l3.5-8 3.5 8M15.2 16.5h4.6" />
+        </svg>
+      );
+    case "list":
+      return (
+        <svg {...commonProps}>
+          <path d="M8 6h12M8 12h12M8 18h12" />
+          <path d="M4 6h.01M4 12h.01M4 18h.01" />
+        </svg>
+      );
+    case "lock":
+      return (
+        <svg {...commonProps}>
+          <rect x="5" y="10" width="14" height="10" rx="2" />
+          <path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
+        </svg>
+      );
+    case "message":
+      return (
+        <svg {...commonProps}>
+          <path d="M5 6.5h14v9H9l-4 3v-12Z" />
+          <path d="M8.5 10h7M8.5 13h4.5" />
+        </svg>
+      );
+    case "price":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 3v18M16 7.5c-.6-1-1.8-1.7-3.6-1.7-2.1 0-3.4 1-3.4 2.5 0 3.7 7.5 1.8 7.5 6 0 1.6-1.4 2.9-3.8 2.9-2 0-3.4-.8-4.2-2" />
+        </svg>
+      );
+    case "profile":
+      return (
+        <svg {...commonProps}>
+          <circle cx="12" cy="8" r="3.25" />
+          <path d="M5.75 19c.55-3.2 2.75-5 6.25-5s5.7 1.8 6.25 5" />
+        </svg>
+      );
+    case "risk":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 4 21 20H3L12 4Z" />
+          <path d="M12 9.5v4.25m0 3h.01" />
+        </svg>
+      );
+    case "ruler":
+      return (
+        <svg {...commonProps}>
+          <path d="M4 17 17 4l3 3L7 20l-3-3Z" />
+          <path d="m8 13 1.5 1.5M10.5 10.5 12 12m1-4 1.5 1.5" />
+        </svg>
+      );
+    case "save":
+      return (
+        <svg {...commonProps}>
+          <path d="M5 5h12l2 2v12H5V5Z" />
+          <path d="M8 5v5h7V5M8 19v-5h8v5" />
+        </svg>
+      );
+    case "search":
+      return (
+        <svg {...commonProps}>
+          <circle cx="10.5" cy="10.5" r="5.75" />
+          <path d="m15 15 4.25 4.25M8.25 10.5l1.5 1.5 3-3.25" />
+        </svg>
+      );
+    case "settings":
+      return (
+        <svg {...commonProps}>
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 3.75v1.5m0 13.5v1.5m8.25-8.25h-1.5M5.25 12h-1.5m14.08-5.83-1.06 1.06M7.23 16.77l-1.06 1.06m11.66 0-1.06-1.06M7.23 7.23 6.17 6.17" />
+        </svg>
+      );
+    case "shield":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 3.5 19 6v5.5c0 4.3-2.8 7.1-7 9-4.2-1.9-7-4.7-7-9V6l7-2.5Z" />
+          <path d="m8.75 12 2.1 2.1 4.4-4.6" />
+        </svg>
+      );
+    case "spark":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 3.5 13.8 9l5.7 1.5-5.7 1.7L12 20.5l-1.8-8.3-5.7-1.7L10.2 9 12 3.5Z" />
+        </svg>
+      );
+    case "star":
+      return (
+        <svg {...commonProps}>
+          <path d="m12 3.8 2.55 5.17 5.7.83-4.13 4.02.98 5.68L12 16.82 6.9 19.5l.98-5.68L3.65 9.8l5.8-.83L12 3.8Z" />
+        </svg>
+      );
+    case "trash":
+      return (
+        <svg {...commonProps}>
+          <path d="M4.5 7h15M9 7V5h6v2m-8.5 0 .75 13h9.5l.75-13M10 10.5v6M14 10.5v6" />
+        </svg>
+      );
+    case "wheel":
+      return (
+        <svg {...commonProps}>
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="2" />
+          <path d="M12 4v6m0 4v6m8-8h-6m-4 0H4m2.35-5.65 4.25 4.25m2.8 2.8 4.25 4.25m0-11.3-4.25 4.25m-2.8 2.8-4.25 4.25" />
+        </svg>
+      );
+  }
+  return null;
 }
 
 function BikeSizeRecommendation({ child }: { child: ChildProfile }) {
