@@ -20,7 +20,8 @@ Production and App Store Connect preparation completed on July 4, 2026:
 - Redeploying from the repository root fixed the Root Directory mismatch. Vercel deployment `dpl_Foz6zxF8eDtToPHw4UczfJo4iy3r` reached `READY` and aliased to `https://app.mandysbikefinder.com`.
 - Production `/`, `/privacy`, and `/api/status` returned `200`; `/api/status` reported `ok: true`.
 - Hosted Chromium browser automation at `390 x 844` confirmed the production startup screen, flow map, Settings version `1.3`, no error overlay, and no browser console errors.
-- App Store Connect export/upload succeeded at 11:32 PM EDT on July 4, 2026. Apple reported that the uploaded package is processing.
+- App Store Connect export/upload succeeded at 11:32 PM EDT on July 4, 2026.
+- Apple processing completed, build `1.3 (6)` was selected for App Store version `1.3`, English and Simplified Chinese v1.3 release notes were saved, and version `1.3 (6)` was submitted to App Review at about 12:01 AM EDT on July 5, 2026.
 
 # Version 1.2 TestFlight Candidate Preparation
 

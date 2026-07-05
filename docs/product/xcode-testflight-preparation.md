@@ -1,7 +1,7 @@
 # Xcode And TestFlight Preparation
 
-Status: Version 1.3 build 6 uploaded to App Store Connect; package processing
-Last updated: 2026-07-04
+Status: Version 1.3 build 6 submitted to App Review; waiting for review
+Last updated: 2026-07-05
 
 ## Purpose
 
@@ -73,7 +73,9 @@ Validation now completed on macOS:
 - Production deployment `dpl_Foz6zxF8eDtToPHw4UczfJo4iy3r` reached `READY` and now serves `https://app.mandysbikefinder.com`.
 - Hosted v1.3 acceptance confirmed startup entry, Rider -> Listing -> Saved flow map, Settings version `1.3`, healthy `/api/status`, and no browser errors.
 - Version `1.3` build `6` unsigned and automatically signed Release archives passed on July 4, 2026.
-- App Store Connect export/upload for `1.3 (6)` succeeded at 11:32 PM EDT on July 4, 2026. Apple reported that the uploaded package is processing.
+- App Store Connect export/upload for `1.3 (6)` succeeded at 11:32 PM EDT on July 4, 2026.
+- Apple processing completed, build `1.3 (6)` was selected for App Store version `1.3`, and English plus Simplified Chinese v1.3 release notes were saved.
+- Version `1.3 (6)` was submitted to App Review at about 12:01 AM EDT on July 5, 2026. App Store Connect reports one item submitted and says review may take up to 48 hours.
 
 GitHub handoff status:
 

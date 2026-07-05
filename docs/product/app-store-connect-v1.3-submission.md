@@ -1,12 +1,12 @@
 # App Store Connect Submission Package v1.3
 
-Status: Build uploaded to App Store Connect; package processing
+Status: Submitted to App Review; waiting for review
 
 Build: `1.3 (6)`
 
 ## Release Status
 
-Updated on July 4, 2026:
+Updated on July 5, 2026:
 
 - Version 1.3 was implemented and pushed to `main` at commit `348d5be`.
 - Vercel production deployment `dpl_Foz6zxF8eDtToPHw4UczfJo4iy3r` reached `READY` and was aliased to `https://app.mandysbikefinder.com`.
@@ -15,7 +15,9 @@ Updated on July 4, 2026:
 - `npm run test`, `NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm run build`, `npm run cap:doctor`, and `npm run cap:sync` passed.
 - Generic iOS Release archive with signing disabled passed for version `1.3 (6)`.
 - Automatically signed generic iOS Release archive passed for version `1.3 (6)`.
-- App Store Connect export/upload succeeded at 11:32 PM EDT on July 4, 2026. Apple reported that the uploaded package is processing.
+- App Store Connect export/upload succeeded at 11:32 PM EDT on July 4, 2026.
+- Apple processing completed, build `1.3 (6)` was selected for App Store version `1.3`, and English plus Simplified Chinese v1.3 release notes were saved.
+- Version `1.3 (6)` was submitted to App Review at about 12:01 AM EDT on July 5, 2026. App Store Connect reports one item submitted and says review may take up to 48 hours.
 
 ## English (U.S.)
 
@@ -89,9 +91,9 @@ Mandy's Bike Finder 1.3 让 App 更容易开始使用，也更容易跟随流程
 - [x] Run unsigned iOS Release archive.
 - [x] Run automatically signed iOS Release archive.
 - [x] Upload build `1.3 (6)` to App Store Connect.
-- [ ] Wait for App Store Connect processing to complete.
-- [ ] Select build `1.3 (6)` in the App Store Connect version record.
+- [x] Wait for App Store Connect processing to complete.
+- [x] Select build `1.3 (6)` in the App Store Connect version record.
 - [ ] Complete internal TestFlight upgrade acceptance.
-- [ ] Submit version `1.3 (6)` to App Review.
+- [x] Submit version `1.3 (6)` to App Review.
 
-Current App Store Connect status: uploaded package is processing.
+Current App Store Connect status: submitted to App Review and waiting for review.
