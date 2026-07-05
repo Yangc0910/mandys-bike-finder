@@ -1,7 +1,7 @@
 # Xcode And TestFlight Preparation
 
-Status: Version 1.2 build 5 submitted to App Review; waiting for review
-Last updated: 2026-06-14
+Status: Version 1.3 build 6 uploaded to App Store Connect; package processing
+Last updated: 2026-07-04
 
 ## Purpose
 
@@ -24,8 +24,8 @@ Current native settings:
 | Hosted URL | `https://app.mandysbikefinder.com` |
 | Cleartext traffic | `false` |
 | iOS deployment target | `15.0` |
-| Marketing version | `1.2` |
-| Build number | `5` |
+| Marketing version | `1.3` |
+| Build number | `6` |
 | Apple Developer Team | `H23DM6J89F` |
 | App icon asset catalog | `AppIcon` |
 | Launch screen | `LaunchScreen` storyboard with generated `Splash` asset |
@@ -69,6 +69,11 @@ Validation now completed on macOS:
 - Device-container inspection confirmed the existing version 1.1 child profile and saved History evaluation survived the TestFlight update.
 - English and Simplified Chinese App Store metadata, release notes, review notes, build selection, and the Simplified Chinese subtitle were saved in App Store Connect.
 - Version `1.2 (5)` was submitted to App Review at 3:16 PM EDT on June 14, 2026, and is now `Waiting for Review`.
+- Version `1.3` app-entry and visual-guidance changes were pushed to `main` at commit `348d5be`.
+- Production deployment `dpl_Foz6zxF8eDtToPHw4UczfJo4iy3r` reached `READY` and now serves `https://app.mandysbikefinder.com`.
+- Hosted v1.3 acceptance confirmed startup entry, Rider -> Listing -> Saved flow map, Settings version `1.3`, healthy `/api/status`, and no browser errors.
+- Version `1.3` build `6` unsigned and automatically signed Release archives passed on July 4, 2026.
+- App Store Connect export/upload for `1.3 (6)` succeeded at 11:32 PM EDT on July 4, 2026. Apple reported that the uploaded package is processing.
 
 GitHub handoff status:
 
@@ -112,8 +117,8 @@ In Xcode:
 - Confirm bundle identifier: `com.mandysbikefinder.app`.
 - Confirm display name: `Mandy's Bike Finder`.
 - Confirm version/build:
-  - Version: `1.2`
-  - Build: `5`
+  - Version: `1.3`
+  - Build: `6`
 - Confirm iOS deployment target is acceptable for first TestFlight. Current target is `15.0`.
 - Confirm App Transport Security allows the HTTPS hosted URL without adding broad exceptions.
 - Confirm no unnecessary native capabilities are enabled.

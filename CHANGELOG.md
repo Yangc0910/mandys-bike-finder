@@ -5,6 +5,7 @@
 - Added the App Store mode version 1.3 startup entry screen with launch artwork, short auto-dismiss timing, and a continue-without-account path that does not add account infrastructure.
 - Added icon-led visual guidance across the App Store Profile, Evaluate, History, and Settings flows, including a Rider -> Listing -> Saved flow map, visual evaluation steps, icon headers, and clearer action buttons.
 - Advanced App Store UI version metadata to `1.3` and the iOS target metadata to marketing version `1.3`, build `6`.
+- Deployed the version 1.3 hosted app to production and uploaded build `1.3 (6)` to App Store Connect for processing.
 - Fixed App Store History deduplication so distinct listings with different model, location, link, condition, description, or other snapshot details no longer overwrite each other.
 - Added History card model/location context plus automated coverage for distinct-listing saves and exact-repeat deduplication.
 - Added persistent English and Simplified Chinese support across the App Store Profile, Evaluate, History, Settings, Privacy, and offline recovery flows.

@@ -11,6 +11,17 @@ Validated locally for the version 1.3 update:
 - `NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm run build`: passed production build, type checking, and route generation.
 - Local Chromium browser automation at `390 x 844` confirmed the startup screen renders, auto-enters the Profile screen, the flow map appears, Settings displays version `1.3`, no Next.js error overlay appears, and no browser console errors were captured.
 
+Production and App Store Connect preparation completed on July 4, 2026:
+
+- Re-ran `npm run test`, `NEXT_PUBLIC_APP_STORE_MVP_MODE=true npm run build`, `npm run cap:doctor`, and `npm run cap:sync`; all passed.
+- Generic iOS Release archive with signing disabled passed for version `1.3 (6)`.
+- Automatically signed generic iOS Release archive passed for version `1.3 (6)`.
+- The first attempted Vercel CLI production deploy from `app/` failed because the Vercel project already has Root Directory `app`, causing the remote build to look for `app/package.json` inside the uploaded `app/` tree.
+- Redeploying from the repository root fixed the Root Directory mismatch. Vercel deployment `dpl_Foz6zxF8eDtToPHw4UczfJo4iy3r` reached `READY` and aliased to `https://app.mandysbikefinder.com`.
+- Production `/`, `/privacy`, and `/api/status` returned `200`; `/api/status` reported `ok: true`.
+- Hosted Chromium browser automation at `390 x 844` confirmed the production startup screen, flow map, Settings version `1.3`, no error overlay, and no browser console errors.
+- App Store Connect export/upload succeeded at 11:32 PM EDT on July 4, 2026. Apple reported that the uploaded package is processing.
+
 # Version 1.2 TestFlight Candidate Preparation
 
 Prepared on 2026-06-13:
